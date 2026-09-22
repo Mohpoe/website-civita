@@ -1,37 +1,37 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
 import {
-  MessageCircle,
-  FileText,
-  CheckCircle2,
   ArrowRight,
-  Sparkles,
-  Layers,
-  ShieldCheck,
-  Clock,
-  UserCheck,
+  ArrowUpRight,
+  Award,
+  Briefcase,
+  Check,
+  CheckCircle2,
   ChevronDown,
   ChevronUp,
-  X,
   ExternalLink,
   Eye,
-  Star,
-  Menu,
-  Send,
-  Briefcase,
-  Award,
-  Zap,
-  Check,
-  Sliders,
-  HelpCircle,
   FileCheck,
-  Phone,
-  ArrowUpRight,
-  ThumbsUp,
-  Search,
-  Filter
+  FileText,
+  HelpCircle,
+  Layers,
+  Menu,
+  MessageCircle,
+  ShieldCheck,
+  Sliders,
+  Sparkles,
+  Star,
+  X,
+  Zap
 } from "lucide-react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type MouseEvent as ReactMouseEvent,
+  type SVGProps,
+  type TouchEvent as ReactTouchEvent,
+} from "react";
 
 import { FaInstagram as Instagram } from "react-icons/fa";
 
@@ -51,7 +51,7 @@ const SITE = {
 };
 
 // Helper for encoded WhatsApp URLs
-const getWaLink = (customText) => {
+const getWaLink = (customText?: string) => {
   const text = customText || SITE.defaultWaMessage;
   return `https://wa.me/${SITE.whatsappNumber}?text=${encodeURIComponent(text)}`;
 };
@@ -186,8 +186,19 @@ const SERVICES_DATA = [
   },
 ];
 
+type PortfolioItem = {
+  id: number;
+  title: string;
+  category: string;
+  clientType: string;
+  tags: string[];
+  accentColor: string;
+  bgPattern: string;
+  previewType: string;
+};
+
 // Portfolio Sample Data
-const PORTFOLIO_DATA = [
+const PORTFOLIO_DATA: PortfolioItem[] = [
   {
     id: 1,
     title: "Curriculum Vitae Minimalist Slate",
@@ -377,7 +388,7 @@ const FAQ_DATA = [
 
 
 // Custom Mail Icon component to ensure missing lucide-react icons don't break
-function MailIcon(props) {
+function MailIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -824,7 +835,7 @@ function Services() {
 
 function PortfolioGallery() {
   const [activeTab, setActiveTab] = useState("Semua");
-  const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
 
   const categories = [
     "Semua",
@@ -1050,9 +1061,9 @@ function PortfolioGallery() {
 
 function BeforeAfter() {
   const [sliderPos, setSliderPos] = useState(50);
-  const containerRef = useRef(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
-  const handleMove = (clientX) => {
+  const handleMove = (clientX: number) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const x = clientX - rect.left;
@@ -1062,11 +1073,11 @@ function BeforeAfter() {
     setSliderPos(pos);
   };
 
-  const handleTouchMove = (e) => {
+  const handleTouchMove = (e: ReactTouchEvent<HTMLDivElement>) => {
     handleMove(e.touches[0].clientX);
   };
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = (e: ReactMouseEvent<HTMLDivElement>) => {
     if (e.buttons !== 1) return;
     handleMove(e.clientX);
   };
@@ -1458,7 +1469,7 @@ function InstagramSection() {
 }
 
 function FAQSection() {
-  const [openIdx, setOpenIdx] = useState(0);
+  const [openIdx, setOpenIdx] = useState<number | null>(0);
 
   return (
     <section id="faq" className="py-24 bg-slate-900 text-white relative">
