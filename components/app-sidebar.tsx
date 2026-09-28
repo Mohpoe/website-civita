@@ -16,6 +16,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { LayoutDashboardIcon, ListIcon, ChartBarIcon, FolderIcon, UsersIcon, CameraIcon, FileTextIcon, Settings2Icon, CircleHelpIcon, SearchIcon, DatabaseIcon, FileChartColumnIcon, FileIcon, CommandIcon } from "lucide-react"
+import Image from "next/image"
 
 const data = {
   user: {
@@ -185,8 +186,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               className="data-[slot=sidebar-menu-button]:p-1.5!"
               render={<a href="#" />}
             >
-              <CommandIcon className="size-5!" />
-              <span className="text-base font-semibold">Acme Inc.</span>
+              {/* <CommandIcon className="size-5!" /> */}
+              <Image alt="Logo" src="/assets/Icon.svg" className="size-5" width={100} height={100} />
+              <span className="text-base font-semibold">CIVITA</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
