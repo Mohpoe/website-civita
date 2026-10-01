@@ -466,7 +466,7 @@ const TestimonialChatVariant = () => {
 };
 
 const Testimonials = () => {
-  const [activeVariant, setActiveVariant] = useState('text'); // 'text' | 'chat'
+  const [activeVariant, setActiveVariant] = useState('chat'); // 'text' | 'chat'
 
   return (
     <section className="py-32 px-6 bg-zinc-50 overflow-hidden">
@@ -489,7 +489,7 @@ const Testimonials = () => {
               {activeVariant === 'text' && (
                 <motion.div layoutId="activePill" className="absolute inset-0 bg-white rounded-full -z-10 shadow-sm" />
               )}
-              <span className="relative z-10">Review Text</span>
+              <span className="relative z-10">Review</span>
             </button>
             <button
               onClick={() => setActiveVariant('chat')}
@@ -499,7 +499,7 @@ const Testimonials = () => {
               {activeVariant === 'chat' && (
                 <motion.div layoutId="activePill" className="absolute inset-0 bg-white rounded-full -z-10 shadow-sm" />
               )}
-              <span className="relative z-10">Chat Screenshot</span>
+              <span className="relative z-10">Testimoni</span>
             </button>
           </div>
         </div>
