@@ -188,7 +188,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             >
               {/* <CommandIcon className="size-5!" /> */}
               <Image alt="Logo" src="/assets/Icon.svg" className="size-5" width={100} height={100} />
-              <span className="text-base font-semibold">CIVITA</span>
+              <span className="text-base font-bold">CIVITA.ID</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
