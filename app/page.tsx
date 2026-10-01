@@ -1,11 +1,11 @@
 "use client";
 
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { APP_CONFIG, ROUTES } from '@/lib/constants';
 import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion';
 import {
   ArrowRight,
   Briefcase,
-  CheckCheckIcon,
   ChevronRight,
   FileText,
   Layout,
@@ -15,14 +15,9 @@ import {
   Sparkles
 } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { SiInstagram as Instagram, SiWhatsapp } from 'react-icons/si';
-
-const LINKS = {
-  whatsapp: "https://wa.me/6282312945365",
-  instagram: "https://www.instagram.com/bikincivita/",
-  email: "mailto:civitakerja@gmail.com"
-};
 
 interface DocumentMockupProps {
   className?: string;
@@ -104,6 +99,7 @@ const Navigation = () => {
         pointer-events-auto flex items-center justify-between px-6 py-3 rounded-full transition-all duration-500
         ${scrolled ? 'bg-white/70 backdrop-blur-xl border border-black/5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] w-full max-w-2xl' : 'bg-transparent w-full max-w-6xl'}
       `}>
+
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 bg-zinc-900 rounded-md flex items-center justify-center">
             {/* <span className="text-white text-xs font-bold tracking-tighter">C</span> */}
@@ -111,14 +107,35 @@ const Navigation = () => {
           </div>
           <span className="font-bold tracking-tight text-lg">CIVITA.ID</span>
         </div>
-        <div className="flex items-center gap-2 md:gap-4">
-          <a href={LINKS.instagram} target="_blank" rel="noreferrer" className="hidden md:flex text-sm text-zinc-500 hover:text-zinc-900 transition-colors px-2">
+
+        <div className="flex items-center gap-2 md:gap-3">
+          {/* Menu Kiri */}
+          <a href={APP_CONFIG.LINKS.INSTAGRAM} target="_blank" rel="noreferrer" className="hidden lg:flex text-sm text-zinc-500 hover:text-zinc-900 transition-colors px-2">
             Instagram
           </a>
-          <Button className="rounded-full px-3" variant="default" size="lg" onClick={() => window.open(LINKS.whatsapp, '_blank')}>
+
+          {/* Auth Menu (Ditambahkan) */}
+          <div className="hidden md:flex items-center gap-2 border-l border-black/10 pl-3 ml-1">
+            <Link
+              href={ROUTES.AUTH.LOGIN}
+              className={buttonVariants({ variant: 'ghost', size: 'sm', className: 'h-9 px-3 text-zinc-500 rounded-full' })}
+            >
+              Masuk
+            </Link>
+            <Link
+              href={ROUTES.AUTH.SIGNUP}
+              className={buttonVariants({ variant: 'outline', size: 'sm', className: 'h-9 px-3 shadow-sm rounded-full' })}
+            >
+              Daftar
+            </Link>
+          </div>
+
+          {/* CTA Utama */}
+          <Button size="sm" onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP, '_blank')} className="h-9 px-3 ml-1 md:ml-0 rounded-full">
             Konsultasi <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </div>
+
       </div>
     </motion.header>
   );
@@ -171,11 +188,11 @@ const Hero = () => {
           </p>
 
           <div className="flex flex-col items-start gap-4 mt-4">
-            <Button className="rounded-full h-12 px-8" size="lg" onClick={() => window.open(LINKS.whatsapp, '_blank')}>
+            <Button className="rounded-full h-12 px-8" size="lg" onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP, '_blank')}>
               <SiWhatsapp className="w-5 h-5 ml-0 mr-2" />
               Chat via WhatsApp
             </Button>
-            <Button className="rounded-full h-12 px-8" variant="outline" size="lg" onClick={() => window.open(LINKS.instagram, '_blank')}>
+            <Button className="rounded-full h-12 px-8" variant="outline" size="lg" onClick={() => window.open(APP_CONFIG.LINKS.INSTAGRAM, '_blank')}>
               <Instagram className="w-5 h-5 ml-0 mr-2" />
               Lihat Kumpulan Karya
             </Button>
@@ -302,7 +319,7 @@ const Process = () => {
             <div className="sticky top-32">
               <h2 className="text-3xl md:text-4xl font-bold tracking-tighter mb-4">Gak Pake Ribet.</h2>
               <p className="text-zinc-500 mb-8">Proses kerja yang dirancang sesimpel mungkin. Karena nyari kerja aja udah ribet, bikin CV jangan ikutan ribet.</p>
-              <Button className="h-10 px-4 py-2 rounded-full" onClick={() => window.open(LINKS.whatsapp, '_blank')}>
+              <Button className="h-10 px-4 py-2 rounded-full" onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP, '_blank')}>
                 Mulai Sekarang
               </Button>
             </div>
@@ -534,13 +551,25 @@ const CTA = () => {
         </p>
 
         <div className="flex justify-center pt-8">
-          <button
-            onClick={() => window.open(LINKS.whatsapp, '_blank')}
-            className="group relative inline-flex items-center justify-center gap-2 h-14 px-8 bg-white text-zinc-900 rounded-full font-bold text-lg transition-transform hover:scale-105 active:scale-95"
-          >
-            Chat Admin CIVITA
-            <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-          </button>
+          <div className="flex flex-col w-full sm:w-auto gap-5">
+            <button
+              onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP, '_blank')}
+              className="group relative inline-flex items-center justify-center gap-2 h-14 px-8 bg-white text-zinc-900 rounded-full font-bold text-lg transition-transform hover:scale-105 active:scale-95"
+            >
+              Chat Admin CIVITA
+              <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </button>
+
+            <div className="flex items-center justify-center gap-4 text-sm font-medium">
+              <Link href="#" className="text-zinc-400 hover:text-white transition-colors underline underline-offset-4 decoration-zinc-700 hover:decoration-white">
+                Masuk ke Akun
+              </Link>
+              <span className="text-zinc-700">|</span>
+              <Link href="#" className="text-zinc-400 hover:text-white transition-colors underline underline-offset-4 decoration-zinc-700 hover:decoration-white">
+                Daftar Member Baru
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -560,10 +589,10 @@ const Footer = () => {
         </div>
 
         <div className="flex items-center gap-6 text-sm text-zinc-500 font-medium">
-          <a href={LINKS.instagram} target="_blank" rel="noreferrer" className="hover:text-zinc-900 transition-colors flex items-center gap-2">
+          <a href={APP_CONFIG.LINKS.INSTAGRAM} target="_blank" rel="noreferrer" className="hover:text-zinc-900 transition-colors flex items-center gap-2">
             <Instagram className="w-4 h-4" /> Instagram
           </a>
-          <a href={LINKS.email} className="hover:text-zinc-900 transition-colors flex items-center gap-2">
+          <a href={APP_CONFIG.LINKS.EMAIL} className="hover:text-zinc-900 transition-colors flex items-center gap-2">
             <Mail className="w-4 h-4" /> Email
           </a>
         </div>
@@ -591,7 +620,7 @@ export default function App() {
           /* Smooth scrolling base */
           scroll-behavior: smooth;
         }
-        
+
         /* Subtle scrollbar */
         ::-webkit-scrollbar {
           width: 8px;
