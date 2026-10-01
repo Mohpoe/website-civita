@@ -3,7 +3,7 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
-const inter = Inter({subsets:['latin'],variable:'--font-inter'});
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CIVITA",
+  title: "CIVITA - Bantu kamu lolos kerja!",
   description: "CIVITA membantu Anda membuat CV, surat lamaran, portfolio, brosur, resi, dan kebutuhan desain lainnya dengan tampilan rapi, profesional, dan siap digunakan.",
 };
 
