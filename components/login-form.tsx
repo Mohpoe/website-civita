@@ -28,9 +28,9 @@ export function LoginForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle>Login to your account</CardTitle>
+          <CardTitle>Login ke akun kamu</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account
+            Masukkan email dan password untuk masuk.
           </CardDescription>
           <CardAction>
             <Link href={ROUTES.ROOT} className={buttonVariants({ variant: "link", size: "icon-lg" })}>
@@ -55,9 +55,9 @@ export function LoginForm({
                   <FieldLabel htmlFor="password">Password</FieldLabel>
                   <a
                     href="#"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                    className="ml-auto inline-block text-xs underline-offset-4 hover:underline"
                   >
-                    Forgot your password?
+                    Lupa password kamu?
                   </a>
                 </div>
                 <Input id="password" type="password" required />
@@ -68,7 +68,7 @@ export function LoginForm({
                   Login with Google
                 </Button> */}
                 <FieldDescription className="text-center">
-                  Don&apos;t have an account? <Link href={ROUTES.AUTH.SIGNUP}>Sign up</Link>
+                  Belum punya akun? <Link href={ROUTES.AUTH.SIGNUP}>Daftar sekarang</Link>
                 </FieldDescription>
               </Field>
             </FieldGroup>

@@ -366,6 +366,187 @@ const Process = () => {
   );
 };
 
+const PortfolioDocumentMockup = ({ type }: { type: string }) => {
+  if (type === 'ATS') {
+    return (
+      <div className="w-full aspect-[1/1.4] bg-[#fdfdfd] rounded-xl border border-foreground/5 p-4 shadow-sm flex flex-col gap-3">
+        <div className="w-1/2 h-3 bg-foreground/80 mx-auto rounded-full mb-2" />
+        <div className="w-full h-px bg-foreground/10 mb-1" />
+        <div className="space-y-1.5">
+          <div className="w-1/3 h-2 bg-foreground/60 rounded-full" />
+          <div className="w-full h-1.5 bg-muted rounded-full" />
+          <div className="w-5/6 h-1.5 bg-muted rounded-full" />
+        </div>
+        <div className="space-y-1.5 mt-2">
+          <div className="w-1/4 h-2 bg-foreground/60 rounded-full" />
+          <div className="flex gap-2">
+            <div className="w-1/4 h-1.5 bg-muted rounded-full" />
+            <div className="w-3/4 h-1.5 bg-muted rounded-full" />
+          </div>
+          <div className="flex gap-2">
+            <div className="w-1/4 h-1.5 bg-muted rounded-full" />
+            <div className="w-2/3 h-1.5 bg-muted rounded-full" />
+          </div>
+        </div>
+        <div className="space-y-1.5 mt-2">
+          <div className="w-1/3 h-2 bg-foreground/60 rounded-full" />
+          <div className="w-full h-1.5 bg-muted rounded-full" />
+          <div className="w-4/5 h-1.5 bg-muted rounded-full" />
+        </div>
+      </div>
+    );
+  }
+
+  if (type === 'Kreatif') {
+    return (
+      <div className="w-full aspect-[1/1.4] bg-[#fdfdfd] rounded-xl border border-foreground/5 p-3 shadow-sm flex gap-3 overflow-hidden">
+        <div className="w-1/3 h-full bg-muted/50 rounded-lg p-2 flex flex-col items-center gap-2 border-r border-foreground/5">
+          <div className="w-8 h-8 rounded-full bg-foreground/20" />
+          <div className="w-full space-y-1 mt-2">
+            <div className="w-full h-1 bg-foreground/20 rounded-full" />
+            <div className="w-4/5 h-1 bg-foreground/20 rounded-full" />
+          </div>
+          <div className="w-full space-y-1 mt-4">
+            <div className="w-full h-1.5 bg-foreground/30 rounded-full mb-1" />
+            <div className="w-full h-1 bg-foreground/10 rounded-full" />
+            <div className="w-full h-1 bg-foreground/10 rounded-full" />
+            <div className="w-full h-1 bg-foreground/10 rounded-full" />
+          </div>
+        </div>
+        <div className="w-2/3 py-2 pr-2 flex flex-col gap-3">
+          <div className="space-y-1">
+            <div className="w-3/4 h-3 bg-foreground/80 rounded-full" />
+            <div className="w-1/2 h-1.5 bg-foreground/40 rounded-full" />
+          </div>
+          <div className="space-y-1.5">
+            <div className="w-1/3 h-2 bg-foreground/60 rounded-full" />
+            <div className="w-full h-1 bg-muted rounded-full" />
+            <div className="w-5/6 h-1 bg-muted rounded-full" />
+            <div className="w-full h-1 bg-muted rounded-full" />
+          </div>
+          <div className="space-y-1.5">
+            <div className="w-1/3 h-2 bg-foreground/60 rounded-full" />
+            <div className="flex gap-2 items-center">
+              <div className="w-4 h-4 rounded bg-muted" />
+              <div className="space-y-1 flex-1">
+                <div className="w-full h-1 bg-muted rounded-full" />
+                <div className="w-4/5 h-1 bg-muted rounded-full" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full aspect-[1/1.4] bg-[#fdfdfd] rounded-xl border border-foreground/5 p-5 shadow-sm flex flex-col gap-4">
+      <div className="w-12 h-12 bg-foreground/5 rounded-lg flex items-center justify-center">
+        <Mail className="w-5 h-5 text-foreground/40" />
+      </div>
+      <div className="space-y-2 mt-2">
+        <div className="w-1/3 h-2 bg-foreground/60 rounded-full" />
+        <div className="w-1/4 h-1.5 bg-muted rounded-full" />
+      </div>
+      <div className="space-y-1.5 mt-2">
+        <div className="w-full h-1.5 bg-muted rounded-full" />
+        <div className="w-full h-1.5 bg-muted rounded-full" />
+        <div className="w-5/6 h-1.5 bg-muted rounded-full" />
+        <div className="w-full h-1.5 bg-muted rounded-full" />
+        <div className="w-4/5 h-1.5 bg-muted rounded-full" />
+        <div className="w-full h-1.5 bg-muted rounded-full" />
+        <div className="w-3/4 h-1.5 bg-muted rounded-full" />
+      </div>
+    </div>
+  );
+};
+
+const PortfolioShowcase = () => {
+  const [activeTab, setActiveTab] = useState('Semua');
+  const tabs = ['Semua', 'ATS', 'Kreatif', 'Cover Letter'];
+
+  const portfolioItems = [
+    { id: 1, type: 'ATS', title: 'Corporate Standard ATS', desc: 'Cocok untuk apply BUMN & Tech Company.' },
+    { id: 2, type: 'Kreatif', title: 'Gen-Z Aesthetic', desc: 'Desain menonjol untuk agensi & startup.' },
+    { id: 3, type: 'Cover Letter', title: 'Pro Cover Letter', desc: 'Sopan, terstruktur & tidak template-an.' },
+    { id: 4, type: 'ATS', title: 'Minimalist ATS', desc: 'Fokus penuh pada pengalaman & skill.' },
+    { id: 5, type: 'Kreatif', title: 'Modern Studio CV', desc: 'Warna subtle dengan layout 2 kolom.' },
+    { id: 6, type: 'Cover Letter', title: 'English Cover Letter', desc: 'Grammar rapi & professional tone.' },
+  ];
+
+  const filteredItems = portfolioItems.filter(
+    (item) => activeTab === 'Semua' || item.type === activeTab
+  );
+
+  return (
+    <section className="py-32 px-6 bg-muted/30">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center max-w-2xl mx-auto space-y-4 mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tighter text-foreground">Desain Yang Bikin HRD Salfok.</h2>
+          <p className="text-muted-foreground text-lg">
+            Mulai dari template ATS yang <em>strict</em> sampai desain kreatif ala anak agency, semua kita racik biar profilmu <em>standout</em>.
+          </p>
+        </div>
+
+        {/* Categories / Tabs */}
+        <div className="flex justify-center mb-12">
+          <div className="bg-input/50 backdrop-blur-md p-1 rounded-full flex gap-1 border border-foreground/5 overflow-x-auto max-w-full [&::-webkit-scrollbar]:hidden">
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`relative px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 whitespace-nowrap ${activeTab === tab ? 'text-foreground shadow-sm' : 'text-muted-foreground hover:text-zinc-700'
+                  }`}
+              >
+                {activeTab === tab && (
+                  <motion.div layoutId="portfolioTab" className="absolute inset-0 bg-background rounded-full -z-10 shadow-sm" />
+                )}
+                <span className="relative z-10">{tab}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Portfolio Grid */}
+        <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 min-h-[400px]">
+          <AnimatePresence mode="popLayout">
+            {filteredItems.map((item) => (
+              <motion.div
+                key={item.id}
+                layout
+                initial={{ opacity: 0, scale: 0.9, filter: "blur(4px)" }}
+                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                exit={{ opacity: 0, scale: 0.9, filter: "blur(4px)" }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                className="group flex flex-col gap-4"
+              >
+                <div className="relative bg-background rounded-[2rem] p-6 border border-foreground/5 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.06)] transition-all duration-500 hover:-translate-y-1">
+                  <div className="absolute top-4 right-4 bg-muted text-muted-foreground text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider z-10">
+                    {item.type}
+                  </div>
+                  <div className="pointer-events-none group-hover:scale-[1.02] transition-transform duration-500 ease-out">
+                    <PortfolioDocumentMockup type={item.type} />
+                  </div>
+                </div>
+                <div className="px-2">
+                  <h3 className="font-bold text-foreground text-lg tracking-tight mb-1">{item.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </motion.div>
+
+        <div className="mt-16 flex justify-center">
+          <Button variant="outline" className="rounded-full h-12 px-8" onClick={() => window.open(APP_CONFIG.LINKS.INSTAGRAM, '_blank')}>
+            Lihat Lebih Banyak di Instagram <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
+        </div>
+      </div>
+    </section>
+  );
+};
+
 const TestimonialTextVariant = () => {
   const reviews = [
     {
@@ -704,6 +885,7 @@ export default function App() {
         <Hero />
         <Services />
         <Process />
+        {/* <PortfolioShowcase /> */}
         <Testimonials />
         <CTA />
       </main>
