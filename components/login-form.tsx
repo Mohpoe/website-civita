@@ -1,8 +1,9 @@
 import { cn } from "cn"
 
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -15,6 +16,9 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { HouseIcon } from "lucide-react"
+import Link from "next/link"
+import { ROUTES } from "@/lib/constants"
 
 export function LoginForm({
   className,
@@ -28,6 +32,11 @@ export function LoginForm({
           <CardDescription>
             Enter your email below to login to your account
           </CardDescription>
+          <CardAction>
+            <Link href={ROUTES.ROOT} className={buttonVariants({ variant: "link", size: "icon-lg" })}>
+              <HouseIcon />
+            </Link>
+          </CardAction>
         </CardHeader>
         <CardContent>
           <form>
@@ -55,11 +64,11 @@ export function LoginForm({
               </Field>
               <Field>
                 <Button type="submit">Login</Button>
-                <Button variant="outline" type="button">
+                {/* <Button variant="outline" type="button">
                   Login with Google
-                </Button>
+                </Button> */}
                 <FieldDescription className="text-center">
-                  Don&apos;t have an account? <a href="#">Sign up</a>
+                  Don&apos;t have an account? <Link href={ROUTES.AUTH.SIGNUP}>Sign up</Link>
                 </FieldDescription>
               </Field>
             </FieldGroup>

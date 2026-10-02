@@ -13,7 +13,8 @@ import {
   Mail,
   MessageCircle,
   QuoteIcon,
-  Sparkles
+  Sparkles,
+  XIcon
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -124,13 +125,13 @@ const Navigation = () => {
           <div className="hidden md:flex items-center gap-2 border-l border-foreground/10 pl-3 ml-1">
             <Link
               href={ROUTES.AUTH.LOGIN}
-              className={buttonVariants({ variant: 'ghost', size: 'sm', className: 'h-9 px-3 text-muted-foreground rounded-full' })}
+              className={buttonVariants({ variant: "ghost", size: "sm", className: "h-9 px-3 text-muted-foreground !rounded-full" })}
             >
               Masuk
             </Link>
             <Link
               href={ROUTES.AUTH.SIGNUP}
-              className={buttonVariants({ variant: 'outline', size: 'sm', className: 'h-9 px-3 shadow-sm rounded-full' })}
+              className={buttonVariants({ variant: "outline", size: "sm", className: "h-9 px-3 shadow-sm !rounded-full" })}
             >
               Daftar
             </Link>
@@ -197,15 +198,15 @@ const Hero = () => {
           </h1>
 
           <p className="text-lg text-zinc-600 max-w-md leading-relaxed">
-            Tersedia berbagai desain, mulai dari ATS-friendly, CV Creative, maupun CV basic yang bisa kamu sesuaikan dengan background kerja dan pendidikan kamu.
+            Tersedia berbagai desain CV (Curriculum Vitae) & resume, mulai dari ATS-friendly, CV Creative, maupun CV basic yang bisa kamu sesuaikan dengan background kerja dan pendidikanmu.
           </p>
 
-          <div className="flex flex-col items-start gap-4 mt-4">
-            <Button className="rounded-full h-12 px-8" size="lg" onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP, '_blank')}>
+          <div className="flex flex-col sm:flex-row flex-wrap items-center gap-3 w-full mt-4">
+            <Button className="rounded-full h-12 px-8 w-full sm:w-auto" size="lg" onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP, '_blank')}>
               <SiWhatsapp className="w-5 h-5 ml-0 mr-2" />
               Chat via WhatsApp
             </Button>
-            <Button className="rounded-full h-12 px-8" variant="outline" size="lg" onClick={() => window.open(APP_CONFIG.LINKS.INSTAGRAM, '_blank')}>
+            <Button className="rounded-full h-12 px-8 w-full sm:w-auto" variant="outline" size="lg" onClick={() => window.open(APP_CONFIG.LINKS.INSTAGRAM, '_blank')}>
               <Instagram className="w-5 h-5 ml-0 mr-2" />
               Lihat Portofolio
             </Button>
@@ -219,7 +220,7 @@ const Hero = () => {
                 </div>
               ))}
             </div>
-            <p>Dipercaya oleh 500+ job seeker & profesional.</p>
+            <p>Dipercaya oleh 1000+ orang sejak 2023.</p>
           </div>
         </motion.div>
 
@@ -245,8 +246,8 @@ const Services = () => {
     <section className="py-32 px-6 bg-muted">
       <div className="max-w-6xl mx-auto space-y-16">
         <div className="text-center max-w-2xl mx-auto space-y-4">
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tighter text-foreground">Senjata Ampuh Job Seeker.</h2>
-          <p className="text-muted-foreground text-lg">Bukan cuma rapi, tapi ATS friendly dan enak dilihat mata manusia (iya, HRD juga manusia, mereka suka yang cantik-cantik).</p>
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tighter text-foreground">90%+ Desain CV Kami Disukai HRD</h2>
+          <p className="text-muted-foreground text-lg">Telah terbukti disukai dan mudah di-<em>screening</em> para HR.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -261,13 +262,13 @@ const Services = () => {
               </div>
               <div>
                 <h3 className="text-2xl font-bold mb-2 tracking-tight">CV & Resume Design</h3>
-                <p className="text-muted-foreground max-w-md">Layout clean, hierarki informasi jelas. Bikin experience baca CV kamu se-smooth scroll TikTok.</p>
+                <p className="text-muted-foreground max-w-md">Layout CV & Resume ATS-friendly yang simpel dan mudah di-<em>screening</em> para HR. Desain CV Kreatif yang <em>aesthetic</em>. Dan CV Basic yang ramah di kantong.</p>
               </div>
             </div>
           </div>
 
           {/* Card 2 */}
-          <div className="md:col-span-1 group relative overflow-hidden rounded-[2rem] bg-foreground text-background p-8 transition-shadow hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
+          <div className="md:col-span-1 group relative overflow-hidden rounded-[2rem] bg-foreground/90 text-background p-8 transition-shadow hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
             <div className="absolute top-0 right-0 p-8 opacity-10 transition-transform group-hover:scale-110 duration-500">
               <MessageCircle className="w-32 h-32" />
             </div>
@@ -277,7 +278,7 @@ const Services = () => {
               </div>
               <div>
                 <h3 className="text-2xl font-bold mb-2 tracking-tight">Cover Letter</h3>
-                <p className="text-muted-foreground">Kata-kata manis yang profesional, bikin peluang dilirik makin gede.</p>
+                <p className="text-muted-foreground">Cover letter & surat lamaran kerja yang disusun secara profesional untuk perbesar peluang lolos kerja.</p>
               </div>
             </div>
           </div>
@@ -289,8 +290,8 @@ const Services = () => {
                 <Layout className="w-5 h-5 text-foreground" />
               </div>
               <div>
-                <h3 className="text-2xl font-bold mb-2 tracking-tight">Brosur & Resi</h3>
-                <p className="text-muted-foreground">Buat bisnis kamu terlihat sekelas enterprise, walau masih dirintis dari kamar kos.</p>
+                <h3 className="text-2xl font-bold mb-2 tracking-tight">Brosur, Flyer, Sign Board & Resi</h3>
+                <p className="text-muted-foreground">Buat bisnis kamu jadi lebih profesional dan menarik pelanggan saat promosi.</p>
               </div>
             </div>
           </div>
@@ -305,8 +306,8 @@ const Services = () => {
                 <Briefcase className="w-5 h-5 text-foreground" />
               </div>
               <div>
-                <h3 className="text-2xl font-bold mb-2 tracking-tight">Company & Work Portfolio</h3>
-                <p className="text-muted-foreground max-w-md">Showcase karyamu dengan elegan. Biar skill dan pencapaianmu nggak cuma jadi mitos belaka.</p>
+                <h3 className="text-2xl font-bold mb-2 tracking-tight">Company Profile & Personal Portfolio</h3>
+                <p className="text-muted-foreground max-w-md">Showcase karyamu dengan profesional, dan tingkatkan peluang bisnis yang lebih baik.</p>
               </div>
             </div>
           </div>
@@ -318,10 +319,10 @@ const Services = () => {
 
 const Process = () => {
   const steps = [
-    { num: "01", title: "Spill Kebutuhan", desc: "Konsultasi santai via WhatsApp. Kasih tau mau apply ke mana atau butuh desain seperti apa." },
-    { num: "02", title: "Kita Eksekusi", desc: "Duduk manis. Desainer kami lagi ngeracik pixel dan typography biar hasilnya premium." },
-    { num: "03", title: "Revisi Tipis-Tipis", desc: "Udah cakep sih, tapi kalau ada yang kurang pas di hati, kita sesuaikan lagi." },
-    { num: "04", title: "Done & Good Luck!", desc: "File high-res meluncur. Siap dipakai buat nge-apply dan naklukin hati HRD." }
+    { num: "01", title: "Konsultasi Kebutuhan", desc: "Diskusi via WhatsApp, konfirmasi jenis CV atau kebutuhan lain, baik berbahasa Indonesia atau English." },
+    { num: "02", title: "Payment & Eksekusi", desc: "Dengan harga terjangkau mulai dari 13K dapatkan CV & Resume yang profesional." },
+    { num: "03", title: "Revisi Tipis-Tipis", desc: "Untuk lebih menyesuaikan dengan kebutuhan kamu, kami siap revisi hingga maksimal 2 hari." },
+    { num: "04", title: "Done & Good Luck!", desc: "Kami akan kirimkan semua yang kamu butuhkan untuk melamar pekerjaan yang kamu inginkan." }
   ];
 
   return (
@@ -330,10 +331,10 @@ const Process = () => {
         <div className="flex flex-col md:flex-row gap-16 lg:gap-24">
           <div className="md:w-1/3">
             <div className="sticky top-32">
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tighter mb-4">Gak Pake Ribet.</h2>
-              <p className="text-muted-foreground mb-8">Proses kerja yang dirancang sesimpel mungkin. Karena nyari kerja aja udah ribet, bikin CV jangan ikutan ribet.</p>
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tighter mb-4">Murah, Cepat & Profesional.</h2>
+              <p className="text-muted-foreground mb-8">Dirancang oleh profesional untuk kamu yang pusing cari pekerjaan <em>in this economy</em>.</p>
               <Button className="h-10 px-4 py-2 rounded-full" onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP, '_blank')}>
-                Mulai Sekarang
+                Mulai Sekarang!
               </Button>
             </div>
           </div>
@@ -344,7 +345,7 @@ const Process = () => {
                 <div key={i} className="group relative flex gap-6">
                   {/* Line connector */}
                   {i !== steps.length - 1 && (
-                    <div className="absolute left-[1.15rem] top-12 bottom-[-3rem] w-px bg-muted group-hover:bg-input transition-colors" />
+                    <div className="absolute left-[1.25rem] top-10 bottom-[-3rem] w-px bg-muted group-hover:bg-input transition-colors" />
                   )}
 
                   <div className="relative z-10 flex-shrink-0 w-10 h-10 rounded-full bg-muted border border-input flex items-center justify-center text-xs font-bold text-muted-foreground">
@@ -502,9 +503,9 @@ const Testimonials = () => {
     <section className="py-32 px-6 bg-muted overflow-hidden">
       <div className="max-w-6xl mx-auto">
         <div className="text-center max-w-2xl mx-auto space-y-4 mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tighter text-foreground">Kata Mereka Yang Lolos Screening.</h2>
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tighter text-foreground">Kata Mereka Yang Keterima Kerja.</h2>
           <p className="text-muted-foreground text-lg">
-            Bukan testimoni fiktif yang diketik admin pas lagi gabut. Beneran hasil karya yang ngebantu mereka dapet kerja.
+            Sudah terbukti dari mereka yang telah diterima kerja di berbagai perusahaan dengan bantuan CV dan Resume dari CIVITA.
           </p>
         </div>
 
@@ -574,11 +575,11 @@ const CTA = () => {
             </button>
 
             <div className="flex items-center justify-center gap-4 text-sm font-medium">
-              <Link href="#" className="text-background/60 hover:text-background transition-colors underline underline-offset-4 decoration-background hover:decoration-background">
+              <Link href={ROUTES.AUTH.LOGIN} className="text-background/60 hover:text-background transition-colors underline underline-offset-4 decoration-background hover:decoration-background">
                 Masuk ke Akun
               </Link>
               <span className="text-zinc-700">|</span>
-              <Link href="#" className="text-background/60 hover:text-background transition-colors underline underline-offset-4 decoration-background hover:decoration-background">
+              <Link href={ROUTES.AUTH.SIGNUP} className="text-background/60 hover:text-background transition-colors underline underline-offset-4 decoration-background hover:decoration-background">
                 Daftar Member Baru
               </Link>
             </div>
@@ -624,6 +625,49 @@ const Footer = () => {
   );
 };
 
+const PricingPopup = () => {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    // Memunculkan popup secara halus setelah 2.5 detik halaman dimuat
+    const timer = setTimeout(() => setIsVisible(true), 2500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <AnimatePresence>
+      {isVisible && (
+        <motion.div
+          initial={{ opacity: 0, y: 30, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 30, scale: 0.95, filter: "blur(5px)" }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="fixed bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 md:translate-x-0 md:left-8 z-50 flex items-center gap-3 p-3 pr-4 bg-background/80 backdrop-blur-xl border border-foreground/10 shadow-[0_20px_40px_rgb(0,0,0,0.12)] rounded-full w-max max-w-[90vw]"
+        >
+          <div className="flex items-center justify-center w-9 h-9 rounded-full bg-foreground text-background shrink-0 shadow-inner">
+            <Sparkles className="w-4 h-4" />
+          </div>
+          <div className="flex flex-col mr-2">
+            <span className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase leading-none mb-1">
+              Harga Terjangkau
+            </span>
+            <span className="text-sm font-medium text-foreground leading-none">
+              Harga mulai dari <strong className="font-bold border-b-2 border-foreground/20">13K</strong> aja!
+            </span>
+          </div>
+          <button
+            onClick={() => setIsVisible(false)}
+            className="p-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-muted ml-1"
+            aria-label="Tutup"
+          >
+            <XIcon className="w-4 h-4" />
+          </button>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
 export default function App() {
   return (
     <div className="font-mono text-foreground antialiased selection:bg-input selection:text-foreground min-h-screen bg-background">
@@ -664,6 +708,7 @@ export default function App() {
         <CTA />
       </main>
       <Footer />
+      <PricingPopup />
     </div>
   );
 }
