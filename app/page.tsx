@@ -558,10 +558,10 @@ const CTA = () => {
 
       <div className="relative z-10 max-w-4xl mx-auto text-center space-y-8">
         <h2 className="text-4xl md:text-6xl font-bold tracking-tighter text-background">
-          Deadline ngelamar besok?
+          Butuh CV & Resume Secepatnya!?
         </h2>
         <p className="text-xl text-background max-w-2xl mx-auto">
-          Tenang, tarik napas dulu... mending langsung chat admin sekarang. Biar kita yang urus visualnya, kamu siapin mental buat interview aja.
+          Langsung chat admin sekarang! CV kamu langsung jadi dalam 3 jam dan siap digunakan. Dibuat untuk maksimalin peluang lolos kerja!
         </p>
 
         <div className="flex justify-center pt-8">
