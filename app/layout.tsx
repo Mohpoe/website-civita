@@ -64,7 +64,7 @@ export const metadata: Metadata = {
     images: [
       {
         // Sesuaikan nama file ini jika Anda menggunakan aset OG image profesional yang dibuat sebelumnya
-        url: "/assets/watermarked_img_13806391683271835073.jpg",
+        url: "/assets/og-image.webp",
         width: 1200,
         height: 630,
         alt: "CIVITA - Jasa Pembuatan CV, Portfolio & Desain Karir",
@@ -76,7 +76,7 @@ export const metadata: Metadata = {
     title: "CIVITA | Jasa Pembuatan CV & Portfolio Profesional",
     description: "Bantu kamu lolos kerja! Buat CV ATS-friendly, cover letter, dan portfolio dengan tampilan rapi, elegan, dan disukai HRD.",
     // Samakan dengan URL gambar di OpenGraph
-    images: ["/assets/watermarked_img_13806391683271835073.jpg"],
+    images: ["/assets/og-image.webp"],
     creator: "@bikincivita",
   },
   alternates: {
