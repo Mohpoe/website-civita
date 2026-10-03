@@ -1,20 +1,30 @@
 "use client";
 
 import { ModeToggle } from '@/components/theme-toggle-button';
-import { Button } from '@/components/ui/button';
-import { Field } from '@/components/ui/field';
-import { Input } from '@/components/ui/input';
-import { APP_CONFIG } from '@/lib/constants';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { APP_CONFIG, ROUTES } from '@/lib/constants';
+import { Show, SignedOut, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
 import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion';
-import { ArrowRight, Briefcase, ChevronRight, FileText, Layout, Mail, MessageCircle, QuoteIcon, Sparkles, XIcon } from 'lucide-react';
+import {
+  ArrowRight,
+  Briefcase,
+  ChevronRight,
+  FileText,
+  Layout,
+  Mail,
+  MessageCircle,
+  QuoteIcon,
+  Sparkles,
+  XIcon
+} from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import { FcGoogle } from 'react-icons/fc';
 import { SiInstagram as Instagram, SiWhatsapp } from 'react-icons/si';
 
-interface DocumentMockupProps { className?: string; }
-type AuthType = "login" | "signup";
-interface AuthModalProps { isOpen: boolean; type: AuthType; onClose: () => void; onSwitchType: (type: AuthType) => void; }
+interface DocumentMockupProps {
+  className?: string;
+}
 
 const DocumentMockupCV = ({ className }: DocumentMockupProps) => (
   <div className={`bg-background/80 backdrop-blur-xl border border-foreground/5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl p-4 flex flex-col gap-3 ${className}`}>
@@ -70,109 +80,7 @@ const DocumentMockupCoverLetter = ({ className }: DocumentMockupProps) => (
   </div>
 );
 
-const AuthModal = ({ isOpen, type, onClose, onSwitchType }: AuthModalProps) => {
-  if (!isOpen) return null;
-
-  return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-        {/* Backdrop */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-          className="absolute inset-0 bg-background/80 backdrop-blur-sm"
-        />
-
-        {/* Modal Content */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
-          className="relative w-full max-w-md bg-background border border-foreground/10 shadow-2xl rounded-3xl p-8 overflow-hidden"
-        >
-          {/* Close Button */}
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-muted hover:bg-input transition-colors"
-          >
-            <XIcon className="w-4 h-4 text-muted-foreground" />
-          </button>
-
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold tracking-tight mb-2">
-              {type === 'login' ? 'Selamat Datang Kembali' : 'Mulai Karirmu'}
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              {type === 'login'
-                ? 'Masuk untuk mengelola pesanan CV & dokumenmu.'
-                : 'Daftar sekarang dan buat CV profesional pertamamu.'}
-            </p>
-          </div>
-
-          <div className="space-y-4">
-            {/* Google Button */}
-            <button className="w-full relative flex items-center justify-center h-12 bg-background border border-input rounded-full hover:bg-muted transition-colors font-medium shadow-sm">
-              <FcGoogle className="absolute left-4 w-5.5 h-5.5" />
-              Lanjutkan dengan Google
-            </button>
-
-            <div className="relative flex items-center py-2">
-              <div className="flex-grow border-t border-input"></div>
-              <span className="flex-shrink-0 mx-4 text-xs text-muted-foreground uppercase tracking-widest">atau</span>
-              <div className="flex-grow border-t border-input"></div>
-            </div>
-
-            {/* Email Form */}
-            <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-              <Field className="space-y-1">
-                <Input
-                  type="email"
-                  placeholder="Alamat Email"
-                  className="h-12 px-4 rounded-xl"
-                />
-              </Field>
-              {type === 'signup' && (
-                <Field className="space-y-1">
-                  <Input
-                    type="text"
-                    placeholder="Nama Lengkap"
-                    className="h-12 px-4 rounded-xl"
-                  />
-                </Field>
-              )}
-              <Field className="space-y-1">
-                <Input
-                  type="password"
-                  placeholder="Kata Sandi"
-                  className="h-12 px-4 rounded-xl"
-                />
-              </Field>
-
-              <Button className="w-full h-12 rounded-full font-bold text-sm" type="submit">
-                {type === 'login' ? 'Masuk' : 'Buat Akun'}
-              </Button>
-            </form>
-
-            <p className="text-center text-sm text-muted-foreground pt-4">
-              {type === 'login' ? 'Belum punya akun? ' : 'Sudah punya akun? '}
-              <button
-                onClick={() => onSwitchType(type === 'login' ? 'signup' : 'login')}
-                className="text-foreground font-bold hover:underline"
-              >
-                {type === 'login' ? 'Daftar' : 'Masuk'}
-              </button>
-            </p>
-          </div>
-        </motion.div>
-      </div>
-    </AnimatePresence>
-  );
-};
-
-const Navigation = ({ onOpenAuth }: { onOpenAuth: (type: AuthType) => void }) => {
+const Navigation = () => {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -214,24 +122,29 @@ const Navigation = ({ onOpenAuth }: { onOpenAuth: (type: AuthType) => void }) =>
             Instagram
           </a>
 
-          {/* Auth Menu (Ditambahkan) */}
+          {/* CLERK AUTHENTICATION MENU */}
           <div className="hidden md:flex items-center gap-2 border-l border-foreground/10 pl-3 ml-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onOpenAuth('login')}
-              className="h-9 px-3 text-muted-foreground rounded-full"
-            >
-              Masuk
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onOpenAuth('signup')}
-              className="h-9 px-3 shadow-sm rounded-full"
-            >
-              Daftar
-            </Button>
+            {/* Tampil jika user belum login */}
+            <Show when="signed-out">
+              <SignInButton mode="modal" fallbackRedirectUrl="/">
+                <Button variant="ghost" size="sm" className="h-9 px-3 text-muted-foreground rounded-full">
+                  Masuk
+                </Button>
+              </SignInButton>
+              <SignUpButton mode="modal" fallbackRedirectUrl="/">
+                <Button variant="outline" size="sm" className="h-9 px-3 text-muted-foreground rounded-full">
+                  Daftar
+                </Button>
+              </SignUpButton>
+            </Show>
+
+            {/* Tampil jika user sudah login */}
+            <Show when="signed-in">
+              <Link href={ROUTES.DASHBOARD.HOME} className={buttonVariants({ variant: "ghost", size: "sm", className: "h-9 px-3 text-muted-foreground !rounded-full mr-1" })}>
+                Dashboard
+              </Link>
+              <UserButton />
+            </Show>
           </div>
 
           {/* CTA Utama */}
@@ -827,7 +740,7 @@ const Testimonials = () => {
   );
 };
 
-const CTA = ({ onOpenAuth }: { onOpenAuth: (type: AuthType) => void }) => {
+const CTA = () => {
   return (
     <section className="relative py-32 px-6 overflow-hidden">
       <div className="absolute inset-0 bg-foreground" />
@@ -853,13 +766,25 @@ const CTA = ({ onOpenAuth }: { onOpenAuth: (type: AuthType) => void }) => {
             </button>
 
             <div className="flex items-center justify-center gap-4 text-sm font-medium">
-              <button onClick={() => onOpenAuth('login')} className="text-background/60 hover:text-background transition-colors underline underline-offset-4 decoration-background hover:decoration-background">
+              <Show when="signed-out">
+                <SignInButton mode="modal" fallbackRedirectUrl="/">
+                  <Button variant="link" className="text-background/60 hover:text-background transition-colors underline underline-offset-4 decoration-background hover:decoration-background">
+                    Masuk ke Akun
+                  </Button>
+                </SignInButton>
+                <SignUpButton mode="modal" fallbackRedirectUrl="/">
+                  <Button variant="link" className="text-background/60 hover:text-background transition-colors underline underline-offset-4 decoration-background hover:decoration-background">
+                    Daftar Member Baru
+                  </Button>
+                </SignUpButton>
+              </Show>
+              {/* <Link href={ROUTES.AUTH.LOGIN} className="text-background/60 hover:text-background transition-colors underline underline-offset-4 decoration-background hover:decoration-background">
                 Masuk ke Akun
-              </button>
+              </Link>
               <span className="text-zinc-700">|</span>
-              <button onClick={() => onOpenAuth('signup')} className="text-background/60 hover:text-background transition-colors underline underline-offset-4 decoration-background hover:decoration-background">
+              <Link href={ROUTES.AUTH.SIGNUP} className="text-background/60 hover:text-background transition-colors underline underline-offset-4 decoration-background hover:decoration-background">
                 Daftar Member Baru
-              </button>
+              </Link> */}
             </div>
           </div>
         </div>
@@ -947,15 +872,6 @@ const PricingPopup = () => {
 };
 
 export default function App() {
-  const [authModal, setAuthModal] = useState<{
-    isOpen: boolean;
-    type: AuthType;
-  }>({ isOpen: false, type: "login" });
-
-  const openAuthModal = (type: AuthType) => setAuthModal({ isOpen: true, type });
-  const closeAuthModal = () => setAuthModal((current) => ({ ...current, isOpen: false }));
-  const switchAuthType = (type: AuthType) => setAuthModal((current) => ({ ...current, type }));
-
   return (
     <div className="font-mono text-foreground antialiased selection:bg-input selection:text-foreground min-h-screen bg-background">
       <style dangerouslySetInnerHTML={{
@@ -985,27 +901,18 @@ export default function App() {
           background: #d4d4d8;
         }
       `}} />
-      <PricingPopup />
 
-      <Navigation onOpenAuth={openAuthModal} />
+      <Navigation />
       <main>
         <Hero />
         <Services />
         <Process />
         <PortfolioShowcase />
         <Testimonials />
-        <CTA onOpenAuth={openAuthModal} />
+        <CTA />
       </main>
       <Footer />
-
-      {authModal.isOpen && (
-        <AuthModal
-          isOpen={authModal.isOpen}
-          type={authModal.type}
-          onClose={closeAuthModal}
-          onSwitchType={switchAuthType}
-        />
-      )}
+      <PricingPopup />
     </div>
   );
 }
