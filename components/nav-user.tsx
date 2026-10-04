@@ -20,16 +20,15 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { useUser } from "@clerk/nextjs"
-import { EllipsisVerticalIcon, CircleUserRoundIcon, CreditCardIcon, BellIcon, LogOutIcon } from "lucide-react"
+import { ROUTES } from "@/lib/constants"
+import { SignOutButton, useClerk, useUser } from "@clerk/nextjs"
+import { CircleUserRoundIcon, EllipsisVerticalIcon, LogOutIcon } from "lucide-react"
 
 export function NavUser() {
   const { isMobile } = useSidebar();
   const { isSignedIn, isLoaded, user } = useUser();
+  const { openUserProfile } = useClerk();
 
-  // name: user?.fullName || user?.firstName || "No Name",
-  // email: user?.primaryEmailAddress?.emailAddress || "",
-  // avatar: user?.imageUrl,
 
   return (
     <SidebarMenu>
@@ -76,28 +75,19 @@ export function NavUser() {
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <CircleUserRoundIcon
-                />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCardIcon
-                />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <BellIcon
-                />
-                Notifications
+              <DropdownMenuItem
+                onClick={() => openUserProfile()}
+                className="cursor-pointer"
+              >
+                <CircleUserRoundIcon /> Setelan Akun
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <LogOutIcon
-              />
-              Log out
-            </DropdownMenuItem>
+            <SignOutButton redirectUrl={ROUTES.ROOT}>
+              <DropdownMenuItem className="cursor-pointer">
+                <LogOutIcon /> Keluar
+              </DropdownMenuItem>
+            </SignOutButton>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
