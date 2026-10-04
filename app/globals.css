@@ -138,3 +138,19 @@
     cursor: pointer;
   }
 }
+
+@layer components {
+
+  .cl-formButtonPrimary,
+  .cl-socialButtonsBlockButton {
+    @apply !rounded-full h-9 px-3;
+  }
+
+  .cl-formButtonPrimary {
+    @apply !bg-primary !border-none !shadow-none !text-background;
+  }
+
+  /* .cl-cardBox {
+    @apply !w-full;
+  } */
+}

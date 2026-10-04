@@ -119,7 +119,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
-        <ClerkProvider localization={idID}>
+        <ClerkProvider
+          localization={idID}
+          appearance={{
+            variables: {
+              fontFamily: "var(--font-geist-mono)",
+              colorPrimary: "var(--primary)",
+              fontSize: ".9rem",
+            },
+          }}
+        >
           <ThemeProvider
             attribute="class"
             defaultTheme="system"

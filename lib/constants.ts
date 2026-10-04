@@ -9,6 +9,7 @@ export const APP_CONFIG = {
     HOMEPAGE_PLAIN: "civita.id",
     WHATSAPP: "https://wa.me/6282312945365",
     INSTAGRAM: "https://www.instagram.com/bikincivita/",
+    LINKEDIN: "https://www.linkedin.com/company/bikin-civita/",
     EMAIL: "mailto:civitakerja@gmail.com",
     EMAIL_LOGO: "https://mohpoe.github.io/pundiku_logo_white.png",
   },
@@ -17,7 +18,8 @@ export const APP_CONFIG = {
 export const ROUTES = {
   ROOT: "/",
   HOME: "/home",
-  PRIVACY: "/home/privacy",
+  TERMS: "/terms-of-service",
+  POLICY: "/privacy-policy",
   LOGIN: "/auth/login",
   SIGNUP: "/auth/signup",
   FORGOT_PASSWORD: "/auth/classic-mistake",

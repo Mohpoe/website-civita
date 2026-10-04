@@ -3,7 +3,7 @@
 import { ModeToggle } from '@/components/theme-toggle-button';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { APP_CONFIG, ROUTES } from '@/lib/constants';
-import { Show, SignedOut, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
+import { Show, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
 import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion';
 import {
   ArrowRight,
@@ -21,6 +21,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { SiInstagram as Instagram, SiWhatsapp } from 'react-icons/si';
+import { TfiLinkedin } from "react-icons/tfi";
 
 interface DocumentMockupProps {
   className?: string;
@@ -814,6 +815,10 @@ const Footer = () => {
           <a href={APP_CONFIG.LINKS.INSTAGRAM} target="_blank" rel="noreferrer" className="hover:text-foreground transition-colors flex items-center gap-2">
             <Instagram className="w-4 h-4" /> Instagram
           </a>
+          {/* Tautan LinkedIn ditambahkan di sini */}
+          <a href={APP_CONFIG.LINKS.LINKEDIN} target="_blank" rel="noreferrer" className="hover:text-foreground transition-colors flex items-center gap-2">
+            <TfiLinkedin className="w-4 h-4" /> LinkedIn
+          </a>
           <a href={APP_CONFIG.LINKS.EMAIL} className="hover:text-foreground transition-colors flex items-center gap-2">
             <Mail className="w-4 h-4" /> Email
           </a>
@@ -822,7 +827,15 @@ const Footer = () => {
 
       <div className="max-w-6xl mx-auto mt-16 pt-8 border-t border-foreground/5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-muted-foreground">
         <p>© {new Date().getFullYear()} CIVITA Design. All rights reserved.</p>
-        <p>Crafted with minimalist principles.</p>
+        {/* Tautan Halaman Legal ditambahkan di sini */}
+        <div className="flex items-center gap-4">
+          <Link href={ROUTES.TERMS} className="hover:text-foreground transition-colors underline underline-offset-4 decoration-transparent hover:decoration-foreground">
+            Syarat & Ketentuan
+          </Link>
+          <Link href={ROUTES.POLICY} className="hover:text-foreground transition-colors underline underline-offset-4 decoration-transparent hover:decoration-foreground">
+            Kebijakan Privasi
+          </Link>
+        </div>
       </div>
     </footer>
   );
