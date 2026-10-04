@@ -1,10 +1,10 @@
 "use client";
 
-import { ModeToggle } from '@/components/theme-toggle-button';
-import { Button, buttonVariants } from '@/components/ui/button';
-import { APP_CONFIG, ROUTES } from '@/lib/constants';
-import { Show, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
-import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion';
+import { ModeToggle } from "@/components/theme-toggle-button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { APP_CONFIG, ROUTES } from "@/lib/constants";
+import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
+import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
 import {
   ArrowRight,
   Briefcase,
@@ -16,11 +16,11 @@ import {
   QuoteIcon,
   Sparkles,
   XIcon
-} from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
-import { SiInstagram as Instagram, SiWhatsapp } from 'react-icons/si';
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import { SiInstagram as Instagram, SiWhatsapp } from "react-icons/si";
 import { TfiLinkedin } from "react-icons/tfi";
 
 interface DocumentMockupProps {
@@ -88,8 +88,8 @@ const Navigation = () => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
     };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
@@ -101,7 +101,7 @@ const Navigation = () => {
     >
       <div className={`
         pointer-events-auto flex items-center justify-between px-6 py-3 rounded-full transition-all duration-500
-        ${scrolled ? 'bg-background/70 backdrop-blur-xl border border-foreground/5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] w-full max-w-2xl' : 'bg-transparent w-full max-w-6xl'}
+        ${scrolled ? "bg-background/70 backdrop-blur-xl border border-foreground/5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] w-full max-w-2xl" : "bg-transparent w-full max-w-6xl"}
       `}>
 
         <div className="flex items-center gap-2">
@@ -149,7 +149,7 @@ const Navigation = () => {
           </div>
 
           {/* CTA Utama */}
-          <Button size="sm" onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP, '_blank')} className="h-9 px-3 ml-1 md:ml-0 rounded-full">
+          <Button size="sm" onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP, "_blank")} className="h-9 px-3 ml-1 md:ml-0 rounded-full">
             <span className="hidden md:flex items-center gap-1">
               Konsultasi <ArrowRight className="w-4 h-4 ml-2" />
             </span>
@@ -213,11 +213,11 @@ const Hero = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row flex-wrap items-center gap-3 w-full mt-4">
-            <Button className="rounded-full h-12 px-8 w-full sm:w-auto" size="lg" onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP, '_blank')}>
+            <Button className="rounded-full h-12 px-8 w-full sm:w-auto" size="lg" onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP, "_blank")}>
               <SiWhatsapp className="w-5 h-5 ml-0 mr-2" />
               Chat via WhatsApp
             </Button>
-            <Button className="rounded-full h-12 px-8 w-full sm:w-auto" variant="outline" size="lg" onClick={() => window.open(APP_CONFIG.LINKS.INSTAGRAM, '_blank')}>
+            <Button className="rounded-full h-12 px-8 w-full sm:w-auto" variant="outline" size="lg" onClick={() => window.open(APP_CONFIG.LINKS.INSTAGRAM, "_blank")}>
               <Instagram className="w-5 h-5 ml-0 mr-2" />
               Lihat Portofolio
             </Button>
@@ -227,7 +227,7 @@ const Hero = () => {
             <div className="flex -space-x-2">
               {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="w-8 h-8 rounded-full border-2 border-background bg-muted flex items-center justify-center overflow-hidden">
-                  <img src={`/assets/people${i}.jpg`} alt="client" className="w-full h-full object-cover opacity-80 mix-blend-luminosity" />
+                  <img src={`/assets/people/people${i}.jpg`} alt="client" className="w-full h-full object-cover opacity-80 mix-blend-luminosity" />
                 </div>
               ))}
             </div>
@@ -344,7 +344,7 @@ const Process = () => {
             <div className="sticky top-32">
               <h2 className="text-3xl md:text-4xl font-bold tracking-tighter mb-4">Murah, Cepat & Profesional.</h2>
               <p className="text-muted-foreground mb-8">Dirancang oleh profesional untuk kamu yang pusing cari pekerjaan <em>in this economy</em>.</p>
-              <Button className="h-10 px-4 py-2 rounded-full" onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP, '_blank')}>
+              <Button className="h-10 px-4 py-2 rounded-full" onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP, "_blank")}>
                 Mulai Sekarang!
               </Button>
             </div>
@@ -377,116 +377,58 @@ const Process = () => {
   );
 };
 
-const PortfolioDocumentMockup = ({ type }: { type: string }) => {
-  if (type === 'ATS') {
-    return (
-      <div className="w-full aspect-[1/1.4] bg-[#fdfdfd] rounded-xl border border-foreground/5 p-4 shadow-sm flex flex-col gap-3">
-        <div className="w-1/2 h-3 bg-foreground/80 mx-auto rounded-full mb-2" />
-        <div className="w-full h-px bg-foreground/10 mb-1" />
-        <div className="space-y-1.5">
-          <div className="w-1/3 h-2 bg-foreground/60 rounded-full" />
-          <div className="w-full h-1.5 bg-muted rounded-full" />
-          <div className="w-5/6 h-1.5 bg-muted rounded-full" />
-        </div>
-        <div className="space-y-1.5 mt-2">
-          <div className="w-1/4 h-2 bg-foreground/60 rounded-full" />
-          <div className="flex gap-2">
-            <div className="w-1/4 h-1.5 bg-muted rounded-full" />
-            <div className="w-3/4 h-1.5 bg-muted rounded-full" />
-          </div>
-          <div className="flex gap-2">
-            <div className="w-1/4 h-1.5 bg-muted rounded-full" />
-            <div className="w-2/3 h-1.5 bg-muted rounded-full" />
-          </div>
-        </div>
-        <div className="space-y-1.5 mt-2">
-          <div className="w-1/3 h-2 bg-foreground/60 rounded-full" />
-          <div className="w-full h-1.5 bg-muted rounded-full" />
-          <div className="w-4/5 h-1.5 bg-muted rounded-full" />
-        </div>
-      </div>
-    );
-  }
-
-  if (type === 'Kreatif') {
-    return (
-      <div className="w-full aspect-[1/1.4] bg-[#fdfdfd] rounded-xl border border-foreground/5 p-3 shadow-sm flex gap-3 overflow-hidden">
-        <div className="w-1/3 h-full bg-muted/50 rounded-lg p-2 flex flex-col items-center gap-2 border-r border-foreground/5">
-          <div className="w-8 h-8 rounded-full bg-foreground/20" />
-          <div className="w-full space-y-1 mt-2">
-            <div className="w-full h-1 bg-foreground/20 rounded-full" />
-            <div className="w-4/5 h-1 bg-foreground/20 rounded-full" />
-          </div>
-          <div className="w-full space-y-1 mt-4">
-            <div className="w-full h-1.5 bg-foreground/30 rounded-full mb-1" />
-            <div className="w-full h-1 bg-foreground/10 rounded-full" />
-            <div className="w-full h-1 bg-foreground/10 rounded-full" />
-            <div className="w-full h-1 bg-foreground/10 rounded-full" />
-          </div>
-        </div>
-        <div className="w-2/3 py-2 pr-2 flex flex-col gap-3">
-          <div className="space-y-1">
-            <div className="w-3/4 h-3 bg-foreground/80 rounded-full" />
-            <div className="w-1/2 h-1.5 bg-foreground/40 rounded-full" />
-          </div>
-          <div className="space-y-1.5">
-            <div className="w-1/3 h-2 bg-foreground/60 rounded-full" />
-            <div className="w-full h-1 bg-muted rounded-full" />
-            <div className="w-5/6 h-1 bg-muted rounded-full" />
-            <div className="w-full h-1 bg-muted rounded-full" />
-          </div>
-          <div className="space-y-1.5">
-            <div className="w-1/3 h-2 bg-foreground/60 rounded-full" />
-            <div className="flex gap-2 items-center">
-              <div className="w-4 h-4 rounded bg-muted" />
-              <div className="space-y-1 flex-1">
-                <div className="w-full h-1 bg-muted rounded-full" />
-                <div className="w-4/5 h-1 bg-muted rounded-full" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="w-full aspect-[1/1.4] bg-[#fdfdfd] rounded-xl border border-foreground/5 p-5 shadow-sm flex flex-col gap-4">
-      <div className="w-12 h-12 bg-foreground/5 rounded-lg flex items-center justify-center">
-        <Mail className="w-5 h-5 text-foreground/40" />
-      </div>
-      <div className="space-y-2 mt-2">
-        <div className="w-1/3 h-2 bg-foreground/60 rounded-full" />
-        <div className="w-1/4 h-1.5 bg-muted rounded-full" />
-      </div>
-      <div className="space-y-1.5 mt-2">
-        <div className="w-full h-1.5 bg-muted rounded-full" />
-        <div className="w-full h-1.5 bg-muted rounded-full" />
-        <div className="w-5/6 h-1.5 bg-muted rounded-full" />
-        <div className="w-full h-1.5 bg-muted rounded-full" />
-        <div className="w-4/5 h-1.5 bg-muted rounded-full" />
-        <div className="w-full h-1.5 bg-muted rounded-full" />
-        <div className="w-3/4 h-1.5 bg-muted rounded-full" />
-      </div>
-    </div>
-  );
-};
-
 const PortfolioShowcase = () => {
-  const [activeTab, setActiveTab] = useState('Semua');
-  const tabs = ['Semua', 'ATS', 'Kreatif', 'Cover Letter'];
+  const [activeTab, setActiveTab] = useState("Semua");
+  const tabs = ["Semua", "ATS", "Resume", "Surat Lamaran"];
 
   const portfolioItems = [
-    { id: 1, type: 'ATS', title: 'Corporate Standard ATS', desc: 'Cocok untuk apply BUMN & Tech Company.' },
-    { id: 2, type: 'Kreatif', title: 'Gen-Z Aesthetic', desc: 'Desain menonjol untuk agensi & startup.' },
-    { id: 3, type: 'Cover Letter', title: 'Pro Cover Letter', desc: 'Sopan, terstruktur & tidak template-an.' },
-    { id: 4, type: 'ATS', title: 'Minimalist ATS', desc: 'Fokus penuh pada pengalaman & skill.' },
-    { id: 5, type: 'Kreatif', title: 'Modern Studio CV', desc: 'Warna subtle dengan layout 2 kolom.' },
-    { id: 6, type: 'Cover Letter', title: 'English Cover Letter', desc: 'Grammar rapi & professional tone.' },
+    {
+      id: 1,
+      type: "ATS",
+      title: "Jasa Pembuatan CV ATS Friendly Corporate",
+      desc: "CV ATS friendly standar HRD untuk melamar lowongan kerja di BUMN, Corporate, dan Tech Company.",
+      imageSrc: "/assets/portofolio/cv-ats-1.webp"
+    },
+    {
+      id: 2,
+      type: "Resume",
+      title: "Desain CV Kreatif Estetik Gen-Z",
+      desc: "Contoh CV kreatif dengan desain visual menonjol, sangat cocok untuk apply ke Agensi Kreatif dan Startup.",
+      imageSrc: "/assets/portofolio/resume-1.webp"
+    },
+    {
+      id: 3,
+      type: "Surat Lamaran",
+      title: "Jasa Surat Lamaran Kerja Profesional",
+      desc: "Format Cover Letter formal yang sopan, terstruktur, dan ditulis custom (bukan template pasaran).",
+      imageSrc: "/assets/portofolio/surat-lamaran-1.webp"
+    },
+    {
+      id: 4,
+      type: "ATS",
+      title: "Template CV ATS Friendly Minimalis",
+      desc: "Desain CV lamaran kerja yang fokus penuh pada bobot pengalaman kerja, pencapaian, dan skill profesional Anda.",
+      imageSrc: "/assets/portofolio/cv-ats-2.webp"
+    },
+    {
+      id: 5,
+      type: "Resume",
+      title: "Pembuatan CV Modern Layout 2 Kolom",
+      desc: "Rekomendasi CV modern dengan perpaduan warna subtle dan layout efisien untuk merangkum riwayat hidup.",
+      imageSrc: "/assets/portofolio/resume-2.webp"
+    },
+    {
+      id: 6,
+      type: "Surat Lamaran",
+      title: "Jasa Pembuatan Cover Letter",
+      desc: "Surat lamaran kerja profesional yang rapi dan tone profesional.",
+      imageSrc: "/assets/portofolio/surat-lamaran-2.webp"
+    },
   ];
 
+
   const filteredItems = portfolioItems.filter(
-    (item) => activeTab === 'Semua' || item.type === activeTab
+    (item) => activeTab === "Semua" || item.type === activeTab
   );
 
   return (
@@ -499,14 +441,13 @@ const PortfolioShowcase = () => {
           </p>
         </div>
 
-        {/* Categories / Tabs */}
         <div className="flex justify-center mb-12">
           <div className="bg-input/50 backdrop-blur-md p-1 rounded-full flex gap-1 border border-foreground/5 overflow-x-auto max-w-full [&::-webkit-scrollbar]:hidden">
             {tabs.map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`relative px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 whitespace-nowrap ${activeTab === tab ? 'text-foreground shadow-sm' : 'text-muted-foreground hover:text-zinc-700'
+                className={`relative px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 whitespace-nowrap ${activeTab === tab ? "text-foreground shadow-sm" : "text-muted-foreground hover:text-zinc-700"
                   }`}
               >
                 {activeTab === tab && (
@@ -518,7 +459,6 @@ const PortfolioShowcase = () => {
           </div>
         </div>
 
-        {/* Portfolio Grid */}
         <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 min-h-[400px]">
           <AnimatePresence mode="popLayout">
             {filteredItems.map((item) => (
@@ -531,12 +471,18 @@ const PortfolioShowcase = () => {
                 transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                 className="group flex flex-col gap-4"
               >
-                <div className="relative bg-background rounded-[2rem] p-6 border border-foreground/5 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.06)] transition-all duration-500 hover:-translate-y-1">
-                  <div className="absolute top-4 right-4 bg-muted text-muted-foreground text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider z-10">
+                <div className="relative bg-background rounded-[2rem] p-4 border border-foreground/5 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.06)] transition-all duration-500 hover:-translate-y-1">
+                  <div className="absolute top-6 right-6 bg-background/80 backdrop-blur-md text-foreground text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider z-10 shadow-sm border border-foreground/5">
                     {item.type}
                   </div>
-                  <div className="pointer-events-none group-hover:scale-[1.02] transition-transform duration-500 ease-out">
-                    <PortfolioDocumentMockup type={item.type} />
+                  <div className="relative w-full aspect-[1/1.4] rounded-xl overflow-hidden bg-muted group-hover:scale-[1.02] transition-transform duration-500 ease-out border border-foreground/5">
+                    <img
+                      src={item.imageSrc}
+                      alt={item.title}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-background/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 mix-blend-overlay pointer-events-none" />
                   </div>
                 </div>
                 <div className="px-2">
@@ -549,7 +495,7 @@ const PortfolioShowcase = () => {
         </motion.div>
 
         <div className="mt-16 flex justify-center">
-          <Button variant="outline" className="rounded-full h-12 px-8" onClick={() => window.open(APP_CONFIG.LINKS.INSTAGRAM, '_blank')}>
+          <Button variant="outline" className="rounded-full h-12 px-8" onClick={() => window.open(APP_CONFIG.LINKS.INSTAGRAM, "_blank")}>
             Lihat Lebih Banyak di Instagram <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </div>
@@ -610,19 +556,19 @@ const TestimonialChatVariant = () => {
   // Ganti URL ini dengan path gambar screenshot WhatsApp Anda yang sebenarnya
   // Contoh: "/images/testi-wa-1.jpg" atau URL dari CDN Anda.
   const screenshots = [
-    "/assets/testimoni1.webp",
-    "/assets/testimoni2.webp",
-    "/assets/testimoni3.webp",
-    "/assets/testimoni4.webp",
-    "/assets/testimoni5.webp",
+    "/assets/testimoni/testimoni1.webp",
+    "/assets/testimoni/testimoni2.webp",
+    "/assets/testimoni/testimoni3.webp",
+    "/assets/testimoni/testimoni4.webp",
+    "/assets/testimoni/testimoni5.webp",
   ];
 
-  const scroll = (direction: 'left' | 'right') => {
+  const scroll = (direction: "left" | "right") => {
     if (scrollContainerRef.current) {
       const scrollAmount = window.innerWidth < 768 ? 280 : 344; // Menyesuaikan lebar card + gap
       scrollContainerRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth'
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth"
       });
     }
   };
@@ -637,13 +583,13 @@ const TestimonialChatVariant = () => {
     >
       {/* Navigation Buttons (Desktop) */}
       <button
-        onClick={() => scroll('left')}
+        onClick={() => scroll("left")}
         className="hidden md:flex absolute -left-12 top-1/2 -translate-y-1/2 w-12 h-12 bg-background/80 backdrop-blur-md border border-foreground/5 rounded-full items-center justify-center shadow-sm hover:scale-105 hover:shadow-md transition-all z-10"
       >
         <ChevronRight className="w-5 h-5 text-zinc-600 rotate-180" />
       </button>
       <button
-        onClick={() => scroll('right')}
+        onClick={() => scroll("right")}
         className="hidden md:flex absolute -right-12 top-1/2 -translate-y-1/2 w-12 h-12 bg-background/80 backdrop-blur-md border border-foreground/5 rounded-full items-center justify-center shadow-sm hover:scale-105 hover:shadow-md transition-all z-10"
       >
         <ChevronRight className="w-5 h-5 text-zinc-600" />
@@ -653,7 +599,7 @@ const TestimonialChatVariant = () => {
       <div
         ref={scrollContainerRef}
         className="flex overflow-x-auto snap-x snap-mandatory gap-4 md:gap-6 pb-8 px-4 md:px-0 -mx-4 md:mx-0 [&::-webkit-scrollbar]:hidden"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         {/* Spacer awal untuk padding mobile */}
         <div className="snap-center shrink-0 w-2 md:hidden"></div>
@@ -689,7 +635,7 @@ const TestimonialChatVariant = () => {
 };
 
 const Testimonials = () => {
-  const [activeVariant, setActiveVariant] = useState('chat'); // 'text' | 'chat'
+  const [activeVariant, setActiveVariant] = useState("chat"); // "text" | "chat"
 
   return (
     <section className="py-32 px-6 bg-muted overflow-hidden">
@@ -705,21 +651,21 @@ const Testimonials = () => {
         <div className="flex justify-center mb-12">
           <div className="bg-input/50 backdrop-blur-md p-1 rounded-full flex gap-1 border border-foreground/5">
             <button
-              onClick={() => setActiveVariant('text')}
-              className={`relative px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 ${activeVariant === 'text' ? 'text-foreground shadow-sm' : 'text-muted-foreground hover:text-zinc-700'
+              onClick={() => setActiveVariant("text")}
+              className={`relative px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 ${activeVariant === "text" ? "text-foreground shadow-sm" : "text-muted-foreground hover:text-zinc-700"
                 }`}
             >
-              {activeVariant === 'text' && (
+              {activeVariant === "text" && (
                 <motion.div layoutId="activePill" className="absolute inset-0 bg-background rounded-full -z-10 shadow-sm" />
               )}
               <span className="relative z-10">Review</span>
             </button>
             <button
-              onClick={() => setActiveVariant('chat')}
-              className={`relative px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 ${activeVariant === 'chat' ? 'text-foreground shadow-sm' : 'text-muted-foreground hover:text-zinc-700'
+              onClick={() => setActiveVariant("chat")}
+              className={`relative px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 ${activeVariant === "chat" ? "text-foreground shadow-sm" : "text-muted-foreground hover:text-zinc-700"
                 }`}
             >
-              {activeVariant === 'chat' && (
+              {activeVariant === "chat" && (
                 <motion.div layoutId="activePill" className="absolute inset-0 bg-background rounded-full -z-10 shadow-sm" />
               )}
               <span className="relative z-10">Testimoni</span>
@@ -729,7 +675,7 @@ const Testimonials = () => {
 
         <div className="min-h-[300px]">
           <AnimatePresence mode="wait">
-            {activeVariant === 'text' ? (
+            {activeVariant === "text" ? (
               <TestimonialTextVariant key="text" />
             ) : (
               <TestimonialChatVariant key="chat" />
@@ -759,7 +705,7 @@ const CTA = () => {
         <div className="flex justify-center pt-8">
           <div className="flex flex-col w-full sm:w-auto gap-5">
             <button
-              onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP, '_blank')}
+              onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP, "_blank")}
               className="group relative inline-flex items-center justify-center gap-2 h-14 px-8 bg-background text-foreground rounded-full font-bold text-lg transition-transform hover:scale-105 active:scale-95"
             >
               Chat Admin CIVITA
@@ -826,7 +772,7 @@ const Footer = () => {
       </div>
 
       <div className="max-w-6xl mx-auto mt-16 pt-8 border-t border-foreground/5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-muted-foreground">
-        <p>© {new Date().getFullYear()} CIVITA Design. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} <a href="https://mohpoe.com/" target="_blank" rel="noopener noreferrer">Mohpoe</a>. All rights reserved.</p>
         {/* Tautan Halaman Legal ditambahkan di sini */}
         <div className="flex items-center gap-4">
           <Link href={ROUTES.TERMS} className="hover:text-foreground transition-colors underline underline-offset-4 decoration-transparent hover:decoration-foreground">
