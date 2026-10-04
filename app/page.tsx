@@ -2,6 +2,7 @@
 
 import { ModeToggle } from "@/components/theme-toggle-button";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { APP_CONFIG, ROUTES } from "@/lib/constants";
 import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
@@ -118,21 +119,16 @@ const Navigation = () => {
         </div>
 
         <div className="flex items-center gap-2 md:gap-3">
-          {/* Menu Kiri */}
-          <a href={APP_CONFIG.LINKS.INSTAGRAM} target="_blank" rel="noreferrer" className="hidden lg:flex text-sm text-muted-foreground hover:text-foreground transition-colors px-2">
-            Instagram
-          </a>
-
           {/* CLERK AUTHENTICATION MENU */}
-          <div className="hidden md:flex items-center gap-2 border-l border-foreground/10 pl-3 ml-1">
+          <div className="hidden md:flex items-center gap-2">
             {/* Tampil jika user belum login */}
             <Show when="signed-out">
-              <SignInButton mode="modal" fallbackRedirectUrl="/">
+              <SignInButton mode="modal" fallbackRedirectUrl={ROUTES.DASHBOARD.HOME}>
                 <Button variant="ghost" size="sm" className="h-9 px-3 text-muted-foreground rounded-full">
                   Masuk
                 </Button>
               </SignInButton>
-              <SignUpButton mode="modal" fallbackRedirectUrl="/">
+              <SignUpButton mode="modal" fallbackRedirectUrl={ROUTES.DASHBOARD.HOME}>
                 <Button variant="outline" size="sm" className="h-9 px-3 text-muted-foreground rounded-full">
                   Daftar
                 </Button>
@@ -147,6 +143,8 @@ const Navigation = () => {
               <UserButton />
             </Show>
           </div>
+
+          <Separator orientation="vertical" className="mx-1" />
 
           {/* CTA Utama */}
           <Button size="sm" onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP, "_blank")} className="h-9 px-3 ml-1 md:ml-0 rounded-full">
@@ -435,9 +433,9 @@ const PortfolioShowcase = () => {
     <section className="py-32 px-6 bg-muted/30">
       <div className="max-w-6xl mx-auto">
         <div className="text-center max-w-2xl mx-auto space-y-4 mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tighter text-foreground">Desain Yang Bikin HRD Salfok.</h2>
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tighter text-foreground">Desain Yang Mudah di-<em>Screening</em>.</h2>
           <p className="text-muted-foreground text-lg">
-            Mulai dari template ATS yang <em>strict</em> sampai desain kreatif ala anak agency, semua kita racik biar profilmu <em>standout</em>.
+            Setiap CV dan Resume dari kami disusun <em>custom</em> sesuai riwayat pendidikan, pengalaman kerja, dan <em>skills</em> yang kamu miliki!
           </p>
         </div>
 
@@ -699,7 +697,7 @@ const CTA = () => {
           Butuh CV & Resume Secepatnya!?
         </h2>
         <p className="text-xl text-background max-w-2xl mx-auto">
-          Langsung chat admin sekarang! CV kamu langsung jadi dalam 3 jam dan siap digunakan. Dibuat untuk maksimalin peluang lolos kerja!
+          Langsung chat admin sekarang! CV kamu langsung jadi dalam 3 jam dan siap digunakan. Dibuat untuk maksimalin peluang dipanggil <em>interview</em>!
         </p>
 
         <div className="flex justify-center pt-8">
