@@ -723,13 +723,6 @@ const CTA = () => {
                   </Button>
                 </SignUpButton>
               </Show>
-              {/* <Link href={ROUTES.AUTH.LOGIN} className="text-background/60 hover:text-background transition-colors underline underline-offset-4 decoration-background hover:decoration-background">
-                Masuk ke Akun
-              </Link>
-              <span className="text-zinc-700">|</span>
-              <Link href={ROUTES.AUTH.SIGNUP} className="text-background/60 hover:text-background transition-colors underline underline-offset-4 decoration-background hover:decoration-background">
-                Daftar Member Baru
-              </Link> */}
             </div>
           </div>
         </div>
