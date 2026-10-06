@@ -7,6 +7,7 @@ import { useUser } from "@clerk/nextjs"
 import { PackageIcon, Settings2Icon, ShoppingBagIcon } from "lucide-react"
 import Image from "next/image"
 import * as React from "react"
+import { Separator } from "./ui/separator"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { isSignedIn, isLoaded, user } = useUser();
@@ -54,6 +55,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
+      <Separator />
       <SidebarContent>
         <NavMain items={data.navMain} />
         {/* <NavSecondary items={data.navSecondary} className="mt-auto" /> */}

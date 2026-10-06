@@ -741,37 +741,50 @@ const CTA = () => {
 const Footer = () => {
   return (
     <footer className="bg-muted border-t border-foreground/5 pt-16 pb-8 px-6">
-      <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-foreground rounded-lg flex items-center justify-center">
-            <Image
-              alt="Logo"
-              src="/assets/Icon.svg"
-              className="size-3.5 [filter:brightness(0)_invert(1)] dark:[filter:brightness(0)]"
-              width={1}
-              height={1}
-            />
+      {/* Bagian Atas: Brand, Kontak, dan Sosial Media */}
+      <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-8 md:gap-6">
+
+        {/* Kiri: Brand & Kontak */}
+        <div className="flex flex-col gap-5">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-foreground rounded-lg flex items-center justify-center">
+              <Image
+                alt="Logo"
+                src="/assets/Icon.svg"
+                className="size-3.5 [filter:brightness(0)_invert(1)] dark:[filter:brightness(0)]"
+                width={1}
+                height={1}
+              />
+            </div>
+            <span className="font-bold tracking-tight text-xl">CIVITA.ID</span>
           </div>
-          <span className="font-bold tracking-tight text-xl">CIVITA.ID</span>
+
+          {/* Informasi Kontak (Teks Terlihat) */}
+          <div className="flex flex-col gap-3 text-sm text-muted-foreground font-medium">
+            <a href={APP_CONFIG.LINKS.WHATSAPP} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-foreground transition-colors">
+              <SiWhatsapp className="w-4 h-4" /> +62 823-1294-5365
+            </a>
+            <a href={APP_CONFIG.LINKS.EMAIL} className="flex items-center gap-2 hover:text-foreground transition-colors">
+              <Mail className="w-4 h-4" /> civitakerja@gmail.com
+            </a>
+          </div>
         </div>
 
+        {/* Kanan: Tautan Sosial Media */}
         <div className="flex items-center gap-6 text-sm text-muted-foreground font-medium">
           <a href={APP_CONFIG.LINKS.INSTAGRAM} target="_blank" rel="noreferrer" className="hover:text-foreground transition-colors flex items-center gap-2">
             <Instagram className="w-4 h-4" /> Instagram
           </a>
-          {/* Tautan LinkedIn ditambahkan di sini */}
           <a href={APP_CONFIG.LINKS.LINKEDIN} target="_blank" rel="noreferrer" className="hover:text-foreground transition-colors flex items-center gap-2">
             <TfiLinkedin className="w-4 h-4" /> LinkedIn
-          </a>
-          <a href={APP_CONFIG.LINKS.EMAIL} className="hover:text-foreground transition-colors flex items-center gap-2">
-            <Mail className="w-4 h-4" /> Email
           </a>
         </div>
       </div>
 
+      {/* Bagian Bawah: Copyright dan Legal */}
       <div className="max-w-6xl mx-auto mt-16 pt-8 border-t border-foreground/5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-muted-foreground">
-        <p>© {new Date().getFullYear()} <a href="https://mohpoe.com/" target="_blank" rel="noopener noreferrer">Mohpoe</a>. All rights reserved.</p>
-        {/* Tautan Halaman Legal ditambahkan di sini */}
+        <p>© {new Date().getFullYear()} <a href="https://mohpoe.com/" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Mohpoe</a>. All rights reserved.</p>
+
         <div className="flex items-center gap-4">
           <Link href={ROUTES.TERMS} className="hover:text-foreground transition-colors underline underline-offset-4 decoration-transparent hover:decoration-foreground">
             Syarat & Ketentuan

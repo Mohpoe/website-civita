@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ClerkProvider } from "@clerk/nextjs";
 import { idID } from "@clerk/localizations";
+import { PageTitleProvider } from "@/components/context/dashboard-page-title";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -129,13 +130,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             },
           }}
         >
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+            <PageTitleProvider>
+              {children}
+            </PageTitleProvider>
           </ThemeProvider>
         </ClerkProvider>
       </body>
