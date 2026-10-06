@@ -1,5 +1,6 @@
 
 import { PageTitle } from "@/components/context/dashboard-page-title"
+import DashboardInventory from "@/components/dashboard-inventory";
 import { Metadata } from "next"
 
 const mainTitle = "Produk";
@@ -12,7 +13,7 @@ export default function DashboardPage() {
   return (
     <>
       <PageTitle title={mainTitle} />
-      percobaan
+      <DashboardInventory />
     </>
   )
 }
