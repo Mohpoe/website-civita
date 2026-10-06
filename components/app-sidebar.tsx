@@ -2,28 +2,32 @@
 
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar"
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar"
 import { useUser } from "@clerk/nextjs"
 import { PackageIcon, Settings2Icon, ShoppingBagIcon } from "lucide-react"
 import Image from "next/image"
 import * as React from "react"
 import { Separator } from "./ui/separator"
+import { ROUTES } from "@/lib/constants"
+import Link from "next/link"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { isSignedIn, isLoaded, user } = useUser();
+
+  const { setOpenMobile, isMobile } = useSidebar();
 
   const data = {
     navMain: [
       {
         title: "Daftar Produk",
-        url: "#",
+        url: ROUTES.DASHBOARD.HOME,
         icon: (
           <ShoppingBagIcon />
         ),
       },
       {
         title: "Pesanan Saya",
-        url: "#",
+        url: ROUTES.DASHBOARD.INVENTORY,
         icon: (
           <PackageIcon />
         ),
@@ -47,7 +51,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton
               className="data-[slot=sidebar-menu-button]:p-1.5!"
-              render={<a href="#" />}
+              render={<Link href={ROUTES.DASHBOARD.HOME} />}
+              onClick={() => { if (isMobile) setOpenMobile(false) }}
             >
               <Image alt="Logo" src="/assets/Icon.svg" className="size-5" width={100} height={100} />
               <span className="text-base font-bold">CIVITA.ID</span>

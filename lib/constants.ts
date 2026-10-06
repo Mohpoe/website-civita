@@ -20,43 +20,8 @@ export const ROUTES = {
   HOME: "/home",
   TERMS: "/terms-of-service",
   POLICY: "/privacy-policy",
-  LOGIN: "/auth/login",
-  SIGNUP: "/auth/signup",
-  FORGOT_PASSWORD: "/auth/classic-mistake",
-  VERIFY: "/auth/verify",
-  AUTH: {
-    HOME: "/auth",
-    LOGIN: "/auth/login",
-    SIGNUP: "/auth/signup",
-    FORGOT_PASSWORD: "/auth/classic-mistake",
-    VERIFY: "/auth/verify",
-  },
   DASHBOARD: {
     HOME: "/dashboard",
-    PROFILE: "/dashboard/profile",
-    ACCOUNTS: "/dashboard/accounts",
-    TRANSACTIONS: "/dashboard/transactions",
-    WISHLIST: "/dashboard/wishlist",
-    CATEGORIES: "/dashboard/categories",
-    ALLOCATIONS: "/dashboard/allocations",
-    REPORTS: "/dashboard/reports",
-    HELP: "/dashboard/help",
-
-    // old version
-    // REKENING: "/dashboard/rekening",
-    // TAMBAH_TRANSAKSI: "/dashboard/tambah-transaksi",
-    // USERS: "/dashboard/users",
-    // PRODUCTS: "/dashboard/products",
-    // UI: "/dashboard/ui",
-    // PRELINE: "/dashboard/preline",
-  },
-  API: {
-    VERIFY_NEW_USER: "/api/verify-new-user",
-    VERIFY_EDIT_EMAIL: "/api/verify-edit-email",
-    // RESET_PASSWORD: "/api/verify-reset-password",
-  },
-  EXTERNAL: {
-    MOHPOE: "https://www.mohpoe.com",
-    INSTAGRAM: "https://www.instagram.com/mohpoe"
+    INVENTORY: "/dashboard/inventory",
   },
 };

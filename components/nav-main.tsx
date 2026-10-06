@@ -1,14 +1,14 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
 import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar"
-import { CirclePlusIcon, MailIcon } from "lucide-react"
+import Link from "next/link"
 
 export function NavMain({
   items,
@@ -19,13 +19,19 @@ export function NavMain({
     icon?: React.ReactNode
   }[]
 }) {
+  const { setOpenMobile, isMobile } = useSidebar();
+
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton tooltip={item.title}>
+              <SidebarMenuButton
+                className="text-base md:text-sm"
+                tooltip={item.title}
+                render={<Link href={item.url} onClick={() => { if (isMobile) setOpenMobile(false) }} />}
+              >
                 {item.icon}
                 <span>{item.title}</span>
               </SidebarMenuButton>
