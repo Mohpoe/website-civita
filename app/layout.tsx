@@ -1,12 +1,10 @@
+import { ThemeProvider } from "@/components/theme-provider";
+import { cn } from "@/lib/utils";
+import { idID } from "@clerk/localizations";
+import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
-import { cn } from "@/lib/utils";
-import { ThemeProvider } from "@/components/theme-provider";
-import { ClerkProvider } from "@clerk/nextjs";
-import { idID } from "@clerk/localizations";
-import { PageTitleProvider } from "@/components/context/dashboard-page-title";
-import { auth } from "@clerk/nextjs/server";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -114,8 +112,6 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  await auth.protect();
-
   return (
     <html
       lang="en"
