@@ -6,27 +6,14 @@ import { Separator } from "@/components/ui/separator";
 import { APP_CONFIG, ROUTES } from "@/lib/constants";
 import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
-import {
-  ArrowRight,
-  Briefcase,
-  ChevronRight,
-  FileText,
-  Layout,
-  Mail,
-  MessageCircle,
-  QuoteIcon,
-  Sparkles,
-  XIcon
-} from "lucide-react";
+import { ArrowRight, Briefcase, ChevronRight, FileText, Layout, Mail, MessageCircle, QuoteIcon, Sparkles, XIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { SiInstagram as Instagram, SiWhatsapp } from "react-icons/si";
 import { TfiLinkedin } from "react-icons/tfi";
 
-interface DocumentMockupProps {
-  className?: string;
-}
+interface DocumentMockupProps { className?: string; }
 
 const DocumentMockupCV = ({ className }: DocumentMockupProps) => (
   <div className={`bg-background/80 backdrop-blur-xl border border-foreground/5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl p-4 flex flex-col gap-3 ${className}`}>

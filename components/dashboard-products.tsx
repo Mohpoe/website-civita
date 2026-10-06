@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { formatRupiah } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2Icon, ChevronLeftIcon, ChevronRightIcon, FileTextIcon, SparklesIcon, XIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface Product {
   id: string;
@@ -107,6 +107,68 @@ export default function DashboardProducs() {
   ];
 
   const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProps) => {
+    const [isProcessing, setIsProcessing] = useState(false);
+
+    useEffect(() => {
+      // Inject Script Snap Midtrans secara dinamis saat modal dirender
+      const snapScript = "https://app.sandbox.midtrans.com/snap/snap.js";
+      const clientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY;
+
+      if (!document.querySelector(`script[src="${snapScript}"]`)) {
+        const script = document.createElement("script");
+        script.src = snapScript;
+        script.setAttribute("data-client-key", clientKey as string);
+        script.async = true;
+        document.body.appendChild(script);
+      }
+    }, []);
+
+    const handleCheckout = async () => {
+      if (!product) return;
+      setIsProcessing(true);
+
+      try {
+        // 1. Panggil API kita untuk mendapatkan Token
+        const response = await fetch("/api/checkout", {
+          method: "POST",
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            productId: product.id,
+            title: product.title,
+            price: product.price
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) throw new Error(data.error);
+
+        // 2. Munculkan Pop-up Midtrans
+        (window as any).snap.pay(data.token, {
+          onSuccess: function (result: any) {
+            console.log('Pembayaran Berhasil!', result);
+            onClose(); // Tutup modal
+            // TODO: Beri notifikasi ke user untuk cek tab "Pesanan Saya"
+          },
+          onPending: function (result: any) {
+            console.log('Menunggu Pembayaran', result);
+            onClose();
+          },
+          onError: function (result: any) {
+            console.error('Pembayaran Gagal', result);
+            setIsProcessing(false);
+          },
+          onClose: function () {
+            // Jika user menutup pop-up sebelum selesai bayar
+            setIsProcessing(false);
+          }
+        });
+      } catch (error: any) {
+        console.error("Gagal memproses checkout:", error);
+        setIsProcessing(false);
+      }
+    }
+
     if (!product) return null;
 
     return (
@@ -184,9 +246,22 @@ export default function DashboardProducs() {
 
                   {/* Footer Actions */}
                   <div className="mt-8 pt-6 border-t border-foreground/5">
-                    <Button className="w-full h-12 rounded-full font-bold text-base shadow-sm group">
-                      <SparklesIcon className="w-4 h-4 mr-2 group-hover:animate-pulse" />
-                      Beli Sekarang ({formatRupiah(product.price)})
+                    <Button
+                      onClick={handleCheckout}
+                      disabled={isProcessing}
+                      className="w-full h-12 rounded-full font-bold text-base shadow-sm group relative overflow-hidden"
+                    >
+                      {isProcessing ? (
+                        <span className="flex items-center gap-2">
+                          <div className="w-4 h-4 border-2 border-background border-t-transparent rounded-full animate-spin" />
+                          Memproses...
+                        </span>
+                      ) : (
+                        <>
+                          <SparklesIcon className="w-4 h-4 mr-2 group-hover:animate-pulse" />
+                          Beli Sekarang ({formatRupiah(product.price)})
+                        </>
+                      )}
                     </Button>
                     <p className="text-center text-xs text-muted-foreground mt-3">
                       Pembayaran aman didukung oleh Midtrans.
