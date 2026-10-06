@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { ClerkProvider } from "@clerk/nextjs";
 import { idID } from "@clerk/localizations";
 import { PageTitleProvider } from "@/components/context/dashboard-page-title";
+import { auth } from "@clerk/nextjs/server";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -112,7 +113,9 @@ export const metadata: Metadata = {
   manifest: "/site.webmanifest",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  await auth.protect();
+
   return (
     <html
       lang="en"
