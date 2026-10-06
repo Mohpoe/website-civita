@@ -67,7 +67,26 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
       <SidebarFooter>
         {!isLoaded || !isSignedIn ? (
-          <div>Loading...</div>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              {/* Tombol pembungkus dengan ukuran yang sama (size="lg") */}
+              <SidebarMenuButton size="lg" className="pointer-events-none select-none">
+                {/* Placeholder untuk Avatar */}
+                <div className="size-8 rounded-lg bg-foreground/40 animate-pulse shrink-0" />
+
+                {/* Placeholder untuk Teks (Nama & Email) */}
+                <div className="grid flex-1 text-left text-sm leading-tight gap-1.5">
+                  {/* Baris Nama */}
+                  <div className="h-4 w-28 bg-foreground/40 animate-pulse rounded" />
+                  {/* Baris Email */}
+                  <div className="h-3 w-36 bg-foreground/20 animate-pulse rounded" />
+                </div>
+
+                {/* Placeholder untuk Ellipsis Icon */}
+                <div className="ml-auto size-4 bg-foreground/40 animate-pulse rounded-full shrink-0" />
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
         ) : (
           <NavUser />
         )}
