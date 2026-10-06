@@ -2,6 +2,16 @@ import { sql } from "@/lib/utils";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+const PRODUCT_FILES: Record<string, string> = {
+  'prod_1': 'https://86mb9raedgd3gaew.public.blob.vercel-storage.com/CV%20Kreatif%20Template.pptx',
+  'prod_2': 'https://86mb9raedgd3gaew.public.blob.vercel-storage.com/CV%20Kreatif%20Template.pptx',
+  'prod_3': 'https://86mb9raedgd3gaew.public.blob.vercel-storage.com/CV%20Kreatif%20Template.pptx',
+  'prod_4': 'https://86mb9raedgd3gaew.public.blob.vercel-storage.com/CV%20Kreatif%20Template.pptx',
+  'prod_5': 'https://86mb9raedgd3gaew.public.blob.vercel-storage.com/CV%20Kreatif%20Template.pptx',
+  'prod_6': 'https://86mb9raedgd3gaew.public.blob.vercel-storage.com/CV%20Kreatif%20Template.pptx',
+  'prod_7': 'https://86mb9raedgd3gaew.public.blob.vercel-storage.com/CV%20Kreatif%20Template.pptx',
+};
+
 export async function POST(req: Request) {
   await auth.protect();
 
@@ -51,10 +61,14 @@ export async function POST(req: Request) {
 
     const snapToken = data.token;
 
-    // 6. Simpan pesanan ke Database Neon dengan status 'pending'
+    // AMBIL URL FILE BERDASARKAN PRODUCT ID
+    // Jika produk tidak ada di mapping, gunakan string kosong (atau URL fallback)
+    const downloadUrl = PRODUCT_FILES[productId] || '';
+
+    // 6. Simpan pesanan ke Database Neon dengan status 'pending' dan masukkan download_url
     await sql`
-      INSERT INTO orders (order_id, user_id, product_id, product_name, amount, status, snap_token)
-      VALUES (${orderId}, ${user.id}, ${productId}, ${title}, ${price}, 'pending', ${snapToken})
+      INSERT INTO orders (order_id, user_id, product_id, product_name, amount, status, snap_token, download_url)
+      VALUES (${orderId}, ${user.id}, ${productId}, ${title}, ${price}, 'pending', ${snapToken}, ${downloadUrl})
     `;
 
     // 7. Kembalikan Token ke Frontend agar Pop-up muncul
