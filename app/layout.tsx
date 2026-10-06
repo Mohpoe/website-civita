@@ -131,9 +131,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           }}
         >
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-            <PageTitleProvider>
-              {children}
-            </PageTitleProvider>
+            {children}
           </ThemeProvider>
         </ClerkProvider>
       </body>

@@ -1,9 +1,9 @@
 "use client";
 
-import { createContext, ReactNode, useContext, useState } from "react";
+import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 
 interface PageTitleContextValue {
-  title: String
+  title: string
   setTitle: (title: string) => void
 }
 
@@ -29,11 +29,18 @@ export function usePageTitle() {
   const context = useContext(PageTitleContext);
 
   if (!context) {
-    return {
-      title: "Dashboard",
-      setTitle: () => { },
-    }
+    throw new Error("usePageTitle harus digunakan dalam PageTitleProvider");
   }
 
   return context;
+}
+
+export function PageTitle({ title }: { title: string }) {
+  const { setTitle } = usePageTitle();
+
+  useEffect(() => {
+    setTitle(title)
+  }, [setTitle]);
+
+  return null;
 }
