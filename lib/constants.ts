@@ -11,7 +11,6 @@ export const APP_CONFIG = {
     INSTAGRAM: "https://www.instagram.com/bikincivita/",
     LINKEDIN: "https://www.linkedin.com/company/bikin-civita/",
     EMAIL: "mailto:civitakerja@gmail.com",
-    EMAIL_LOGO: "https://mohpoe.github.io/pundiku_logo_white.png",
   },
 };
 
