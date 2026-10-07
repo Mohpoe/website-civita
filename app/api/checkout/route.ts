@@ -1,54 +1,58 @@
 import { sql } from "@/lib/utils";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-const PRODUCT_FILES: Record<string, string> = {
-  'prod_1': 'https://86mb9raedgd3gaew.public.blob.vercel-storage.com/CV%20Kreatif%20Template.pptx',
-  'prod_2': 'https://86mb9raedgd3gaew.public.blob.vercel-storage.com/CV%20Kreatif%20Template.pptx',
-  'prod_3': 'https://86mb9raedgd3gaew.public.blob.vercel-storage.com/CV%20Kreatif%20Template.pptx',
-  'prod_4': 'https://86mb9raedgd3gaew.public.blob.vercel-storage.com/CV%20Kreatif%20Template.pptx',
-  'prod_5': 'https://86mb9raedgd3gaew.public.blob.vercel-storage.com/CV%20Kreatif%20Template.pptx',
-  'prod_6': 'https://86mb9raedgd3gaew.public.blob.vercel-storage.com/CV%20Kreatif%20Template.pptx',
-  'prod_7': 'https://86mb9raedgd3gaew.public.blob.vercel-storage.com/CV%20Kreatif%20Template.pptx',
-};
-
 export async function POST(req: Request) {
-  await auth.protect();
-
   try {
-    // 1. Pastikan user sudah login via Clerk
     const user = await currentUser();
     if (!user) return NextResponse.json("Unauthorized", { status: 401 });
 
-    // 2. Ambil data produk yang dikirim dari Frontend
     const body = await req.json();
-    const { productId, title, price } = body;
+    const { productId } = body;
 
-    // 3. Buat Order ID unik (Contoh: ORD-CIV-1698765432-123)
+    if (!productId) {
+      return NextResponse.json({ error: "Product ID tidak ditemukan!" }, { status: 400 });
+    }
+
+    const rows = await sql`
+      SELECT title, price, file_url
+      FROM products
+      WHERE id = ${productId} AND is_active = TRUE
+      LIMIT 1
+    `;
+
+    if (rows.length === 0) {
+      return NextResponse.json({ error: "Produk tidak ditemukan atau tidak tersedia!" }, { status: 404 });
+    }
+
+    const product = rows[0];
+
+    if (!product.file_url) {
+      return NextResponse.json({ error: "File untuk produk ini belum tersedia! Hubungi Admin." }, { status: 400 });
+    }
+
     const orderId = `ORD-CIV-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
-    // 4. Siapkan Autentikasi untuk Midtrans (Encode Server Key jadi Base64)
     const serverKey = process.env.MIDTRANS_SERVER_KEY || "";
     const encodedKey = Buffer.from(serverKey + ":").toString("base64");
 
-    // 5. Minta Token Snap ke Midtrans API
     const response = await fetch("https://app.sandbox.midtrans.com/snap/v1/transactions", {
       method: "POST",
       headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': `Basic ${encodedKey}`
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": `Basic ${encodedKey}`
       },
       body: JSON.stringify({
         transaction_details: {
           order_id: orderId,
-          gross_amount: price
+          gross_amount: product.price
         },
         item_details: [{
           id: productId,
-          price: price,
+          price: product.price,
           quantity: 1,
-          name: title.substring(0, 50)
+          name: product.title.substring(0, 50)
         }],
       })
     });
@@ -56,25 +60,19 @@ export async function POST(req: Request) {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error_messages?.[0] || 'Gagal mendapatkan token dari Midtrans');
+      throw new Error(data.error_messages?.[0] || "Gagal mendapatkan token dari Midtrans");
     }
 
     const snapToken = data.token;
 
-    // AMBIL URL FILE BERDASARKAN PRODUCT ID
-    // Jika produk tidak ada di mapping, gunakan string kosong (atau URL fallback)
-    const downloadUrl = PRODUCT_FILES[productId] || '';
-
-    // 6. Simpan pesanan ke Database Neon dengan status 'pending' dan masukkan download_url
     await sql`
       INSERT INTO orders (order_id, user_id, product_id, product_name, amount, status, snap_token, download_url)
-      VALUES (${orderId}, ${user.id}, ${productId}, ${title}, ${price}, 'pending', ${snapToken}, ${downloadUrl})
+      VALUES (${orderId}, ${user.id}, ${productId}, ${product.title}, ${product.price}, 'pending', ${snapToken}, ${product.file_url})
     `;
 
-    // 7. Kembalikan Token ke Frontend agar Pop-up muncul
     return NextResponse.json({ token: snapToken, orderId });
   } catch (error: any) {
-    console.error('Checkout error:', error);
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    console.error("Checkout error:", error);
+    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
   }
 }

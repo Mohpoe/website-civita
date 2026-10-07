@@ -58,8 +58,6 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           productId: product.id,
-          title: product.title,
-          price: product.price
         })
       });
 
@@ -121,7 +119,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
               transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
               className="w-full max-w-2xl bg-background border border-foreground/10 shadow-2xl rounded-[2rem] overflow-hidden pointer-events-auto flex flex-col md:flex-row max-h-[90vh]"
             >
-              <div className="w-full md:w-2/5 aspect-[4/3] md:aspect-auto bg-muted relative overflow-hidden">
+              <div className="w-full md:w-2/5 aspect-[4/3] md:aspect-auto bg-muted relative overflow-hidden flex items-center justify-center p-4">
                 {product.image_url ? (
                   <img src={product.image_url} alt={product.title} className="w-full h-full object-contain filter drop-shadow-md" />
                 ) : (
