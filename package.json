@@ -19,6 +19,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@neondatabase/serverless": "^1.2.0",
     "@tanstack/react-table": "^9.2.4",
+    "@vercel/blob": "^2.8.1",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.4.0",
     "framer-motion": "^13.4.4",

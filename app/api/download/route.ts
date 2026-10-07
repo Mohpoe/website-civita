@@ -39,13 +39,40 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Selesaikan pembayaran terlebih dahulu untuk mengunduh.' }, { status: 403 });
     }
 
-    // 4. Proses Download (Redirect ke File Asli)
-    // Di sinilah tempat Anda menaruh link ke Cloud Storage (G-Drive/Vercel Blob/S3)
-    // Sebaiknya URL Cloud disimpan di kolom 'download_url' database.
-    const fileUrl = order.download_url || 'https://raw.githubusercontent.com/shadcn-ui/ui/main/apps/www/public/apple-touch-icon.png'; // <- GANTI URL INI DENGAN FILE PRODUK ANDA SEBAGAI FALLBACK
+    // 4. URL Asli dari Vercel Blob
+    const fileUrl = order.download_url;
 
-    // Alihkan user ke link file tersebut (Browser akan otomatis mendownloadnya)
-    return NextResponse.redirect(fileUrl);
+    if (!fileUrl) {
+      return NextResponse.json({ error: 'File tidak ditemukan' }, { status: 404 });
+    }
+
+    // 5. PROSES MASKING: Download file dari Blob via Server, bukan redirect
+    try {
+      const response = await fetch(fileUrl);
+
+      if (!response.ok) {
+        throw new Error('Gagal mengambil file dari storage');
+      }
+
+      // Ubah data menjadi Buffer/Blob
+      const fileBuffer = await response.arrayBuffer();
+
+      // Ekstrak nama file dari URL atau gunakan nama produk (misal: "Template_CV_ATS.zip")
+      // Menghapus spasi dan menggantinya dengan underscore agar rapi
+      const safeFilename = order.product_name.replace(/[^a-zA-Z0-9]/g, '_') + ".zip";
+
+      // Kirim file langsung ke browser tanpa mengungkap URL aslinya
+      return new NextResponse(fileBuffer, {
+        headers: {
+          'Content-Type': response.headers.get('Content-Type') || 'application/octet-stream',
+          'Content-Disposition': `attachment; filename="${safeFilename}"`,
+        },
+      });
+
+    } catch (fetchError) {
+      console.error('Error fetching file:', fetchError);
+      return NextResponse.json({ error: 'Gagal memproses file' }, { status: 500 });
+    }
 
   } catch (error: any) {
     console.error('Download error:', error);
