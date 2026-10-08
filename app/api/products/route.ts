@@ -1,8 +1,8 @@
-import { sql } from '@/lib/utils';
-import { NextResponse } from 'next/server';
+import { sql } from "@/lib/utils";
+import { NextResponse } from "next/server";
 
 // Pastikan selalu mengambil data terbaru, tidak di-cache oleh Next.js
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
@@ -16,7 +16,7 @@ export async function GET() {
 
     return NextResponse.json(rows);
   } catch (error: any) {
-    console.error('Error fetching products:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    console.error("Error fetching products:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
