@@ -2,12 +2,13 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { formatRupiah } from "@/lib/utils";
-import { AnimatePresence, motion } from "framer-motion";
-import { CheckCircle2Icon, ChevronLeftIcon, ChevronRightIcon, FileTextIcon, ShoppingBagIcon } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog";
+import { fetcher, formatRupiah } from "@/lib/utils";
 import { Product } from "@/types/global";
+import { AnimatePresence, motion } from "framer-motion";
+import { CheckCircle2Icon, ChevronLeftIcon, ChevronRightIcon, FileTextIcon, ShoppingBagIcon, TriangleAlertIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import useSWR from "swr";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog";
 
 interface ProductDetailModalProps {
   product: Product | null;
@@ -181,10 +182,56 @@ interface ProductDetailModalProps {
 //   );
 // };
 
-export default function DashboardProducs() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export function ProductSkeleton({ count = 6 }) {
+  // Membuat array tiruan berdasarkan jumlah count untuk merender list skeleton
+  const skeletons = Array.from({ length: count })
 
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+      {skeletons.map((_, idx) => (
+        <div
+          key={idx}
+          className="bg-background rounded-2xl overflow-hidden border border-foreground/5 shadow-[0_8px_30px_rgb(0,0,0,0.02)] flex flex-col animate-pulse"
+        >
+          {/* Placeholder Gambar (Aspect Ratio 4/3) */}
+          <div className="relative aspect-[4/3] bg-muted/80 flex items-center justify-center">
+            {/* Opsi tambahan: Efek placeholder ikon file jika ingin mempermanis */}
+            <div className="w-12 h-12 rounded-full bg-foreground/5 opacity-40" />
+
+            {/* Placeholder untuk Badge Kategori di kanan atas */}
+            <div className="absolute top-4 right-4 w-20 h-6 bg-foreground/10 rounded-full" />
+          </div>
+
+          {/* Konten Teks & Tombol */}
+          <div className="p-5 flex-1 flex flex-col">
+            {/* Placeholder Judul (2 Baris) */}
+            <div className="space-y-2 mb-3">
+              <div className="h-5 bg-foreground/10 rounded-md w-5/6" />
+              <div className="h-5 bg-foreground/10 rounded-md w-2/3" />
+            </div>
+
+            {/* Placeholder Deskripsi Singkat (2 Baris) */}
+            <div className="space-y-2 mb-6 flex-1">
+              <div className="h-4 bg-muted-foreground/15 rounded-md w-full" />
+              <div className="h-4 bg-muted-foreground/15 rounded-md w-4/5" />
+            </div>
+
+            {/* Bagian Bawah: Harga & Tombol */}
+            <div className="flex items-center justify-between mt-auto pt-4 border-t border-foreground/5">
+              {/* Placeholder Harga */}
+              <div className="h-5 bg-foreground/10 rounded-md w-24" />
+
+              {/* Placeholder Tombol Detail */}
+              <div className="h-9 bg-foreground/10 rounded-full w-20" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+export default function DashboardProducs() {
   // Dialog/Modal State
   const [detailDialog, setDetailDialog] = useState(false);
 
@@ -196,21 +243,9 @@ export default function DashboardProducs() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const res = await fetch("/api/products");
-        if (!res.ok) throw new Error("Failed to fetch");
-        const data = await res.json();
-        setProducts(data);
-      } catch (error) {
-        console.error("Gagal memuat produk", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchProducts();
+  const { data: products, error, isLoading } = useSWR<Product[]>("/api/products", fetcher);
 
+  useEffect(() => {
     const snapScript = process.env.MIDTRANS_SNAP_URL || "";
     const clientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || "";
 
@@ -224,10 +259,10 @@ export default function DashboardProducs() {
   }, []);
 
   // Pagination Logic
-  const totalPages = Math.ceil(products.length / itemsPerPage);
+  const totalPages = Math.ceil((products?.length ?? 0) / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = products.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = (products ?? []).slice(indexOfFirstItem, indexOfLastItem);
   const handleNextPage = () => {
     if (currentPage < totalPages) setCurrentPage(prev => prev + 1);
   };
@@ -289,12 +324,18 @@ export default function DashboardProducs() {
           <p className="text-muted-foreground">Tingkatkan peluang lolos kerja kamu dengan template dan panduan eksklusif siap pakai.</p>
         </div>
 
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-            <div className="w-8 h-8 border-4 border-muted-foreground/20 border-t-foreground rounded-full animate-spin mb-4"></div>
-            Memuat daftar produk...
+        {error ? (
+          <div className="flex flex-col items-center justify-center gap-2 py-20 text-destructive">
+            <TriangleAlertIcon className="w-8 h-8" />
+            Gagal memuat data... Hubungi Administrator!
           </div>
-        ) : products.length === 0 ? (
+        ) : isLoading ? (
+          <ProductSkeleton count={3} />
+          // <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+          //   <div className="w-8 h-8 border-4 border-muted-foreground/20 border-t-foreground rounded-full animate-spin mb-4"></div>
+          //   Memuat daftar produk...
+          // </div>
+        ) : (products?.length ?? 0) === 0 ? (
           <div className="bg-background rounded-3xl border border-foreground/5 shadow-sm min-h-[300px] flex flex-col items-center justify-center p-12 text-center">
             <div className="w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mb-4 shadow-inner border border-foreground/5">
               <ShoppingBagIcon className="w-8 h-8 text-muted-foreground/50" />
@@ -375,7 +416,7 @@ export default function DashboardProducs() {
             {totalPages > 1 && (
               <div className="flex items-center justify-between border-t border-foreground/5 pt-6">
                 <p className="text-sm text-muted-foreground hidden sm:block">
-                  Menampilkan <span className="font-bold text-foreground">{indexOfFirstItem + 1}</span> - <span className="font-bold text-foreground">{Math.min(indexOfLastItem, products.length)}</span> dari <span className="font-bold text-foreground">{products.length}</span> produk
+                  Menampilkan <span className="font-bold text-foreground">{indexOfFirstItem + 1}</span> - <span className="font-bold text-foreground">{Math.min(indexOfLastItem, (products?.length ?? 0))}</span> dari <span className="font-bold text-foreground">{(products?.length ?? 0)}</span> produk
                 </p>
 
                 <div className="flex items-center gap-2 w-full sm:w-auto justify-center sm:justify-end">

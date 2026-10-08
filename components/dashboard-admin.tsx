@@ -2,11 +2,32 @@
 
 import { fetcher } from "@/lib/utils";
 import { Product } from "@/types/global";
-import { useEffect, useState } from "react";
+import { createColumnHelper, flexRender, tableFeatures, useTable } from "@tanstack/react-table";
 import useSWR from "swr";
+import { Table, TableBody, TableHead, TableHeader, TableRow } from "./ui/table";
 
 export default function DashboardAdmin() {
   const { data: products, error, isLoading } = useSWR<Product[]>("/api/products", fetcher);
+
+  const features = tableFeatures({});
+
+  const columnHelper = createColumnHelper<typeof features, Product>();
+
+  const columns = columnHelper.columns([
+    columnHelper.accessor("id", {
+      header: () => <div className="text-center">#</div>,
+      cell: (info) => info.getValue(),
+    }),
+    columnHelper.accessor("title", {
+      header: "Nama Produk"
+    })
+  ])
+
+  const table = useTable({
+    features,
+    columns,
+    data: products || [],
+  });
 
   return (
     <>
@@ -19,10 +40,29 @@ export default function DashboardAdmin() {
           <div className="p-4">Sedang memuat data...</div>
         </>
       ) : products?.map((product) => (
-        <div key={product.id} className="p-4 border rounded">
-          <h3>{product.title}</h3>
-          <p>Harga: Rp {product.price}</p>
-        </div>
+        <>
+          <Table>
+            <TableHeader className="bg-muted">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id} className="*:border-border [&>:not(:last-child)]:border-r">
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(header.column.columnDef.header, header.getContext())}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows.map((row)=>(
+                <TableRow>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </>
       ))}
     </>
   );
