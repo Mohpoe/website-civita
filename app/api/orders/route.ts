@@ -17,10 +17,19 @@ export async function GET(req: Request) {
     // 2. Ambil data pesanan milik user ini dari Database Neon
     // Kita urutkan dari yang paling baru (created_at DESC)
     const rows = await sql`
-      SELECT order_id, product_id, product_name, amount, status, snap_token, created_at
-      FROM orders
-      WHERE user_id = ${user.id}
-      ORDER BY created_at DESC
+      SELECT
+        o.order_id,
+        o.product_id,
+        o.product_name,
+        o.amount,
+        o.status,
+        o.snap_token,
+        o.created_at,
+        p.image_url
+      FROM orders o
+      LEFT JOIN products p ON o.product_id = p.id
+      WHERE o.user_id = ${user.id}
+      ORDER BY o.created_at DESC
     `;
 
     return NextResponse.json(rows);

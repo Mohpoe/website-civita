@@ -1,32 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { FileTextIcon, XIcon, CheckCircle2Icon, SparklesIcon, ChevronLeftIcon, ChevronRightIcon, ShoppingBagIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { formatRupiah } from "@/lib/utils";
+import { AnimatePresence, motion } from "framer-motion";
+import { CheckCircle2Icon, ChevronLeftIcon, ChevronRightIcon, FileTextIcon, ShoppingBagIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog";
-import { Separator } from "./ui/separator";
-
-// 1. Deklarasi global untuk Midtrans agar TypeScript tidak error
-declare global {
-  interface Window {
-    snap: any;
-  }
-}
-
-// 2. Interface untuk Struktur Data Produk dari Database Neon
-interface Product {
-  id: string;
-  title: string;
-  short_desc: string;
-  long_desc: string;
-  price: number;
-  category: string;
-  features: string[] | string; // Mengakomodasi JSON string atau array dari DB
-  image_url: string;
-}
+import { Product } from "@/types/global";
 
 interface ProductDetailModalProps {
   product: Product | null;
@@ -200,7 +181,7 @@ interface ProductDetailModalProps {
 //   );
 // };
 
-export default function ProductStore() {
+export default function DashboardProducs() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -228,8 +209,18 @@ export default function ProductStore() {
         setIsLoading(false);
       }
     };
-
     fetchProducts();
+
+    const snapScript = process.env.MIDTRANS_SNAP_URL || "";
+    const clientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || "";
+
+    if (!document.querySelector(`script[src="${snapScript}"]`)) {
+      const script = document.createElement("script");
+      script.src = snapScript;
+      script.setAttribute("data-client-key", clientKey);
+      script.async = true;
+      document.body.appendChild(script);
+    }
   }, []);
 
   // Pagination Logic
@@ -245,7 +236,7 @@ export default function ProductStore() {
   };
 
   // Checkout Handler
-  const handleCheckout = async () => {
+  const checkoutHandler = async () => {
     if (!selectedProduct || detailDialog === false) return;
 
     try {
@@ -494,7 +485,7 @@ export default function ProductStore() {
               </DialogClose>
               <Button
                 className="w-full sm:w-auto"
-                onClick={handleCheckout}
+                onClick={checkoutHandler}
               >
                 Beli Sekarang
               </Button>

@@ -4,7 +4,7 @@ import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar"
 import { useUser } from "@clerk/nextjs"
-import { PackageIcon, Settings2Icon, ShoppingBagIcon } from "lucide-react"
+import { BoltIcon, PackageIcon, PackagePlusIcon, Settings2Icon, ShoppingBagIcon } from "lucide-react"
 import Image from "next/image"
 import * as React from "react"
 import { Separator } from "./ui/separator"
@@ -30,6 +30,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         url: ROUTES.DASHBOARD.INVENTORY,
         icon: (
           <PackageIcon />
+        ),
+      },
+      {
+        title: "Kelola Produk",
+        url: ROUTES.DASHBOARD.ADMIN,
+        icon: (
+          <BoltIcon />
         ),
       },
     ],

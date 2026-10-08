@@ -22,5 +22,6 @@ export const ROUTES = {
   DASHBOARD: {
     HOME: "/dashboard",
     INVENTORY: "/dashboard/inventory",
+    ADMIN: "/dashboard/admin",
   },
 };

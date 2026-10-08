@@ -3,37 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Download, Clock, CheckCircle2, AlertCircle, ShoppingBag, ChevronRight, ChevronLeft, Search } from 'lucide-react';
-
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Order } from '@/types/global';
+import { formatRupiah } from '@/lib/utils';
 
-// 1. Deklarasi global untuk Midtrans agar TypeScript tidak error pada window.snap
-declare global {
-  interface Window {
-    snap: any;
-  }
-}
-
-// 2. Interface / Tipe Data untuk Pesanan (Sesuai dengan skema Database Neon kita)
-interface Order {
-  order_id: string;
-  product_id: string;
-  product_name: string;
-  amount: number;
-  status: 'pending' | 'success' | 'failed';
-  snap_token: string | null;
-  created_at: string;
-}
-
-const formatRupiah = (amount: number) => {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0
-  }).format(amount);
-};
-
-export default function MyOrders() {
+export default function DashboardInventory() {
   // 3. Terapkan Tipe Data ke dalam State
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -61,7 +36,7 @@ export default function MyOrders() {
     fetchOrders();
 
     // Inject Script Snap Midtrans (Jika belum ada, berguna untuk retry pembayaran pending)
-    const snapScript = "https://app.sandbox.midtrans.com/snap/snap.js";
+    const snapScript = process.env.MIDTRANS_SNAP_URL || "";
     const clientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || "";
 
     if (!document.querySelector(`script[src="${snapScript}"]`)) {
@@ -160,8 +135,6 @@ export default function MyOrders() {
                   day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
                 });
 
-                const imagePlaceholder = 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?q=80&w=400&auto=format&fit=crop';
-
                 return (
                   <motion.div
                     key={order.order_id}
@@ -173,7 +146,7 @@ export default function MyOrders() {
                   >
                     <div className="relative w-full sm:w-28 aspect-[4/3] sm:aspect-square rounded-xl overflow-hidden bg-muted shrink-0 border border-foreground/10 shadow-sm">
                       <img
-                        src={imagePlaceholder}
+                        src={order.image_url}
                         alt={order.product_name}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         loading="lazy"

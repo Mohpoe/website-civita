@@ -7,3 +7,5 @@ export const formatRupiah = (amount: number) => {
 };
 
 export const sql = neon(`${process.env.DATABASE_URL}`);
+
+export const fetcher = (url: string) => fetch(url).then((res) => res.json());
