@@ -247,141 +247,143 @@ export default function ProductStore() {
   };
 
   return (
-    <div className="w-full font-mono text-foreground">
-      <div className="mb-8">
-        <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">Produk Digital CIVITA</h2>
-        <p className="text-muted-foreground">Tingkatkan peluang lolos kerja kamu dengan template dan panduan eksklusif siap pakai.</p>
-      </div>
-
-      {isLoading ? (
-        <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-          <div className="w-8 h-8 border-4 border-muted-foreground/20 border-t-foreground rounded-full animate-spin mb-4"></div>
-          Memuat daftar produk...
+    <>
+      <div className="w-full font-mono text-foreground">
+        <div className="mb-8">
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">Produk Digital CIVITA</h2>
+          <p className="text-muted-foreground">Tingkatkan peluang lolos kerja kamu dengan template dan panduan eksklusif siap pakai.</p>
         </div>
-      ) : products.length === 0 ? (
-        <div className="bg-background rounded-3xl border border-foreground/5 shadow-sm min-h-[300px] flex flex-col items-center justify-center p-12 text-center">
-          <div className="w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mb-4 shadow-inner border border-foreground/5">
-            <ShoppingBagIcon className="w-8 h-8 text-muted-foreground/50" />
+
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+            <div className="w-8 h-8 border-4 border-muted-foreground/20 border-t-foreground rounded-full animate-spin mb-4"></div>
+            Memuat daftar produk...
           </div>
-          <h3 className="text-xl font-bold tracking-tight mb-2">Belum Ada Produk</h3>
-          <p className="text-muted-foreground max-w-sm">
-            Produk digital sedang disiapkan dan akan segera tersedia di toko.
-          </p>
-        </div>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-            <AnimatePresence mode="popLayout">
-              {currentItems.map((product, idx) => (
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.3, delay: idx * 0.05 }}
-                  className="group bg-background rounded-2xl overflow-hidden border border-foreground/5 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] transition-all duration-300 flex flex-col cursor-pointer"
-                  onClick={() => openProductDetails(product)}
-                >
-                  <div className={`relative aspect-[4/3] bg-muted overflow-hidden`}>
-                    {product.image_url ? (
-                      <img
-                        src={product.image_url}
-                        alt={product.title}
-                        className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center opacity-50 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500">
-                        <div className="w-20 h-24 bg-background/50 backdrop-blur-sm rounded-lg border border-foreground/10 shadow-sm flex items-center justify-center">
-                          <FileTextIcon className="w-8 h-8 text-foreground/40" />
-                        </div>
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <Badge className="absolute top-4 right-4 bg-background/80 backdrop-blur text-foreground border-none shadow-sm pointer-events-none">
-                      {product.category}
-                    </Badge>
-                  </div>
-
-                  <div className="p-5 flex-1 flex flex-col">
-                    <h3 className="font-bold text-lg leading-tight mb-2 group-hover:text-zinc-600 transition-colors line-clamp-2">
-                      {product.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2 mb-4 flex-1">
-                      {product.short_desc}
-                    </p>
-
-                    <div className="flex items-center justify-between mt-auto pt-4 border-t border-foreground/5">
-                      <span className="font-bold text-base">{formatRupiah(product.price)}</span>
-                      <Button
-                        size="sm"
-                        className="rounded-full shadow-sm hover:scale-105 transition-transform px-4"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openProductDetails(product);
-                        }}
-                      >
-                        Detail
-                      </Button>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-foreground/5 pt-6">
-              <p className="text-sm text-muted-foreground hidden sm:block">
-                Menampilkan <span className="font-bold text-foreground">{indexOfFirstItem + 1}</span> - <span className="font-bold text-foreground">{Math.min(indexOfLastItem, products.length)}</span> dari <span className="font-bold text-foreground">{products.length}</span> produk
-              </p>
-
-              <div className="flex items-center gap-2 w-full sm:w-auto justify-center sm:justify-end">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="rounded-full w-9 h-9 border-foreground/10 disabled:opacity-50"
-                  onClick={handlePrevPage}
-                  disabled={currentPage === 1}
-                >
-                  <ChevronLeftIcon className="w-4 h-4" />
-                </Button>
-
-                <div className="flex items-center gap-1 mx-2">
-                  {[...Array(totalPages)].map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setCurrentPage(i + 1)}
-                      className={`w-8 h-8 rounded-full text-sm font-medium transition-colors flex items-center justify-center ${currentPage === i + 1
-                        ? "bg-foreground text-background shadow-sm"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                        }`}
-                    >
-                      {i + 1}
-                    </button>
-                  ))}
-                </div>
-
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="rounded-full w-9 h-9 border-foreground/10 disabled:opacity-50"
-                  onClick={handleNextPage}
-                  disabled={currentPage === totalPages}
-                >
-                  <ChevronRightIcon className="w-4 h-4" />
-                </Button>
-              </div>
+        ) : products.length === 0 ? (
+          <div className="bg-background rounded-3xl border border-foreground/5 shadow-sm min-h-[300px] flex flex-col items-center justify-center p-12 text-center">
+            <div className="w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mb-4 shadow-inner border border-foreground/5">
+              <ShoppingBagIcon className="w-8 h-8 text-muted-foreground/50" />
             </div>
-          )}
-        </>
-      )}
+            <h3 className="text-xl font-bold tracking-tight mb-2">Belum Ada Produk</h3>
+            <p className="text-muted-foreground max-w-sm">
+              Produk digital sedang disiapkan dan akan segera tersedia di toko.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+              <AnimatePresence mode="popLayout">
+                {currentItems.map((product, idx) => (
+                  <motion.div
+                    key={product.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.3, delay: idx * 0.05 }}
+                    className="group bg-background rounded-2xl overflow-hidden border border-foreground/5 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] transition-all duration-300 flex flex-col cursor-pointer"
+                    onClick={() => openProductDetails(product)}
+                  >
+                    <div className={`relative aspect-[4/3] bg-muted overflow-hidden`}>
+                      {product.image_url ? (
+                        <img
+                          src={product.image_url}
+                          alt={product.title}
+                          className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center opacity-50 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500">
+                          <div className="w-20 h-24 bg-background/50 backdrop-blur-sm rounded-lg border border-foreground/10 shadow-sm flex items-center justify-center">
+                            <FileTextIcon className="w-8 h-8 text-foreground/40" />
+                          </div>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <Badge className="absolute top-4 right-4 bg-background/80 backdrop-blur text-foreground border-none shadow-sm pointer-events-none">
+                        {product.category}
+                      </Badge>
+                    </div>
+
+                    <div className="p-5 flex-1 flex flex-col">
+                      <h3 className="font-bold text-lg leading-tight mb-2 group-hover:text-zinc-600 transition-colors line-clamp-2">
+                        {product.title}
+                      </h3>
+                      <p className="text-sm text-muted-foreground line-clamp-2 mb-4 flex-1">
+                        {product.short_desc}
+                      </p>
+
+                      <div className="flex items-center justify-between mt-auto pt-4 border-t border-foreground/5">
+                        <span className="font-bold text-base">{formatRupiah(product.price)}</span>
+                        <Button
+                          size="sm"
+                          className="rounded-full shadow-sm hover:scale-105 transition-transform px-4"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openProductDetails(product);
+                          }}
+                        >
+                          Detail
+                        </Button>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between border-t border-foreground/5 pt-6">
+                <p className="text-sm text-muted-foreground hidden sm:block">
+                  Menampilkan <span className="font-bold text-foreground">{indexOfFirstItem + 1}</span> - <span className="font-bold text-foreground">{Math.min(indexOfLastItem, products.length)}</span> dari <span className="font-bold text-foreground">{products.length}</span> produk
+                </p>
+
+                <div className="flex items-center gap-2 w-full sm:w-auto justify-center sm:justify-end">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="rounded-full w-9 h-9 border-foreground/10 disabled:opacity-50"
+                    onClick={handlePrevPage}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeftIcon className="w-4 h-4" />
+                  </Button>
+
+                  <div className="flex items-center gap-1 mx-2">
+                    {[...Array(totalPages)].map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setCurrentPage(i + 1)}
+                        className={`w-8 h-8 rounded-full text-sm font-medium transition-colors flex items-center justify-center ${currentPage === i + 1
+                          ? "bg-foreground text-background shadow-sm"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                          }`}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="rounded-full w-9 h-9 border-foreground/10 disabled:opacity-50"
+                    onClick={handleNextPage}
+                    disabled={currentPage === totalPages}
+                  >
+                    <ChevronRightIcon className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
 
       <ProductDetailModal
         product={selectedProduct}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />
-    </div>
+    </>
   );
 }
