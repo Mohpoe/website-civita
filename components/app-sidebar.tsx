@@ -3,16 +3,19 @@
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar"
-import { useUser } from "@clerk/nextjs"
-import { BoltIcon, PackageIcon, PackagePlusIcon, Settings2Icon, ShoppingBagIcon } from "lucide-react"
-import Image from "next/image"
-import * as React from "react"
-import { Separator } from "./ui/separator"
 import { ROUTES } from "@/lib/constants"
+import { useUser } from "@clerk/nextjs"
+import { BoltIcon, PackageIcon, PackagePlusIcon, ShoppingBagIcon } from "lucide-react"
+import Image from "next/image"
 import Link from "next/link"
+import * as React from "react"
+import { NavSecondary } from "./nav-secondary"
+import { Separator } from "./ui/separator"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { isSignedIn, isLoaded, user } = useUser();
+
+  const role = user?.publicMetadata.role;
 
   const { setOpenMobile, isMobile } = useSidebar();
 
@@ -32,23 +35,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <PackageIcon />
         ),
       },
-      {
-        title: "Kelola Produk",
-        url: ROUTES.DASHBOARD.ADMIN,
-        icon: (
-          <BoltIcon />
-        ),
-      },
     ],
-    navSecondary: [
-      {
-        title: "Settings",
-        url: "#",
-        icon: (
-          <Settings2Icon />
-        ),
-      },
-    ],
+    navSecondary: role === "admin"
+      ? [
+        {
+          title: "Kelola Produk",
+          url: ROUTES.DASHBOARD.ADMIN,
+          icon: (
+            <PackagePlusIcon />
+          ),
+        },
+      ]
+      : [],
   }
 
   return (
@@ -70,7 +68,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <Separator />
       <SidebarContent>
         <NavMain items={data.navMain} />
-        {/* <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
+        <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
         {!isLoaded || !isSignedIn ? (
