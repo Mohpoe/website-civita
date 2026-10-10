@@ -12,18 +12,27 @@ declare global {
   }
 }
 
+export type Category = {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  created_at: string;
+};
+
 export interface Product {
   id: string;
   title: string;
   short_desc: string;
   long_desc: string;
   price: number;
-  category: string;
+  category_id: string;
   features: string[];
   image_url: string;
   is_active: boolean;
   created_at: string;
   file_url: string;
+  category?: Category;
 }
 
 export interface Order {

@@ -3,6 +3,8 @@ import { WebhookEvent } from '@clerk/nextjs/server';
 import { headers } from 'next/headers';
 import { Webhook } from 'svix';
 
+// NEED TO FIX
+
 // Inisialisasi Clerk Backend SDK
 const clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
 

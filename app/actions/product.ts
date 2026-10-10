@@ -1,17 +1,17 @@
 "use server";
 
 import { ROUTES } from "@/lib/constants";
-import { generateProductId } from "@/lib/id-generator";
 import { sql } from "@/lib/utils";
 import { productSchema } from "@/lib/zod-schemas";
 import { auth, currentUser } from "@clerk/nextjs/server";
+import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 
 // #region 1. PRODUCT CREATE & UPDATE ACTION
 export async function upsertProductAction(state: any, formData: FormData) {
   await auth.protect();
   const user = await currentUser();
-  if (!user) return { success: false, message: "Akses tidak valid, silakan login!" };
+  if (!user || user.publicMetadata.role !== "admin") return { success: false, message: "Akses tidak valid, silakan login!" };
 
   const id = formData.get("id") as string | null;
 
@@ -61,7 +61,7 @@ export async function upsertProductAction(state: any, formData: FormData) {
       `;
     } else {
       // PROSES INSERT BARU
-      const newId = generateProductId();
+      const newId = `prod-${randomUUID().substring(0, 8)}`;
       await sql`
         INSERT INTO products (
           id, title, price, is_active, category_id,
@@ -73,6 +73,8 @@ export async function upsertProductAction(state: any, formData: FormData) {
       `;
     }
 
+    revalidatePath(ROUTES.DASHBOARD.HOME);
+    revalidatePath(ROUTES.DASHBOARD.INVENTORY);
     revalidatePath(ROUTES.DASHBOARD.ADMIN);
     return { success: true, message: "Data produk berhasil disimpan!" };
   } catch (error: any) {
@@ -86,7 +88,7 @@ export async function upsertProductAction(state: any, formData: FormData) {
 export async function deleteProductAction(state: any, formData: FormData) {
   await auth.protect();
   const user = await currentUser();
-  if (!user) return { success: false, message: "Akses tidak valid, silakan login!" };
+  if (!user || user.publicMetadata.role !== "admin") return { success: false, message: "Akses tidak valid, silakan login!" };
 
   const id = formData.get("id") as string | null;
 

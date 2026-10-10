@@ -380,7 +380,7 @@ export default function DashboardProducs() {
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                       <Badge className="absolute top-4 right-4 bg-background/80 backdrop-blur text-foreground border-none shadow-sm pointer-events-none">
-                        {product.category}
+                        {product.category?.name}
                       </Badge>
                     </div>
 
@@ -487,7 +487,7 @@ export default function DashboardProducs() {
                 <h3 className="text-2xl font-bold text-primary">{formatRupiah(selectedProduct?.price as number)}</h3>
                 {/* Opsional: Gunakan komponen Badge dari Shadcn jika Anda sudah menginstalnya */}
                 <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-secondary text-secondary-foreground">
-                  {selectedProduct?.category}
+                  {selectedProduct?.category?.name}
                 </span>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">

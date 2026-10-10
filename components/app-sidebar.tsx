@@ -5,7 +5,7 @@ import { NavUser } from "@/components/nav-user"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar"
 import { ROUTES } from "@/lib/constants"
 import { useUser } from "@clerk/nextjs"
-import { BoltIcon, PackageIcon, PackagePlusIcon, ShoppingBagIcon } from "lucide-react"
+import { BoltIcon, GroupIcon, PackageIcon, PackagePlusIcon, ShoppingBagIcon, SquareTextIcon } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import * as React from "react"
@@ -43,6 +43,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           url: ROUTES.DASHBOARD.ADMIN,
           icon: (
             <PackagePlusIcon />
+          ),
+        },
+        {
+          title: "Kelola Kategori",
+          url: ROUTES.DASHBOARD.ADMIN,
+          icon: (
+            <GroupIcon />
+          ),
+        },
+        {
+          title: "Laporan Penjualan",
+          url: ROUTES.DASHBOARD.ADMIN,
+          icon: (
+            <SquareTextIcon />
           ),
         },
       ]

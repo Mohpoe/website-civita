@@ -6,7 +6,7 @@ import { fetcher, formatRupiah } from "@/lib/utils";
 import { Product } from "@/types/global";
 import { createColumnHelper, tableFeatures, useTable } from "@tanstack/react-table";
 import { BadgeCheckIcon, BadgeXIcon, ImageIcon, LinkIcon, LoaderCircleIcon, MoreHorizontalIcon, PlusIcon, SquarePenIcon, Trash2Icon, TriangleAlertIcon } from "lucide-react";
-import { useActionState, useMemo, useState, useTransition } from "react";
+import { useActionState, useEffect, useMemo, useState, useTransition } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle } from "./ui/alert-dialog";
 import { Badge } from "./ui/badge";
@@ -25,6 +25,74 @@ import { toast } from "./ui/toast";
 
 export default function DashboardAdmin() {
   const { data: products, error, isLoading } = useSWR<Product[]>("/api/products", fetcher);
+  const [isPending, startTransition] = useTransition();
+  const { mutate } = useSWRConfig();
+
+  // #region CREATE & UPDATE STATES (Tambah & Edit Produk)
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [productToUpdate, setProductToUpdate] = useState<Product | null>(null);
+  const [upsertState, upsertFormAction, upsertIsPending] = useActionState(upsertProductAction, null);
+  // 1. Trigger untuk Tambah Produk
+  const handleCreate = () => {
+    setProductToUpdate(null);
+    setIsDialogOpen(true);
+  };
+  // 2. Trigger untuk Edit Produk
+  const handleEdit = (product: Product) => {
+    setProductToUpdate(product);
+    setIsDialogOpen(true);
+  };
+  // 3. Toast Handler
+  useEffect(() => {
+    if (!upsertState) return;
+    if (upsertState.success) {
+      toast.add({
+        type: "success",
+        description: upsertState.message,
+      });
+      mutate("/api/products");
+      setIsDialogOpen(false);
+      setProductToUpdate(null);
+    } else {
+      toast.add({
+        type: "error",
+        description: upsertState.message,
+        priority: "high",
+      });
+    }
+  }, [upsertState]);
+  // #endregion CREATE & UPDATE STATES (Tambah & Edit Produk)
+
+  // #region DELETE STATES (Hapus Produk)
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<string | null>(null);
+
+  const handleDelete = (id: string) => {
+    setProductToDelete(id);
+    setIsAlertOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (!productToDelete) return;
+
+    // startTransition(async () => {
+    //   const res = await deleteProductAction(productToDelete);
+
+    //   if (res.success) {
+    //     mutate("/api/products");
+    //     toast.add({
+    //       type: "success",
+    //       description: res.message,
+    //     });
+    //   } else {
+    //     toast.add({
+    //       type: "error",
+    //       description: res.message,
+    //     });
+    //   }
+    // });
+  };
+  // #endregion DELETE STATES (Hapus Produk)
 
   // #region TABLE DEFINITION
   // 1. Table Initiation
@@ -178,81 +246,6 @@ export default function DashboardAdmin() {
   })), [products]);
   // #endregion
 
-  // #region CREATE & UPDATE STATES (Tambah & Edit Produk)
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isAlertOpen, setIsAlertOpen] = useState(false);
-  const [productToUpdate, setProductToUpdate] = useState<Product | null>(null);
-  const [productToDelete, setProductToDelete] = useState<string | null>(null);
-  const { mutate } = useSWRConfig();
-  const [isPending, startTransition] = useTransition();
-
-  const [upsertState, upsertFormAction, upsertIsPending] = useActionState(upsertProductAction, null);
-
-  // Trigger untuk Tambah Produk
-  const handleAdd = () => {
-    setProductToUpdate(null);
-    setIsDialogOpen(true);
-  };
-
-  // Trigger untuk Edit Produk
-  const handleEdit = (product: Product) => {
-    setProductToUpdate(product);
-    setIsDialogOpen(true);
-  };
-
-  // Fungsi Action Form
-  // const handleActionSubmit = async (formData: FormData) => {
-  //   startTransition(async () => {
-  //     const res = await upsertProductAction(formData);
-
-  //     if (res.success) {
-  //       setIsDialogOpen(false);
-  //       mutate("/api/products");
-  //       toast.add({
-  //         type: "success",
-  //         description: res.message,
-  //       });
-  //     } else {
-  //       toast.add({
-  //         type: "error",
-  //         description: res.message,
-  //         priority: "high",
-  //       });
-  //     }
-  //   })
-  // };
-
-  const handleDelete = (id: string) => {
-    setProductToDelete(id);
-    setIsAlertOpen(true);
-  };
-
-  const confirmDelete = () => {
-    if (!productToDelete) return;
-
-    startTransition(async () => {
-      const res = await deleteProductAction(productToDelete);
-
-      if (res.success) {
-        mutate("/api/products");
-        toast.add({
-          type: "success",
-          description: res.message,
-        });
-      } else {
-        toast.add({
-          type: "error",
-          description: res.message,
-        });
-      }
-    });
-  };
-  // #endregion CREATE & UPDATE STATES (Tambah & Edit Produk)
-
-  // #region DELETE STATES (Hapus Produk)
-  const [deleteDialog, setDeleteDialog] = useState(false);
-  // #endregion DELETE STATES (Hapus Produk)
-
   return (
     <>
       <Card className="shadow-md">
@@ -261,7 +254,7 @@ export default function DashboardAdmin() {
           <CardDescription>Lorem ipsum dolor, sit amet consectetur adipisicing elit.</CardDescription>
           <CardAction>
             <Button variant="outline" onClick={() => {
-              handleAdd();
+              handleCreate();
               setIsDialogOpen(true);
             }}>
               <PlusIcon />
@@ -321,7 +314,7 @@ export default function DashboardAdmin() {
         open={isDialogOpen}
         onOpenChange={(open) => {
           setIsDialogOpen(open);
-          if (!open) setTimeout(() => setProductToUpdate(null), 200);
+          if (!open) setProductToUpdate(null);
         }}
       >
         <DialogContent className="w-full sm:max-w-xl">
@@ -339,6 +332,7 @@ export default function DashboardAdmin() {
               id="productForm"
               action={upsertFormAction}
               autoCapitalize="off"
+              key={productToUpdate ? productToUpdate.id : "new-product-form"}
             >
               {/* Hidden input untuk melempar ID jika mode edit */}
               {productToUpdate && <input type="hidden" name="id" value={productToUpdate.id} />}
