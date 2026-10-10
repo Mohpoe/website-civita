@@ -12,7 +12,7 @@ declare global {
   }
 }
 
-export type Category = {
+export interface Category {
   id: string;
   name: string;
   slug: string;
@@ -45,5 +45,5 @@ export interface Order {
   snap_token: string | null;
   download_url: string;
   created_at: string;
-  image_url: string;
+  product?: Product;
 }

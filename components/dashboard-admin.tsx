@@ -1,11 +1,11 @@
 "use client";
 
-import { deleteProductAction, upsertProductAction } from "@/app/actions/product";
+import { upsertProductAction } from "@/lib/actions/product";
 import { APP_CONFIG } from "@/lib/constants";
 import { fetcher, formatRupiah } from "@/lib/utils";
-import { Product } from "@/types/global";
+import { Category, Order, Product } from "@/types/global";
 import { createColumnHelper, tableFeatures, useTable } from "@tanstack/react-table";
-import { BadgeCheckIcon, BadgeXIcon, ImageIcon, LinkIcon, LoaderCircleIcon, MoreHorizontalIcon, PlusIcon, SquarePenIcon, Trash2Icon, TriangleAlertIcon } from "lucide-react";
+import { BadgeCheckIcon, BadgeXIcon, ImageIcon, LinkIcon, MoreHorizontalIcon, PlusIcon, SquarePenIcon, Trash2Icon, TriangleAlertIcon } from "lucide-react";
 import { useActionState, useEffect, useMemo, useState, useTransition } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle } from "./ui/alert-dialog";
@@ -23,10 +23,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { Textarea } from "./ui/textarea";
 import { toast } from "./ui/toast";
 
-export default function DashboardAdmin() {
-  const { data: products, error, isLoading } = useSWR<Product[]>("/api/products", fetcher);
+interface DashboardAdminProps {
+  products: Product[],
+  categories: Category[],
+  orders: Order[],
+}
+
+export default function DashboardAdmin({ products, categories, orders }: DashboardAdminProps) {
   const [isPending, startTransition] = useTransition();
-  const { mutate } = useSWRConfig();
 
   // #region CREATE & UPDATE STATES (Tambah & Edit Produk)
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -50,7 +54,6 @@ export default function DashboardAdmin() {
         type: "success",
         description: upsertState.message,
       });
-      mutate("/api/products");
       setIsDialogOpen(false);
       setProductToUpdate(null);
     } else {
@@ -113,7 +116,7 @@ export default function DashboardAdmin() {
       header: "ID Produk",
       cell: (info) => (
         <span className="font-mono text-xs text-muted-foreground bg-muted px-2 py-1 rounded-md">
-          {info.getValue().substring(0, 8)}
+          {info.getValue()}
         </span>
       )
     }),
@@ -206,7 +209,8 @@ export default function DashboardAdmin() {
 
                   {/* Memanggil fungsi edit/hapus dari table.options.meta (Best Practice TanStack) */}
                   <DropdownMenuItem onClick={() => {
-                    handleEdit(product);
+                    // handleEdit(product);
+                    setProductToUpdate(product);
                     setIsDialogOpen(true);
                   }}>
                     <SquarePenIcon />
@@ -240,18 +244,18 @@ export default function DashboardAdmin() {
   // #endregion TABLE DEFINITION
 
   // #region LIST DEFINITION
-  const categoryList = useMemo(() => products?.map((cat) => ({
-    label: cat.category?.name,
-    value: cat.category?.id
-  })), [products]);
+  const categoryList = useMemo(() => categories?.map((cat) => ({
+    label: cat.name,
+    value: cat.id
+  })), [categories]);
   // #endregion
 
   return (
     <>
       <Card className="shadow-md">
         <CardHeader className="border-b">
-          <CardTitle>Kelola Produk {APP_CONFIG.NAME}</CardTitle>
-          <CardDescription>Lorem ipsum dolor, sit amet consectetur adipisicing elit.</CardDescription>
+          <CardTitle>Kelola Produk Digital</CardTitle>
+          <CardDescription>Silakan atur produk digital yang ingin dijual.</CardDescription>
           <CardAction>
             <Button variant="outline" onClick={() => {
               handleCreate();
@@ -263,49 +267,35 @@ export default function DashboardAdmin() {
           </CardAction>
         </CardHeader>
         <CardContent>
-          {error ? (
-            <div className="flex flex-col items-center justify-center gap-2 py-20 text-destructive">
-              <TriangleAlertIcon className="w-8 h-8" />
-              Gagal memuat data... Hubungi Administrator!
-            </div>
-          ) : isLoading ? (
-            <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-              <div className="w-8 h-8 border-4 border-muted-foreground/20 border-t-foreground rounded-full animate-spin mb-4"></div>
-              Memuat daftar produk...
-            </div>
-          ) : (
-            <>
-              <div className="overflow-hidden rounded-lg border">
-                <Table>
-                  <TableHeader className="bg-muted">
-                    {table.getHeaderGroups().map((headerGroup) => (
-                      <TableRow key={headerGroup.id} className="*:border-border [&>:not(:last-child)]:border-r">
-                        {headerGroup.headers.map((header) => (
-                          <TableHead key={header.id}>
-                            {header.isPlaceholder
-                              ? null
-                              : <table.FlexRender header={header} />
-                            }
-                          </TableHead>
-                        ))}
-                      </TableRow>
+          <div className="overflow-hidden rounded-lg border">
+            <Table>
+              <TableHeader className="bg-muted">
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id} className="*:border-border [&>:not(:last-child)]:border-r">
+                    {headerGroup.headers.map((header) => (
+                      <TableHead key={header.id}>
+                        {header.isPlaceholder
+                          ? null
+                          : <table.FlexRender header={header} />
+                        }
+                      </TableHead>
                     ))}
-                  </TableHeader>
-                  <TableBody>
-                    {table.getRowModel().rows.map((row) => (
-                      <TableRow key={row.id} className="*:border-border [&>:not(:last-child)]:border-r">
-                        {row.getAllCells().map((cell) => (
-                          <TableCell key={cell.id}>
-                            <table.FlexRender cell={cell} />
-                          </TableCell>
-                        ))}
-                      </TableRow>
+                  </TableRow>
+                ))}
+              </TableHeader>
+              <TableBody>
+                {table.getRowModel().rows.map((row) => (
+                  <TableRow key={row.id} className="*:border-border [&>:not(:last-child)]:border-r">
+                    {row.getAllCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        <table.FlexRender cell={cell} />
+                      </TableCell>
                     ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </>
-          )}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 
@@ -361,13 +351,13 @@ export default function DashboardAdmin() {
                   </Field>
                   <Field>
                     <FieldLabel htmlFor="isActive">Status Publikasi</FieldLabel>
-                    <div className="flex items-center space-x-3 h-full pt-2">
+                    <div className="flex items-center space-x-3 h-full">
                       <Switch
                         id="isActive"
                         name="isActive"
                         defaultChecked={productToUpdate ? productToUpdate.is_active : true}
                       />
-                      <Label htmlFor="isActive" className="text-sm font-normal">Aktifkan di toko</Label>
+                      <Label htmlFor="isActive">Aktifkan di toko</Label>
                     </div>
                   </Field>
                 </FieldGroup>
@@ -377,7 +367,7 @@ export default function DashboardAdmin() {
                   <Select
                     items={categoryList}
                     name="category"
-                    defaultValue={productToUpdate?.category?.id || ""}
+                    defaultValue={productToUpdate?.category_id || ""}
                   >
                     <SelectTrigger id="category">
                       <SelectValue placeholder="Pilih kategori" />

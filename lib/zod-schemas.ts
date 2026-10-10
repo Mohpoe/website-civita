@@ -5,7 +5,7 @@ export const productSchema = z.object({
   price: z.coerce.number().min(0, "Harga tidak boleh minus!"),
   isActive: z.boolean(),
   categoryId: z.string().min(1, "Kategori wajib dipilih!"),
-  shortDesc: z.string().max(150, "Deskripsi singkat maksimal 150 karakter!").optional(),
+  shortDesc: z.string().min(10, "Deskripsi singkat terlalu singkat!").optional(),
   longDesc: z.string().min(10, "Deskripsi lengkap terlalu singkat!").optional(),
   // URL bisa divalidasi, .or(z.literal('')) mengizinkan input kosong
   imageUrl: z.url("URL Gambar tidak valid!").or(z.literal('')),
