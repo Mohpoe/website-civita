@@ -15,12 +15,11 @@ export async function getProducts(isActive = false): Promise<Product[]> {
       ? await sql`
         SELECT
           p.*,
-          json_build_object(
-            'id', c.id,
-            'name', c.name,
-            'slug', c.slug,
-            'description', c.description
-          ) as category
+          CASE
+            WHEN c.id IS NOT NULL THEN
+              to_jsonb(c.*)
+            ELSE null
+          END as category
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.id
         WHERE p.is_active = true
@@ -29,21 +28,17 @@ export async function getProducts(isActive = false): Promise<Product[]> {
       : await sql`
         SELECT
           p.*,
-          json_build_object(
-            'id', c.id,
-            'name', c.name,
-            'slug', c.slug,
-            'description', c.description
-          ) as category
+          CASE
+            WHEN c.id IS NOT NULL THEN
+              to_jsonb(c.*)
+            ELSE null
+          END as category
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.id
         ORDER BY p.created_at DESC
       `;
 
-    return data.map((row: any) => ({
-      ...row,
-      category: row.category_id ? row.category : null
-    })) as Product[];
+    return data as Product[];
   } catch (error) {
     console.error("Kesalahan mengambil data produk:", error);
     return [];
@@ -68,50 +63,65 @@ export async function getCategories(): Promise<Category[]> {
 // #region 3. GET ORDERS
 export async function getOrders(userId?: string): Promise<Order[]> {
   try {
+    const data = !userId
+      ? await sql`
+          SELECT
+            o.*,
+            -- Jika product_id ada, gabungkan data produk dengan data kategori yang di-convert ke JSON
+            CASE
+              WHEN p.id IS NOT NULL THEN
+                to_jsonb(p.*) || jsonb_build_object('category', CASE WHEN c.id IS NOT NULL THEN to_jsonb(c.*) ELSE null END)
+              ELSE null
+            END as product
+          FROM orders o
+          LEFT JOIN products p ON o.product_id = p.id
+          LEFT JOIN categories c ON p.category_id = c.id
+          ORDER BY o.created_at DESC
+      `
+      : await sql`
+        SELECT
+          o.*,
+          -- Jika product_id ada, gabungkan data produk dengan data kategori yang di-convert ke JSON
+          CASE
+            WHEN p.id IS NOT NULL THEN
+              to_jsonb(p.*) || jsonb_build_object('category', CASE WHEN c.id IS NOT NULL THEN to_jsonb(c.*) ELSE null END)
+            ELSE null
+          END as product
+        FROM orders o
+        LEFT JOIN products p ON o.product_id = p.id
+        LEFT JOIN categories c ON p.category_id = c.id
+        WHERE o.user_id = ${userId}
+        ORDER BY o.created_at DESC
+      `;
+    return data as Order[];
+
     if (!userId) {
       const data = await sql`
         SELECT
           o.*,
-          json_build_object(
-            'title', p.title,
-            'short_desc', p.short_desc,
-            'long_desc', p.long_desc,
-            'price', p.price,
-            'features', p.features,
-            'image_url', p.image_url,
-            'is_active', p.is_active,
-            'created_at', p.created_at,
-            'file_url', p.file_url,
-            'category_id', p.category_id,
-            'category', json_build_object(
-              'id', c.id,
-              'name', c.name,
-              'slug', c.slug,
-              'description', c.description
-            )
-          ) as product
+          -- Jika product_id ada, gabungkan data produk dengan data kategori yang di-convert ke JSON
+          CASE
+            WHEN p.id IS NOT NULL THEN
+              to_jsonb(p.*) || jsonb_build_object('category', CASE WHEN c.id IS NOT NULL THEN to_jsonb(c.*) ELSE null END)
+            ELSE null
+          END as product
         FROM orders o
         LEFT JOIN products p ON o.product_id = p.id
         LEFT JOIN categories c ON p.category_id = c.id
         ORDER BY o.created_at DESC
       `;
 
-      return data.map((row: any) => ({
-        ...row,
-        product: row.product_id ? row.product : null
-      })) as Order[];
+      return data as Order[];
     } else {
       const data = await sql`
         SELECT
           o.*,
-          p.title AS product_title,
-          p.short_desc AS product_short_desc,
-          p.long_desc AS product_long_desc,
-          p.price AS product_price,
-          p.features AS product_features,
-          p.image_url AS product_image_url,
-          p.is_active AS product_is_active,
-          p.category_id AS product_category_id
+          -- Jika product_id ada, gabungkan data produk dengan data kategori yang di-convert ke JSON
+          CASE
+            WHEN p.id IS NOT NULL THEN
+              to_jsonb(p.*) || jsonb_build_object('category', CASE WHEN c.id IS NOT NULL THEN to_jsonb(c.*) ELSE null END)
+            ELSE null
+          END as product
         FROM orders o
         LEFT JOIN products p ON o.product_id = p.id
         LEFT JOIN categories c ON p.category_id = c.id
@@ -119,35 +129,7 @@ export async function getOrders(userId?: string): Promise<Order[]> {
         ORDER BY o.created_at DESC
       `;
 
-      return data.map((row: any) => ({
-        order_id: row.order_id,
-        user_id: row.user_id,
-        product_name: row.product_name,
-        amount: row.amount,
-        status: row.status,
-        snap_token: row.snap_token,
-        download_url: row.download_url,
-        created_at: row.created_at,
-        product_id: row.product_id,
-
-        product: row.product_id ? {
-          title: row.title,
-          short_desc: row.short_desc,
-          long_desc: row.long_desc,
-          price: row.price,
-          features: row.features,
-          image_url: row.image_url,
-          is_active: row.is_active,
-          category_id: row.category_id,
-
-          category: row.category_id ? {
-            id: row.category_id,
-            name: row.category_name,
-            slug: row.category_slug,
-            description: row.category_description,
-          } : null,
-        } : null,
-      })) as Order[];
+      return data as Order[];
     }
   } catch (error) {
     console.error("Gagal mengambil order:", error);

@@ -30,7 +30,7 @@ interface DashboardAdminProps {
 }
 
 export default function DashboardAdmin({ products, categories, orders }: DashboardAdminProps) {
-  console.log(orders);
+  console.log(products);
   const [isPending, startTransition] = useTransition();
 
   // #region CREATE & UPDATE STATES (Tambah & Edit Produk)
