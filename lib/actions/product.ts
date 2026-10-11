@@ -15,7 +15,12 @@ export async function getProducts(isActive = false): Promise<Product[]> {
       ? await sql`
         SELECT
           p.*,
-          c.name AS category_name, c.slug AS category_slug, c.description AS category_description
+          json_build_object(
+            'id', c.id,
+            'name', c.name,
+            'slug', c.slug,
+            'description', c.description
+          ) as category
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.id
         WHERE p.is_active = true
@@ -24,30 +29,20 @@ export async function getProducts(isActive = false): Promise<Product[]> {
       : await sql`
         SELECT
           p.*,
-          c.id AS category_id, c.name AS category_name, c.slug AS category_slug, c.description AS category_description
+          json_build_object(
+            'id', c.id,
+            'name', c.name,
+            'slug', c.slug,
+            'description', c.description
+          ) as category
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.id
         ORDER BY p.created_at DESC
       `;
 
     return data.map((row: any) => ({
-      id: row.id,
-      title: row.title,
-      short_desc: row.short_desc,
-      long_desc: row.long_desc,
-      price: row.price,
-      features: row.features,
-      image_url: row.image_url,
-      is_active: row.is_active,
-      created_at: row.created_at,
-      file_url: row.file_url,
-      category_id: row.category_id,
-      category: row.category_id ? {
-        id: row.category_id,
-        name: row.category_name,
-        slug: row.category_slug,
-        description: row.category_description,
-      } : null
+      ...row,
+      category: row.category_id ? row.category : null
     })) as Product[];
   } catch (error) {
     console.error("Kesalahan mengambil data produk:", error);
@@ -77,19 +72,24 @@ export async function getOrders(userId?: string): Promise<Order[]> {
       const data = await sql`
         SELECT
           o.*,
-          p.title AS product_title,
-          p.short_desc AS product_short_desc,
-          p.long_desc AS product_long_desc,
-          p.price AS product_price,
-          p.features AS product_features,
-          p.image_url AS product_image_url,
-          p.is_active AS product_is_active,
-          p.created_at AS product_created_at,
-          p.file_url AS product_file_url,
-          p.category_id AS product_category_id,
-          c.name AS category_name,
-          c.slug AS category_slug,
-          c.description AS category_description
+          json_build_object(
+            'title', p.title,
+            'short_desc', p.short_desc,
+            'long_desc', p.long_desc,
+            'price', p.price,
+            'features', p.features,
+            'image_url', p.image_url,
+            'is_active', p.is_active,
+            'created_at', p.created_at,
+            'file_url', p.file_url,
+            'category_id', p.category_id,
+            'category', json_build_object(
+              'id', c.id,
+              'name', c.name,
+              'slug', c.slug,
+              'description', c.description
+            )
+          ) as product
         FROM orders o
         LEFT JOIN products p ON o.product_id = p.id
         LEFT JOIN categories c ON p.category_id = c.id
@@ -97,36 +97,8 @@ export async function getOrders(userId?: string): Promise<Order[]> {
       `;
 
       return data.map((row: any) => ({
-        order_id: row.order_id,
-        user_id: row.user_id,
-        product_name: row.product_name,
-        amount: row.amount,
-        status: row.status,
-        snap_token: row.snap_token,
-        download_url: row.download_url,
-        created_at: row.created_at,
-        product_id: row.product_id,
-
-        product: row.product_id ? {
-          id: row.product_id,
-          title: row.title,
-          short_desc: row.short_desc,
-          long_desc: row.long_desc,
-          price: row.price,
-          features: row.features,
-          image_url: row.image_url,
-          is_active: row.is_active,
-          created_at: row.created_at,
-          file_url: row.file_url,
-          category_id: row.category_id,
-
-          category: row.category_id ? {
-            id: row.category_id,
-            name: row.category_name,
-            slug: row.category_slug,
-            description: row.category_description,
-          } : null,
-        } : null,
+        ...row,
+        product: row.product_id ? row.product : null
       })) as Order[];
     } else {
       const data = await sql`

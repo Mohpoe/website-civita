@@ -30,6 +30,7 @@ interface DashboardAdminProps {
 }
 
 export default function DashboardAdmin({ products, categories, orders }: DashboardAdminProps) {
+  console.log(orders);
   const [isPending, startTransition] = useTransition();
 
   // #region CREATE & UPDATE STATES (Tambah & Edit Produk)
@@ -41,12 +42,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
     setProductToUpdate(null);
     setIsDialogOpen(true);
   };
-  // 2. Trigger untuk Edit Produk
-  const handleEdit = (product: Product) => {
-    setProductToUpdate(product);
-    setIsDialogOpen(true);
-  };
-  // 3. Toast Handler
+  // 2. Toast Handler
   useEffect(() => {
     if (!upsertState) return;
     if (upsertState.success) {
