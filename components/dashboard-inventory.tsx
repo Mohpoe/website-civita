@@ -146,7 +146,7 @@ export default function DashboardInventory() {
                   >
                     <div className="relative w-full sm:w-28 aspect-[4/3] sm:aspect-square rounded-xl overflow-hidden bg-muted shrink-0 border border-foreground/10 shadow-sm">
                       <img
-                        src={order.image_url}
+                        src={order.product?.image_url}
                         alt={order.product_name}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         loading="lazy"
