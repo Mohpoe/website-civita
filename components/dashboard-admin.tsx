@@ -141,6 +141,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
 
       // 3. Kolom Nama Produk + Deskripsi Singkat + Thumbnail
       columnHelper.accessor("title", {
+        id: "informasi_produk",
         header: "Informasi Produk",
         cell: ({ row }) => {
           const product = row.original;
@@ -186,6 +187,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
 
       // 5. Kolom Harga
       columnHelper.accessor("price", {
+        id: "harga",
         header: "Harga",
         // header: () => <div className="text-right">Harga</div>,
         cell: (info) => (
