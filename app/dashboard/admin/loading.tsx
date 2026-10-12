@@ -1,18 +1,32 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlusIcon } from "lucide-react";
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function LoadingProducts() {
   return (
     <Card className="shadow-md">
       <CardHeader className="border-b">
-        <CardTitle>Sedang Memuat Data</CardTitle>
-        <CardDescription>Harap bersabar data sedang dikumpulkan...</CardDescription>
+        <CardTitle>
+          <Skeleton className="h-6 w-50" />
+        </CardTitle>
+        <CardDescription>
+          <Skeleton className="h-5 w-80" />
+        </CardDescription>
+        <CardAction>
+          <Skeleton className="h-8 w-30" />
+        </CardAction>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-          <div className="w-8 h-8 border-4 border-muted-foreground/20 border-t-foreground rounded-full animate-spin mb-4"></div>
-          Memuat daftar produk...
+        <div className="flex w-full flex-col gap-4">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div className="flex gap-4" key={index}>
+              <Skeleton className="h-20 w-20" />
+              <Skeleton className="h-20 flex-1" />
+              <Skeleton className="h-20 flex-3" />
+              <Skeleton className="h-20 flex-2" />
+              <Skeleton className="h-20 flex-1" />
+              <Skeleton className="h-20 w-10" />
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>

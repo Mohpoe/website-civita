@@ -5,12 +5,13 @@ import { NavUser } from "@/components/nav-user"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar"
 import { ROUTES } from "@/lib/constants"
 import { useUser } from "@clerk/nextjs"
-import { BoltIcon, GroupIcon, PackageIcon, PackagePlusIcon, ShoppingBagIcon, SquareTextIcon } from "lucide-react"
+import { GroupIcon, PackageIcon, PackagePlusIcon, ShoppingBagIcon, SquareTextIcon } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import * as React from "react"
 import { NavSecondary } from "./nav-secondary"
 import { Separator } from "./ui/separator"
+import { Skeleton } from "./ui/skeleton"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { isSignedIn, isLoaded, user } = useUser();
@@ -88,21 +89,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {!isLoaded || !isSignedIn ? (
           <SidebarMenu>
             <SidebarMenuItem>
-              {/* Tombol pembungkus dengan ukuran yang sama (size="lg") */}
               <SidebarMenuButton size="lg" className="pointer-events-none select-none">
-                {/* Placeholder untuk Avatar */}
-                <div className="size-8 rounded-lg bg-foreground/40 animate-pulse shrink-0" />
-
-                {/* Placeholder untuk Teks (Nama & Email) */}
-                <div className="grid flex-1 text-left text-sm leading-tight gap-1.5">
-                  {/* Baris Nama */}
-                  <div className="h-4 w-28 bg-foreground/40 animate-pulse rounded" />
-                  {/* Baris Email */}
-                  <div className="h-3 w-36 bg-foreground/20 animate-pulse rounded" />
+                <Skeleton className="size-10 rounded-lg shrink-0" />
+                <div className="grid gap-2">
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="h-3 w-36" />
                 </div>
-
-                {/* Placeholder untuk Ellipsis Icon */}
-                <div className="ml-auto size-4 bg-foreground/40 animate-pulse rounded-full shrink-0" />
+                <Skeleton className="size-4 ml-auto" />
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

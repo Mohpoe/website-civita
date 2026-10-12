@@ -1,13 +1,11 @@
 "use client";
 
 import { upsertProductAction } from "@/lib/actions/product";
-import { APP_CONFIG } from "@/lib/constants";
-import { fetcher, formatRupiah } from "@/lib/utils";
+import { formatRupiah } from "@/lib/utils";
 import { Category, Order, Product } from "@/types/global";
 import { createColumnHelper, tableFeatures, useTable } from "@tanstack/react-table";
-import { BadgeCheckIcon, BadgeXIcon, ImageIcon, LinkIcon, MoreHorizontalIcon, PlusIcon, SquarePenIcon, Trash2Icon, TriangleAlertIcon } from "lucide-react";
+import { BadgeCheckIcon, BadgeXIcon, ImageIcon, LinkIcon, MoreHorizontalIcon, PlusIcon, SquarePenIcon, Trash2Icon, UploadIcon } from "lucide-react";
 import { useActionState, useEffect, useMemo, useState, useTransition } from "react";
-import useSWR, { useSWRConfig } from "swr";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle } from "./ui/alert-dialog";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
@@ -30,7 +28,6 @@ interface DashboardAdminProps {
 }
 
 export default function DashboardAdmin({ products, categories, orders }: DashboardAdminProps) {
-  console.log(products);
   const [isPending, startTransition] = useTransition();
 
   // #region CREATE & UPDATE STATES (Tambah & Edit Produk)
@@ -295,7 +292,9 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
         </CardContent>
       </Card>
 
-      {/* CREATE & UPDATE DIALOG */}
+      {
+        // #region CREATE & UPDATE DIALOG
+      }
       <Dialog
         open={isDialogOpen}
         onOpenChange={(open) => {
@@ -324,6 +323,60 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
               {productToUpdate && <input type="hidden" name="id" value={productToUpdate.id} />}
 
               <FieldGroup>
+                <Field>
+                  <FieldLabel>Thumbnail Produk</FieldLabel>
+                  <div className="flex gap-4 items-start">
+                    <div className={`relative group flex items-center justify-center w-20 h-20 shrink-0 overflow-hidden rounded-xl transition-all ${!productToUpdate?.image_url ? "border-2 border-dashed border-muted-foreground/100" : "border-2 border-muted-foreground"} rounded-xl`}>
+                      {productToUpdate?.image_url ? (
+                        <img id={`preview-${productToUpdate.id || "new"}`} src={productToUpdate?.image_url} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <ImageIcon className="w-8 h-8 text-muted-foreground" />
+                        </div>
+                      )}
+                      <Label htmlFor="imageFile" className="absolute flex flex-col gap-2 items-center justify-center text-foreground bg-background/50 backdrop-blur-sm inset-0 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                        <UploadIcon className="w-4 h-4" />
+                        Ubah
+                      </Label>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center gap-2">
+
+                        <Button type="button" variant="secondary" size="sm" onClick={() => document.getElementById("imageFile")?.click()}>
+                          {productToUpdate?.image_url ? "Ganti Thumbnail" : "Upload Thumbnail"}
+                        </Button>
+                        {productToUpdate?.image_url && (
+                          <Button type="button" variant="destructive" size="sm">
+                            <Trash2Icon className="w-4 h-4" />
+                          </Button>
+                        )}
+
+                        <input type="hidden" name="oldImageUrl" value={productToUpdate?.image_url} />
+                        <input type="hidden" name="imageUrl" />
+                        <Input
+                          id="imageFile"
+                          name="imageFile"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            const imgPreview = document.getElementById(`preview-${productToUpdate?.id || "new"}`) as HTMLImageElement;
+                            if (file && imgPreview) {
+                              imgPreview.src = URL.createObjectURL(file);
+                            }
+                          }}
+                        />
+
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Rekomendasi rasio 1:1, ukuran maksimal 2MB. <br />
+                        Format .JPG atau .PNG.
+                      </p>
+                    </div>
+                  </div>
+                </Field>
+
                 <Field>
                   <Label htmlFor="title">Nama Produk</Label>
                   <Input
@@ -413,7 +466,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                 </Field>
 
                 <FieldGroup className="space-y-4 p-4 rounded-xl border border-dashed bg-muted/40">
-                  <Field>
+                  {/* <Field>
                     <FieldLabel htmlFor="imageUrl">
                       <ImageIcon className="w-4 h-4 mr-2 inline-block text-muted-foreground" />
                       URL Thumbnail
@@ -424,7 +477,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                       placeholder="https://..."
                       defaultValue={productToUpdate?.image_url || ""}
                     />
-                  </Field>
+                  </Field> */}
 
                   <Field>
                     <FieldLabel htmlFor="fileUrl">
@@ -463,8 +516,14 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {
+        // #endregion CREATE & UPDATE DIALOG
+      }
 
-      {/* DELETE ALERT DIALOG */}
+
+      {
+        // #region DELETE ALERT DIALOG
+      }
       <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
         <AlertDialogContent size="sm">
           <AlertDialogHeader>
@@ -482,6 +541,9 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {
+        // #endregion DELETE ALERT DIALOG
+      }
     </>
   );
 }

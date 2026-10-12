@@ -5,8 +5,10 @@ import { sql } from "@/lib/utils";
 import { productSchema } from "@/lib/zod-schemas";
 import { Category, Order, Product } from "@/types/global";
 import { auth, currentUser } from "@clerk/nextjs/server";
+import { del, put, putImage } from "@vercel/blob";
 import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
+import { success } from "zod";
 
 // #region 1. GET PRODUCTS
 export async function getProducts(isActive = false): Promise<Product[]> {
@@ -67,7 +69,6 @@ export async function getOrders(userId?: string): Promise<Order[]> {
       ? await sql`
           SELECT
             o.*,
-            -- Jika product_id ada, gabungkan data produk dengan data kategori yang di-convert ke JSON
             CASE
               WHEN p.id IS NOT NULL THEN
                 to_jsonb(p.*) || jsonb_build_object('category', CASE WHEN c.id IS NOT NULL THEN to_jsonb(c.*) ELSE null END)
@@ -94,43 +95,6 @@ export async function getOrders(userId?: string): Promise<Order[]> {
         ORDER BY o.created_at DESC
       `;
     return data as Order[];
-
-    if (!userId) {
-      const data = await sql`
-        SELECT
-          o.*,
-          -- Jika product_id ada, gabungkan data produk dengan data kategori yang di-convert ke JSON
-          CASE
-            WHEN p.id IS NOT NULL THEN
-              to_jsonb(p.*) || jsonb_build_object('category', CASE WHEN c.id IS NOT NULL THEN to_jsonb(c.*) ELSE null END)
-            ELSE null
-          END as product
-        FROM orders o
-        LEFT JOIN products p ON o.product_id = p.id
-        LEFT JOIN categories c ON p.category_id = c.id
-        ORDER BY o.created_at DESC
-      `;
-
-      return data as Order[];
-    } else {
-      const data = await sql`
-        SELECT
-          o.*,
-          -- Jika product_id ada, gabungkan data produk dengan data kategori yang di-convert ke JSON
-          CASE
-            WHEN p.id IS NOT NULL THEN
-              to_jsonb(p.*) || jsonb_build_object('category', CASE WHEN c.id IS NOT NULL THEN to_jsonb(c.*) ELSE null END)
-            ELSE null
-          END as product
-        FROM orders o
-        LEFT JOIN products p ON o.product_id = p.id
-        LEFT JOIN categories c ON p.category_id = c.id
-        WHERE o.user_id = ${userId}
-        ORDER BY o.created_at DESC
-      `;
-
-      return data as Order[];
-    }
   } catch (error) {
     console.error("Gagal mengambil order:", error);
     return [];
@@ -142,7 +106,7 @@ export async function getOrders(userId?: string): Promise<Order[]> {
 export async function upsertProductAction(state: any, formData: FormData) {
   await auth.protect();
   const user = await currentUser();
-  if (!user || user.publicMetadata.role !== "admin") return { success: false, message: "Akses tidak valid, silakan login!" };
+  if (!user || user.publicMetadata.role !== "admin") return { success: false, message: "Akses tidak valid!" };
 
   const id = formData.get("id") as string | null;
 
@@ -152,6 +116,37 @@ export async function upsertProductAction(state: any, formData: FormData) {
     ? featuresRaw.split("\n").map((f) => f.trim()).filter((f) => f !== "")
     : [];
 
+  const imageFile = formData.get("imageFile") as File | null;
+  const oldImageUrl = formData.get("oldImageUrl") as string | null;
+
+  let finalImageUrl = oldImageUrl || "";
+
+  if (imageFile && imageFile.size > 0) {
+    try {
+      if (oldImageUrl) {
+        await del(oldImageUrl, {
+          storeId: process.env.PUBLIK_STORE_ID,
+        });
+      }
+
+      const blob = await putImage(`thumbnails/${imageFile.name}`, imageFile, {
+        access: "public",
+        optimizeImage: {
+          width: 500,
+          quality: 75,
+          format: "webp"
+        },
+        storeId: process.env.PUBLIK_STORE_ID,
+        addRandomSuffix: true
+      });
+
+      finalImageUrl = blob.url;
+    } catch (error) {
+      console.error("Gagal mengelola file di Blob:", error);
+      return { success: false, message: "Gagal mengunggah gambar thumbnail." };
+    }
+  }
+
   const rawData = {
     title: formData.get("title"),
     price: formData.get("price"),
@@ -159,7 +154,8 @@ export async function upsertProductAction(state: any, formData: FormData) {
     categoryId: formData.get("category"),
     shortDesc: formData.get("shortDesc"),
     longDesc: formData.get("longDesc"),
-    imageUrl: formData.get("imageUrl"),
+    // imageUrl: formData.get("imageUrl"),
+    imageUrl: finalImageUrl,
     fileUrl: formData.get("fileUrl"),
     features: featuresArray,
   };
@@ -180,14 +176,14 @@ export async function upsertProductAction(state: any, formData: FormData) {
       await sql`
         UPDATE products
         SET title = ${title},
-            price = ${price},
-            is_active = ${isActive},
-            category_id = ${categoryId},
-            short_desc = ${shortDesc},
-            long_desc = ${longDesc},
-            features = ${featuresJson}::jsonb,
-            image_url = ${imageUrl},
-            file_url = ${fileUrl}
+          price = ${price},
+          is_active = ${isActive},
+          category_id = ${categoryId},
+          short_desc = ${shortDesc},
+          long_desc = ${longDesc},
+          features = ${featuresJson}::jsonb,
+          image_url = ${imageUrl},
+          file_url = ${fileUrl}
         WHERE id = ${id}
       `;
     } else {
