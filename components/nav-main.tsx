@@ -30,7 +30,8 @@ export function NavMain({
               <SidebarMenuButton
                 className="text-base md:text-sm"
                 tooltip={item.title}
-                render={<Link href={item.url} onClick={() => { if (isMobile) setOpenMobile(false) }} />}
+                render={<Link href={item.url} />}
+                onClick={() => { if (isMobile) setOpenMobile(false) }}
               >
                 {item.icon}
                 <span>{item.title}</span>
