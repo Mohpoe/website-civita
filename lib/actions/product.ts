@@ -124,12 +124,16 @@ export async function upsertProductAction(state: any, formData: FormData) {
   if (imageFile && imageFile.size > 0) {
     if (imageFile.size > 4 * 1024 * 1024) return { success: false, message: "Ukuran gambar melebihi 4MB!" };
     try {
-      if (oldImageUrl) await del(oldImageUrl, { storeId: process.env.PUBLIK_STORE_ID });
+      if (oldImageUrl) await del(oldImageUrl, {
+        storeId: process.env.PUBLIK_STORE_ID,
+        oidcToken: process.env.VERCEL_OIDC_TOKEN
+      });
       const blob = await putImage(`thumbnails/${imageFile.name}`, imageFile, {
         access: "public",
         optimizeImage: { width: 500 },
+        addRandomSuffix: true,
         storeId: process.env.PUBLIK_STORE_ID,
-        addRandomSuffix: true
+        oidcToken: process.env.VERCEL_OIDC_TOKEN,
       });
       finalImageUrl = blob.url;
     } catch (error) {
@@ -146,11 +150,15 @@ export async function upsertProductAction(state: any, formData: FormData) {
 
   if (productFile && productFile.size > 0) {
     try {
-      if (oldFileUrl) await del(oldFileUrl, { storeId: process.env.PRIVATE_BLOB_STORE_ID });
+      if (oldFileUrl) await del(oldFileUrl, {
+        storeId: process.env.PRIVATE_BLOB_STORE_ID,
+        oidcToken: process.env.VERCEL_OIDC_TOKEN,
+      });
       const fileBlob = await put(`products/${productFile.name}`, productFile, {
         access: "private",
+        addRandomSuffix: true,
         storeId: process.env.PRIVATE_BLOB_STORE_ID,
-        addRandomSuffix: true
+        oidcToken: process.env.VERCEL_OIDC_TOKEN,
       });
       finalFileUrl = fileBlob.url;
     } catch (error) {
