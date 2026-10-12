@@ -2,185 +2,18 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { fetcher, formatRupiah } from "@/lib/utils";
+import { formatRupiah } from "@/lib/utils";
 import { Product } from "@/types/global";
 import { AnimatePresence, motion } from "framer-motion";
-import { CheckCircle2Icon, ChevronLeftIcon, ChevronRightIcon, FileTextIcon, ShoppingBagIcon, TriangleAlertIcon } from "lucide-react";
+import { CheckCircle2Icon, ChevronLeftIcon, ChevronRightIcon, FileTextIcon, ShoppingBagIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import useSWR from "swr";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog";
+import { toast } from "./ui/toast";
+import Script from "next/script";
 
-interface ProductDetailModalProps {
-  product: Product | null;
-  isOpen: boolean;
-  onClose: () => void;
+interface DashboardProductsProps {
+  products: Product[],
 }
-
-// const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen, onClose }) => {
-//   const [isProcessing, setIsProcessing] = useState(false);
-
-//   useEffect(() => {
-//     const snapScript = "https://app.sandbox.midtrans.com/snap/snap.js";
-//     const clientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || "";
-
-//     if (!document.querySelector(`script[src="${snapScript}"]`)) {
-//       const script = document.createElement("script");
-//       script.src = snapScript;
-//       script.setAttribute("data-client-key", clientKey);
-//       script.async = true;
-//       document.body.appendChild(script);
-//     }
-//   }, []);
-
-//   const handleCheckout = async () => {
-//     if (!product) return;
-//     setIsProcessing(true);
-
-//     try {
-//       const response = await fetch("/api/checkout", {
-//         method: "POST",
-//         headers: { "Content-Type": "application/json" },
-//         body: JSON.stringify({
-//           productId: product.id,
-//         })
-//       });
-
-//       const data = await response.json();
-
-//       if (!response.ok) throw new Error(data.error);
-
-//       window.snap.pay(data.token, {
-//         onSuccess: function (result: any) {
-//           console.log("Pembayaran Berhasil!", result);
-//           onClose();
-//           alert("Pembayaran berhasil! Silakan cek tab 'Pesanan Saya' untuk mengunduh produk.");
-//         },
-//         onPending: function (result: any) {
-//           console.log("Menunggu Pembayaran", result);
-//           onClose();
-//           alert("Pesanan dibuat. Silakan selesaikan pembayaran di tab 'Pesanan Saya'.");
-//         },
-//         onError: function (result: any) {
-//           console.error("Pembayaran Gagal", result);
-//           setIsProcessing(false);
-//           alert("Pembayaran gagal. Silakan coba lagi.");
-//         },
-//         onClose: function () {
-//           setIsProcessing(false);
-//         }
-//       });
-//     } catch (error) {
-//       console.error("Gagal memproses checkout:", error);
-//       alert("Terjadi kesalahan saat memproses pesanan.");
-//       setIsProcessing(false);
-//     }
-//   };
-
-//   if (!product) return null;
-
-//   // Cek apakah features adalah array, jika dari database berupa string JSON, parse dulu
-//   const featureList = typeof product.features === "string"
-//     ? JSON.parse(product.features)
-//     : (product.features || []);
-
-//   return (
-//     <AnimatePresence>
-//       {isOpen && (
-//         <>
-//           <motion.div
-//             initial={{ opacity: 0 }}
-//             animate={{ opacity: 1 }}
-//             exit={{ opacity: 0 }}
-//             onClick={onClose}
-//             className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm"
-//           />
-
-//           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 pointer-events-none">
-//             <motion.div
-//               initial={{ opacity: 0, scale: 0.95, y: 20 }}
-//               animate={{ opacity: 1, scale: 1, y: 0 }}
-//               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-//               transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
-//               className="w-full max-w-2xl bg-background border border-foreground/10 shadow-2xl rounded-[2rem] overflow-hidden pointer-events-auto flex flex-col md:flex-row max-h-[90vh]"
-//             >
-//               <div className="w-full md:w-2/5 aspect-[4/3] md:aspect-auto bg-muted relative overflow-hidden flex items-center justify-center p-4">
-//                 {product.image_url ? (
-//                   <img src={product.image_url} alt={product.title} className="w-full h-full object-contain filter drop-shadow-md" />
-//                 ) : (
-//                   <div className="w-full h-full flex items-center justify-center">
-//                     <FileTextIcon className="w-16 h-16 text-foreground/20" />
-//                   </div>
-//                 )}
-//                 <div className="absolute top-4 left-4">
-//                   <Badge variant="secondary" className="bg-background/80 backdrop-blur shadow-sm border-none">
-//                     {product.category}
-//                   </Badge>
-//                 </div>
-//               </div>
-
-//               <div className="w-full md:w-3/5 p-6 md:p-8 flex flex-col overflow-y-auto">
-//                 <div className="flex justify-between items-start mb-4">
-//                   <h2 className="text-2xl font-bold tracking-tight pr-8 leading-tight">{product.title}</h2>
-//                   <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-muted hover:bg-input rounded-full transition-colors shrink-0">
-//                     <XIcon className="w-4 h-4 text-muted-foreground" />
-//                   </button>
-//                 </div>
-
-//                 <div className="space-y-6 flex-1">
-//                   <div>
-//                     <span className="text-2xl font-bold text-foreground">{formatRupiah(product.price)}</span>
-//                   </div>
-
-//                   <div className="space-y-2">
-//                     <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Deskripsi</h4>
-//                     <p className="text-muted-foreground text-sm leading-relaxed">
-//                       {product.long_desc}
-//                     </p>
-//                   </div>
-
-//                   <div className="space-y-3">
-//                     <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Yang Kamu Dapatkan</h4>
-//                     <ul className="space-y-2">
-//                       {featureList.map((feature: string, idx: number) => (
-//                         <li key={idx} className="flex items-start gap-2 text-sm text-foreground">
-//                           <CheckCircle2Icon className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
-//                           <span>{feature}</span>
-//                         </li>
-//                       ))}
-//                     </ul>
-//                   </div>
-//                 </div>
-
-//                 <div className="mt-8 pt-6 border-t border-foreground/5">
-//                   <Button
-//                     onClick={handleCheckout}
-//                     disabled={isProcessing}
-//                     className="w-full h-12 rounded-full font-bold text-base shadow-sm group relative overflow-hidden"
-//                   >
-//                     {isProcessing ? (
-//                       <span className="flex items-center gap-2">
-//                         <div className="w-4 h-4 border-2 border-background border-t-transparent rounded-full animate-spin" />
-//                         Memproses...
-//                       </span>
-//                     ) : (
-//                       <>
-//                         <SparklesIcon className="w-4 h-4 mr-2 group-hover:animate-pulse" />
-//                         Beli Sekarang ({formatRupiah(product.price)})
-//                       </>
-//                     )}
-//                   </Button>
-//                   <p className="text-center text-xs text-muted-foreground mt-3">
-//                     Pembayaran aman didukung oleh Midtrans.
-//                   </p>
-//                 </div>
-//               </div>
-//             </motion.div>
-//           </div>
-//         </>
-//       )}
-//     </AnimatePresence>
-//   );
-// };
 
 export function ProductSkeleton({ count = 6 }) {
   // Membuat array tiruan berdasarkan jumlah count untuk merender list skeleton
@@ -231,7 +64,8 @@ export function ProductSkeleton({ count = 6 }) {
   )
 }
 
-export default function DashboardProducs() {
+export default function DashboardProducs({ products }: DashboardProductsProps) {
+
   // Dialog/Modal State
   const [detailDialog, setDetailDialog] = useState(false);
 
@@ -241,12 +75,9 @@ export default function DashboardProducs() {
 
   // Modal State
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const { data: products, error, isLoading } = useSWR<Product[]>("/api/products", fetcher);
 
   useEffect(() => {
-    const snapScript = process.env.MIDTRANS_SNAP_URL || "";
+    const snapScript = "https://app.sandbox.midtrans.com/snap/snap.js";
     const clientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || "";
 
     if (!document.querySelector(`script[src="${snapScript}"]`)) {
@@ -290,20 +121,32 @@ export default function DashboardProducs() {
       window.snap.pay(data.token, {
         onSuccess: function (result: any) {
           console.log("Pembayaran Berhasil!", result);
-          alert("Pembayaran berhasil! Silakan cek tab 'Pesanan Saya' untuk mengunduh produk.");
+          toast.add({
+            type: "success",
+            description: "Pembayaran berhasil! Silakan cek tab 'Pesanan Saya' untuk mengunduh produk."
+          });
         },
         onPending: function (result: any) {
           console.log("Menunggu Pembayaran", result);
-          alert("Pesanan dibuat. Silakan selesaikan pembayaran di tab 'Pesanan Saya'.");
+          toast.add({
+            type: "warning",
+            description: "Pesanan dibuat. Silakan selesaikan pembayaran di tab 'Pesanan Saya'."
+          });
         },
         onError: function (result: any) {
           console.error("Pembayaran Gagal", result);
-          alert("Pembayaran gagal. Silakan coba lagi.");
+          toast.add({
+            type: "error",
+            description: "Pembayaran gagal. Silakan coba lagi."
+          });
         },
       });
     } catch (error) {
       console.error("Gagal memproses checkout:", error);
-      alert("Terjadi kesalahan saat memproses pesanan.");
+      toast.add({
+        type: "error",
+        description: "Terjadi kesalahan saat memproses pesanan."
+      });
     }
   };
 
@@ -324,18 +167,7 @@ export default function DashboardProducs() {
           <p className="text-muted-foreground">Tingkatkan peluang lolos kerja kamu dengan template dan panduan eksklusif siap pakai.</p>
         </div>
 
-        {error ? (
-          <div className="flex flex-col items-center justify-center gap-2 py-20 text-destructive">
-            <TriangleAlertIcon className="w-8 h-8" />
-            Gagal memuat data... Hubungi Administrator!
-          </div>
-        ) : isLoading ? (
-          <ProductSkeleton count={3} />
-          // <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-          //   <div className="w-8 h-8 border-4 border-muted-foreground/20 border-t-foreground rounded-full animate-spin mb-4"></div>
-          //   Memuat daftar produk...
-          // </div>
-        ) : (products?.length ?? 0) === 0 ? (
+        {(products?.length ?? 0) === 0 ? (
           <div className="bg-background rounded-3xl border border-foreground/5 shadow-sm min-h-[300px] flex flex-col items-center justify-center p-12 text-center">
             <div className="w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mb-4 shadow-inner border border-foreground/5">
               <ShoppingBagIcon className="w-8 h-8 text-muted-foreground/50" />
@@ -535,11 +367,11 @@ export default function DashboardProducs() {
         </DialogContent>
       </Dialog>
 
-      {/* <ProductDetailModal
-        product={selectedProduct}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      /> */}
+      {/* <script
+        type="text/javascript"
+        src={process.env.MIDTRANS_SNAP_URL}
+        data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
+      ></script> */}
     </>
   );
 }

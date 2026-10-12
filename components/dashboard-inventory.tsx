@@ -8,45 +8,15 @@ import { Badge } from '@/components/ui/badge';
 import { Order } from '@/types/global';
 import { formatRupiah } from '@/lib/utils';
 
-export default function DashboardInventory() {
-  // 3. Terapkan Tipe Data ke dalam State
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+interface DashboardInventoryProps {
+  orders: Order[]
+}
 
+export default function DashboardInventory({ orders }: DashboardInventoryProps) {
   // Pagination & Search State
   const [currentPage, setCurrentPage] = useState<number>(1);
   const itemsPerPage = 5;
   const [searchQuery, setSearchQuery] = useState<string>('');
-
-  // Fetch Data dari API
-  useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const res = await fetch('/api/orders');
-        if (!res.ok) throw new Error('Gagal mengambil data');
-        const data: Order[] = await res.json();
-        setOrders(data);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchOrders();
-
-    // Inject Script Snap Midtrans (Jika belum ada, berguna untuk retry pembayaran pending)
-    const snapScript = process.env.MIDTRANS_SNAP_URL || "";
-    const clientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || "";
-
-    if (!document.querySelector(`script[src="${snapScript}"]`)) {
-      const script = document.createElement("script");
-      script.src = snapScript;
-      script.setAttribute("data-client-key", clientKey);
-      script.async = true;
-      document.body.appendChild(script);
-    }
-  }, []);
 
   // Filter Data
   const filteredOrders = orders.filter(order =>
@@ -122,12 +92,7 @@ export default function DashboardInventory() {
       {/* Main Order List */}
       <div className="bg-background rounded-3xl border border-foreground/5 shadow-[0_8px_30px_rgb(0,0,0,0.02)] overflow-hidden min-h-[400px] flex flex-col">
 
-        {isLoading ? (
-          <div className="flex-1 flex flex-col items-center justify-center p-12 text-center text-muted-foreground gap-4">
-            <div className="w-8 h-8 border-4 border-muted-foreground/20 border-t-foreground rounded-full animate-spin"></div>
-            Memuat pesanan Anda...
-          </div>
-        ) : filteredOrders.length > 0 ? (
+        {filteredOrders.length > 0 ? (
           <div className="flex-1 divide-y divide-foreground/5">
             <AnimatePresence mode="popLayout">
               {currentItems.map((order, idx) => {

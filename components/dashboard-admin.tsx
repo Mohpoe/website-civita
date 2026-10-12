@@ -4,12 +4,12 @@ import { upsertProductAction } from "@/lib/actions/product";
 import { formatRupiah } from "@/lib/utils";
 import { Category, Order, Product } from "@/types/global";
 import { columnFilteringFeature, ColumnFiltersState, columnVisibilityFeature, ColumnVisibilityState, createColumnHelper, createFilteredRowModel, createPaginatedRowModel, createSortedRowModel, filterFn_includesString, globalFilteringFeature, rowPaginationFeature, rowSortingFeature, sortFn_alphanumeric, sortFn_text, SortingState, tableFeatures, useTable } from "@tanstack/react-table";
-import { BadgeCheckIcon, BadgeXIcon, ChevronDownIcon, ChevronFirstIcon, ChevronLastIcon, ChevronLeftIcon, ChevronRightIcon, Columns3Icon, EyeIcon, GhostIcon, ImageIcon, LinkIcon, MoreHorizontalIcon, PlusIcon, RefreshCcwIcon, Rows3Icon, SearchIcon, SlidersHorizontalIcon, SquarePenIcon, TagsIcon, Trash2Icon, UploadIcon } from "lucide-react";
+import { BadgeCheckIcon, BadgeXIcon, ChevronDownIcon, ChevronFirstIcon, ChevronLastIcon, ChevronLeftIcon, ChevronRightIcon, Columns3Icon, EyeIcon, FileTextIcon, GhostIcon, ImageIcon, LinkIcon, MoreHorizontalIcon, PlusIcon, RefreshCcwIcon, Rows3Icon, SearchIcon, SlidersHorizontalIcon, SquarePenIcon, TagsIcon, Trash2Icon, UploadIcon, XIcon } from "lucide-react";
 import { useActionState, useEffect, useMemo, useState, useTransition } from "react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle } from "./ui/alert-dialog";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
-import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
+import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "./ui/field";
@@ -22,6 +22,7 @@ import { Switch } from "./ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import { Textarea } from "./ui/textarea";
 import { toast } from "./ui/toast";
+import { Attachment, AttachmentAction, AttachmentActions, AttachmentContent, AttachmentDescription, AttachmentMedia, AttachmentTitle } from "./ui/attachment";
 
 interface DashboardAdminProps {
   products: Product[],
@@ -185,7 +186,8 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
 
       // 5. Kolom Harga
       columnHelper.accessor("price", {
-        header: () => <div className="text-right">Harga</div>,
+        header: "Harga",
+        // header: () => <div className="text-right">Harga</div>,
         cell: (info) => (
           <div className="text-right font-mono text-sm font-medium">
             {formatRupiah(info.getValue())}
@@ -630,6 +632,77 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
             // #endregion DATATABLE
           }
         </CardContent>
+        {
+          // #region LOWER PAGINATION
+          table.getRowModel().rows?.length > 0 && (
+            <CardFooter>
+              <div className="flex w-full flex-col items-center justify-between gap-4 py-1 lg:flex-row lg:gap-8">
+                <div className="order-2 text-xs font-medium lg:order-1 lg:flex-1">
+                  <span className="opacity-50">Baris</span>{" "}
+                  {table.getFilteredRowModel().rows.length > 0
+                    ? table.state.pagination.pageIndex * table.state.pagination.pageSize + 1
+                    : 0}
+                  {" "}<span className="opacity-50">s/d</span>{" "}
+                  {table.state.pagination.pageIndex * table.state.pagination.pageSize + table.getRowModel().rows.length}
+                  {" "}<span className="opacity-50">dari</span>{" "}
+                  <span className="font-bold">{table.getFilteredRowModel().rows.length}</span>{" "}
+                </div>
+
+                <div className="order-1 flex items-center gap-1.5 lg:order-2">
+                  <Button
+                    variant="outline"
+                    className="size-8 p-0"
+                    onClick={() => table.setPageIndex(0)}
+                    disabled={!table.getCanPreviousPage()}
+                    title="Halaman Pertama"
+                  >
+                    <ChevronFirstIcon className="size-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="size-8 p-0"
+                    onClick={() => table.previousPage()}
+                    disabled={!table.getCanPreviousPage()}
+                    title="Halaman Sebelumnya"
+                  >
+                    <ChevronLeftIcon className="size-4" />
+                  </Button>
+
+                  <div className="flex h-8 items-center justify-center rounded-md border bg-muted/50 px-3 text-xs font-bold sm:hidden">
+                    {table.state.pagination.pageIndex + 1} / {table.getPageCount()}
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    className="size-8 p-0"
+                    onClick={() => table.nextPage()}
+                    disabled={!table.getCanNextPage()}
+                    title="Halaman Selanjutnya"
+                  >
+                    <ChevronRightIcon className="size-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="size-8 p-0"
+                    onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                    disabled={!table.getCanNextPage()}
+                    title="Halaman Terakhir"
+                  >
+                    <ChevronLastIcon className="size-4" />
+                  </Button>
+                </div>
+
+                <div className="order-3 hidden text-right text-xs font-medium lg:block lg:flex-1">
+                  <span className="opacity-50">Halaman</span>{" "}
+                  <span className="font-bold">{table.state.pagination.pageIndex + 1}</span>{" "}
+                  <span className="opacity-50">dari</span>{" "}
+                  <span className="font-bold">{table.getPageCount()}</span>
+                </div>
+              </div>
+            </CardFooter>
+          )
+          // #endregion LOWER PAGINATION
+        }
       </Card>
 
       {
@@ -826,8 +899,46 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                   <FieldDescription className="text-xs">Pisahkan dengan Enter</FieldDescription>
                 </Field>
 
-                <FieldGroup className="space-y-4 p-4 rounded-xl border border-dashed bg-muted/40">
-                  {/* <Field>
+                <Field>
+                  <FieldLabel htmlFor="fileUrl">File Produk Digital</FieldLabel>
+                  <Attachment>
+                    <AttachmentMedia>
+                      <FileTextIcon />
+                    </AttachmentMedia>
+                    <AttachmentContent>
+                      <AttachmentTitle>salse-dashboard.pdf</AttachmentTitle>
+                      <AttachmentDescription>PDF · 2.4 MB</AttachmentDescription>
+                    </AttachmentContent>
+                    <AttachmentActions>
+                      <AttachmentAction aria-label="Remove file"><XIcon /></AttachmentAction>
+                    </AttachmentActions>
+                  </Attachment>
+                  <Input
+                    id="fileUrl"
+                    name="productFile"
+                    type="file"
+                    className="cursor-pointer file:cursor-pointer file:bg-muted file:border-0 file:rounded-md file:mr-4 file:px-3 file:py-1"
+                    // placeholder="https://drive.google.com/..."
+                    // defaultValue={productToUpdate?.file_url || ""}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        if (file.size > 4.5 * 1024 * 1024) {
+                          toast.add({
+                            type: "error",
+                            description: "Ukuran file tidak boleh melebihi 4.5 MB!",
+                            priority: "high",
+                          });
+                          e.target.value = "";
+                        }
+                      }
+                    }}
+                  />
+                  <input type="hidden" name="oldFileUrl" value={productToUpdate?.file_url || ""} />
+                </Field>
+
+                {/* <FieldGroup className="space-y-4 p-4 rounded-xl border border-dashed bg-muted/40">
+                  <Field>
                     <FieldLabel htmlFor="imageUrl">
                       <ImageIcon className="w-4 h-4 mr-2 inline-block text-muted-foreground" />
                       URL Thumbnail
@@ -838,21 +949,8 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                       placeholder="https://..."
                       defaultValue={productToUpdate?.image_url || ""}
                     />
-                  </Field> */}
-
-                  <Field>
-                    <FieldLabel htmlFor="fileUrl">
-                      <LinkIcon className="w-4 h-4 mr-2 inline-block text-muted-foreground" />
-                      URL File Produk
-                    </FieldLabel>
-                    <Input
-                      id="fileUrl"
-                      name="fileUrl"
-                      placeholder="https://drive.google.com/..."
-                      defaultValue={productToUpdate?.file_url || ""}
-                    />
                   </Field>
-                </FieldGroup>
+                </FieldGroup> */}
 
               </FieldGroup>
             </form>

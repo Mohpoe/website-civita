@@ -8,7 +8,7 @@ export const productSchema = z.object({
   shortDesc: z.string().min(10, "Deskripsi singkat terlalu singkat!").optional(),
   longDesc: z.string().min(10, "Deskripsi lengkap terlalu singkat!").optional(),
   // URL bisa divalidasi, .or(z.literal('')) mengizinkan input kosong
-  imageUrl: z.url("URL Gambar tidak valid!").or(z.literal('')),
-  fileUrl: z.string().min(10, "File tidak valid!").optional(),
+  imageUrl: z.url("Gambar thumbnail tidak valid!").or(z.literal('')),
+  fileUrl: z.url("File produk digital tidak valid!").or(z.literal('')),
   features: z.array(z.string())
 });

@@ -116,36 +116,49 @@ export async function upsertProductAction(state: any, formData: FormData) {
     ? featuresRaw.split("\n").map((f) => f.trim()).filter((f) => f !== "")
     : [];
 
+  // #region THUMBNAIL HANDLER
   const imageFile = formData.get("imageFile") as File | null;
   const oldImageUrl = formData.get("oldImageUrl") as string | null;
-
   let finalImageUrl = oldImageUrl || "";
 
   if (imageFile && imageFile.size > 0) {
+    if (imageFile.size > 4 * 1024 * 1024) return { success: false, message: "Ukuran gambar melebihi 4MB!" };
     try {
-      if (oldImageUrl) {
-        await del(oldImageUrl, {
-          storeId: process.env.PUBLIK_STORE_ID,
-        });
-      }
-
+      if (oldImageUrl) await del(oldImageUrl, { storeId: process.env.PUBLIK_STORE_ID });
       const blob = await putImage(`thumbnails/${imageFile.name}`, imageFile, {
         access: "public",
-        optimizeImage: {
-          width: 500,
-          quality: 75,
-          format: "webp"
-        },
+        optimizeImage: { width: 500 },
         storeId: process.env.PUBLIK_STORE_ID,
         addRandomSuffix: true
       });
-
       finalImageUrl = blob.url;
     } catch (error) {
       console.error("Gagal mengelola file di Blob:", error);
       return { success: false, message: "Gagal mengunggah gambar thumbnail." };
     }
   }
+  // #endregion THUMBNAIL HANDLER
+
+  // #region FILE HANDLER
+  const productFile = formData.get("productFile") as File | null;
+  const oldFileUrl = formData.get("oldFileUrl") as string | null;
+  let finalFileUrl = oldFileUrl || "";
+
+  if (productFile && productFile.size > 0) {
+    try {
+      if (oldFileUrl) await del(oldFileUrl, { storeId: process.env.PRIVATE_BLOB_STORE_ID });
+      const fileBlob = await put(`products/${productFile.name}`, productFile, {
+        access: "private",
+        storeId: process.env.PRIVATE_BLOB_STORE_ID,
+        addRandomSuffix: true
+      });
+      finalFileUrl = fileBlob.url;
+    } catch (error) {
+      console.error("Gagal upload file produk:", error);
+      return { success: false, message: "Gagal mengunggah file produk!" };
+    }
+  }
+  // #endregion FILE HANDLER
 
   const rawData = {
     title: formData.get("title"),
@@ -156,7 +169,8 @@ export async function upsertProductAction(state: any, formData: FormData) {
     longDesc: formData.get("longDesc"),
     // imageUrl: formData.get("imageUrl"),
     imageUrl: finalImageUrl,
-    fileUrl: formData.get("fileUrl"),
+    // fileUrl: formData.get("fileUrl"),
+    fileUrl: finalFileUrl,
     features: featuresArray,
   };
 
