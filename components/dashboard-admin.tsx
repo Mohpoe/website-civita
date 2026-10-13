@@ -4,9 +4,10 @@ import { upsertProductAction } from "@/lib/actions/product";
 import { formatRupiah } from "@/lib/utils";
 import { Category, Order, Product } from "@/types/global";
 import { columnFilteringFeature, ColumnFiltersState, columnVisibilityFeature, ColumnVisibilityState, createColumnHelper, createFilteredRowModel, createPaginatedRowModel, createSortedRowModel, filterFn_includesString, globalFilteringFeature, rowPaginationFeature, rowSortingFeature, sortFn_alphanumeric, sortFn_text, SortingState, tableFeatures, useTable } from "@tanstack/react-table";
-import { BadgeCheckIcon, BadgeXIcon, ChevronDownIcon, ChevronFirstIcon, ChevronLastIcon, ChevronLeftIcon, ChevronRightIcon, Columns3Icon, EyeIcon, FileTextIcon, GhostIcon, ImageIcon, LinkIcon, MoreHorizontalIcon, PlusIcon, RefreshCcwIcon, Rows3Icon, SearchIcon, SlidersHorizontalIcon, SquarePenIcon, TagsIcon, Trash2Icon, UploadIcon, XIcon } from "lucide-react";
+import { BadgeCheckIcon, BadgeXIcon, ChevronDownIcon, ChevronFirstIcon, ChevronLastIcon, ChevronLeftIcon, ChevronRightIcon, Columns3Icon, EyeIcon, FileSpreadsheetIcon, FileTextIcon, GhostIcon, ImageIcon, MoreHorizontalIcon, PlusIcon, RefreshCcwIcon, Rows3Icon, SearchIcon, SlidersHorizontalIcon, SquarePenIcon, TagsIcon, Trash2Icon, UploadIcon, XIcon } from "lucide-react";
 import { useActionState, useEffect, useMemo, useState, useTransition } from "react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle } from "./ui/alert-dialog";
+import { Attachment, AttachmentAction, AttachmentActions, AttachmentContent, AttachmentDescription, AttachmentMedia, AttachmentTitle } from "./ui/attachment";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
@@ -22,7 +23,6 @@ import { Switch } from "./ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import { Textarea } from "./ui/textarea";
 import { toast } from "./ui/toast";
-import { Attachment, AttachmentAction, AttachmentActions, AttachmentContent, AttachmentDescription, AttachmentMedia, AttachmentTitle } from "./ui/attachment";
 
 interface DashboardAdminProps {
   products: Product[],
@@ -48,13 +48,13 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
   useEffect(() => {
     if (!upsertState) return;
     if (upsertState.success) {
+      setIsDialogOpen(false);
+      setImagePreview(null);
+      setProductToUpdate(null);
       toast.add({
         type: "success",
         description: upsertState.message,
       });
-      setIsDialogOpen(false);
-      setImagePreview(null);
-      setProductToUpdate(null);
     } else {
       toast.add({
         type: "error",
@@ -238,9 +238,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
 
-                    {/* Memanggil fungsi edit/hapus dari table.options.meta (Best Practice TanStack) */}
                     <DropdownMenuItem onClick={() => {
-                      // handleEdit(product);
                       setProductToUpdate(product);
                       setImagePreview(product.image_url || null);
                       setIsDialogOpen(true);
@@ -271,6 +269,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
   );
   // #endregion COLUMN DEFINITION
 
+  // #region TABLE DEFINITION
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -290,7 +289,6 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
     });
   };
 
-  // #region TABLE DEFINITION
   const table = useTable({
     features,
     columns,
@@ -311,6 +309,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
     autoResetPageIndex: true,
   }, (state) => state);
 
+  // Untuk menu dropdown di atas datatable
   const filteredKategori = (table.getColumn("kategori")?.getFilterValue() as string[]) ?? [];
   const filteredStatusValue = table.getColumn("status")?.getFilterValue() as boolean[] | undefined;
   const filteredStatus = filteredStatusValue !== undefined ? String(filteredStatusValue[0]) : "all";
@@ -903,6 +902,46 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
 
                 <Field>
                   <FieldLabel htmlFor="fileUrl">File Produk Digital</FieldLabel>
+
+                  <div className="flex justify-center space-x-4 rounded-md border border-input border-dashed px-6 py-10">
+                    <div className="flex sm:flex-row flex-col items-center gap-3 sm:gap-4 text-center">
+                      <UploadIcon
+                        aria-hidden={true}
+                        className="h-8 w-8 sm:h-6 sm:w-6 text-muted-foreground"
+                      />
+                      <Label
+                        className="relative cursor-pointer rounded-sm font-medium text-primary hover:underline hover:underline-offset-4"
+                        htmlFor="fileUrl"
+                      >
+                        <span>Tarik file atau klik untuk upload</span>
+                        <Input
+                          required
+                          className="sr-only"
+                          id="fileUrl"
+                          name="productFile"
+                          type="file"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              if (file.size > 4.5 * 1024 * 1024) {
+                                toast.add({
+                                  type: "error",
+                                  description: "Ukuran file tidak boleh melebihi 4.5 MB!",
+                                  priority: "high",
+                                });
+                                e.target.value = "";
+                              }
+                            }
+                          }}
+                        />
+                      </Label>
+                      {/* <p className="text-pretty pl-1">untuk di-upload</p> */}
+                    </div>
+                  </div>
+                  <p className="flex items-center justify-between text-pretty text-muted-foreground text-xs leading-5">
+                    Recommended max. size: 10 MB, Accepted file types: XLSX, XLS, CSV.
+                  </p>
+
                   <Attachment>
                     <AttachmentMedia>
                       <FileTextIcon />
@@ -915,13 +954,11 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                       <AttachmentAction aria-label="Remove file"><XIcon /></AttachmentAction>
                     </AttachmentActions>
                   </Attachment>
-                  <Input
-                    id="fileUrl"
+
+                  {/* <Input
                     name="productFile"
                     type="file"
                     className="cursor-pointer file:cursor-pointer file:bg-muted file:border-0 file:rounded-md file:mr-4 file:px-3 file:py-1"
-                    // placeholder="https://drive.google.com/..."
-                    // defaultValue={productToUpdate?.file_url || ""}
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) {
@@ -935,25 +972,9 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                         }
                       }
                     }}
-                  />
+                  /> */}
                   <input type="hidden" name="oldFileUrl" value={productToUpdate?.file_url || ""} />
                 </Field>
-
-                {/* <FieldGroup className="space-y-4 p-4 rounded-xl border border-dashed bg-muted/40">
-                  <Field>
-                    <FieldLabel htmlFor="imageUrl">
-                      <ImageIcon className="w-4 h-4 mr-2 inline-block text-muted-foreground" />
-                      URL Thumbnail
-                    </FieldLabel>
-                    <Input
-                      id="imageUrl"
-                      name="imageUrl"
-                      placeholder="https://..."
-                      defaultValue={productToUpdate?.image_url || ""}
-                    />
-                  </Field>
-                </FieldGroup> */}
-
               </FieldGroup>
             </form>
           </div>
