@@ -42,7 +42,7 @@ const formatBytes = (bytes: number, decimals = 2) => {
 export default function DashboardAdmin({ products, categories, orders }: DashboardAdminProps) {
   const [isPending, startTransition] = useTransition();
 
-  // #region CREATE & UPDATE STATES (Tambah & Edit Produk)
+  // #region CREATE/UPDATE STATES
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [productToUpdate, setProductToUpdate] = useState<Product | null>(null);
   const [upsertState, upsertFormAction, upsertIsPending] = useActionState(upsertProductAction, null);
@@ -80,7 +80,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
   }, [upsertState]);
   // #endregion CREATE & UPDATE STATES (Tambah & Edit Produk)
 
-  // #region DELETE STATES (Hapus Produk)
+  // #region DELETE STATES
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
 
@@ -113,7 +113,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
       }
     });
   };
-  // #endregion DELETE STATES (Hapus Produk)
+  // #endregion
 
   // 1. Table Initiation
   const features = tableFeatures({
@@ -136,7 +136,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
 
   const columnHelper = createColumnHelper<typeof features, Product>();
 
-  // #region COLUMN DEFINITION
+  // #region COLUMN
   const columns = useMemo(() =>
     columnHelper.columns([
       // 1. Kolom Nomor Urut
@@ -305,11 +305,11 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
         enableHiding: false,
       }),
     ]),
-    []
+    [columnHelper, isPending]
   );
-  // #endregion COLUMN DEFINITION
+  // #endregion
 
-  // #region TABLE DEFINITION
+  // #region TABLE
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -359,7 +359,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
   const filteredKategori = (table.getColumn("kategori")?.getFilterValue() as string[]) ?? [];
   const filteredStatusValue = table.getColumn("status")?.getFilterValue() as boolean[] | undefined;
   const filteredStatus = filteredStatusValue !== undefined ? String(filteredStatusValue[0]) : "all";
-  // #endregion TABLE DEFINITION
+  // #endregion
 
   // #region LIST DEFINITION
   const categoryList = useMemo(() => categories?.map((cat) => ({
@@ -536,7 +536,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-              // #endregion DATATABLE MENU
+              // #endregion
             }
             {
               // #region DATATABLE SEARCH
@@ -557,7 +557,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                   </InputGroup>
                 </Field>
               </div>
-              // #endregion DATATABLE SEARCH
+              // #endregion
             }
           </div>
 
@@ -629,7 +629,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                 </div>
               </>
             )
-            // #endregion UPPER PAGINATION
+            // #endregion
           }
           {
             // #region DATATABLE
@@ -694,7 +694,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                 </TableBody>
               </Table>
             </div>
-            // #endregion DATATABLE
+            // #endregion
           }
         </CardContent>
         {
@@ -766,7 +766,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
               </div>
             </CardFooter>
           )
-          // #endregion LOWER PAGINATION
+          // #endregion
         }
       </Card>
 
@@ -807,7 +807,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
 
                 <FieldGroup>
                   <Field>
-                    <FieldLabel>Thumbnail Produk</FieldLabel>
+                    <FieldLabel htmlFor="imageFile">Thumbnail Produk <span className="text-destructive">*</span></FieldLabel>
                     <div className="flex gap-4 items-start">
                       <div className={`relative group flex items-center justify-center w-20 h-20 shrink-0 overflow-hidden rounded-xl transition-all ${!imagePreview ? "border-2 border-dashed border-muted-foreground/100" : "border-2 border-muted-foreground"} rounded-xl`}>
                         {imagePreview ? (
@@ -865,7 +865,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                   </Field>
 
                   <Field>
-                    <Label htmlFor="title">Nama Produk</Label>
+                    <Label htmlFor="title">Nama Produk <span className="text-destructive">*</span></Label>
                     <Input
                       required
                       id="title"
@@ -878,7 +878,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
 
                   <FieldGroup className="grid md:grid-cols-2 gap-4">
                     <Field>
-                      <FieldLabel htmlFor="price">Harga</FieldLabel>
+                      <FieldLabel htmlFor="price">Harga <span className="text-destructive">*</span></FieldLabel>
                       <Input
                         required
                         id="price"
@@ -903,7 +903,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                   </FieldGroup>
 
                   <Field>
-                    <FieldLabel htmlFor="category">Kategori</FieldLabel>
+                    <FieldLabel htmlFor="category">Kategori <span className="text-destructive">*</span></FieldLabel>
                     <Select
                       required
                       items={categoryList}
@@ -925,7 +925,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="shortDesc">Deskripsi Singkat</FieldLabel>
+                    <FieldLabel htmlFor="shortDesc">Deskripsi Singkat <span className="text-destructive">*</span></FieldLabel>
                     <Textarea
                       required
                       id="shortDesc"
@@ -937,7 +937,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="longDesc">Deskripsi Lengkap</FieldLabel>
+                    <FieldLabel htmlFor="longDesc">Deskripsi Lengkap <span className="text-destructive">*</span></FieldLabel>
                     <Textarea
                       required
                       id="longDesc"
@@ -950,7 +950,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="features">Fitur (JSONB)</FieldLabel>
+                    <FieldLabel htmlFor="features">Fitur (JSONB) <span className="text-destructive">*</span></FieldLabel>
                     <Textarea
                       required
                       id="features"
@@ -964,7 +964,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="fileUrl">File Produk Digital</FieldLabel>
+                    <FieldLabel htmlFor="fileUrl">File Produk Digital <span className="text-destructive">*</span></FieldLabel>
 
                     {selectedFile && (
                       <Attachment className="mt-3">
@@ -1023,9 +1023,9 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                         {/* <p className="text-pretty pl-1">untuk di-upload</p> */}
                       </div>
                     </Label>
-                    <p className="flex items-center justify-between text-pretty text-muted-foreground text-xs leading-5">
+                    {/* <p className="flex items-center justify-between text-pretty text-muted-foreground text-xs leading-5">
                       Recommended max. size: 10 MB, Accepted file types: XLSX, XLS, CSV.
-                    </p>
+                    </p> */}
 
                     <input type="hidden" name="oldFileUrl" value={productToUpdate?.file_url || ""} />
                   </Field>
@@ -1034,7 +1034,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
             </div>
 
             <DialogFooter className="pt-4">
-              <DialogClose render={<Button variant="outline" />}>
+              <DialogClose render={<Button variant="outline" />} disabled={upsertIsPending}>
                 Batal
               </DialogClose>
               <Button form="productForm" type="submit" disabled={upsertIsPending}>
@@ -1052,10 +1052,10 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
             </DialogFooter>
           </DialogContent>
         </Dialog>
-        // #endregion CREATE & UPDATE DIALOG
+        // #endregion
       }
       {
-        // #region DELETE ALERT DIALOG
+        // #region DELETE ALERT
         <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
           <AlertDialogContent size="sm">
             <AlertDialogHeader>
@@ -1074,7 +1074,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-        // #endregion DELETE ALERT DIALOG
+        // #endregion
       }
     </>
   );

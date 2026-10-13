@@ -1,7 +1,7 @@
 import { sql } from "@/lib/utils";
 import { Order } from "@/types/global";
 
-// #region 3. GET ORDERS
+// #region 1. GET ORDERS
 export async function getOrders(userId?: string): Promise<Order[]> {
   try {
     const data = !userId
@@ -39,4 +39,4 @@ export async function getOrders(userId?: string): Promise<Order[]> {
     return [];
   }
 }
-// #endregion 3. GET ORDERS
+// #endregion 1. GET ORDERS
