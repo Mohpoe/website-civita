@@ -48,7 +48,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         },
         {
           title: "Kelola Kategori",
-          url: ROUTES.DASHBOARD.ADMIN,
+          url: ROUTES.DASHBOARD.CATEGORY,
           icon: (
             <GroupIcon />
           ),

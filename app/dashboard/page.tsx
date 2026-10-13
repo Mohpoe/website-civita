@@ -10,10 +10,14 @@ export const metadata: Metadata = {
   title: mainTitle,
 }
 
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export default async function DashboardPage() {
+  // throw new Error("Ini adalah pesan error simulasi untuk keperluan desain!");
+  // await delay(10000);
   try {
     const [products] = await Promise.all([
-      getProducts(false) as Promise<Product[]>,
+      getProducts(true) as Promise<Product[]>,
     ]);
 
     return (

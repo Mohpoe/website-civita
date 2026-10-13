@@ -1,13 +1,13 @@
 "use client";
 
-import { upsertProductAction } from "@/lib/actions/product";
+import { deleteProductAction, upsertProductAction } from "@/lib/actions/product";
 import { formatRupiah } from "@/lib/utils";
 import { Category, Order, Product } from "@/types/global";
 import { columnFilteringFeature, ColumnFiltersState, columnVisibilityFeature, ColumnVisibilityState, createColumnHelper, createFilteredRowModel, createPaginatedRowModel, createSortedRowModel, filterFn_includesString, globalFilteringFeature, rowPaginationFeature, rowSortingFeature, sortFn_alphanumeric, sortFn_text, SortingState, tableFeatures, useTable } from "@tanstack/react-table";
-import { BadgeCheckIcon, BadgeXIcon, ChevronDownIcon, ChevronFirstIcon, ChevronLastIcon, ChevronLeftIcon, ChevronRightIcon, Columns3Icon, EyeIcon, FileSpreadsheetIcon, FileTextIcon, GhostIcon, ImageIcon, MoreHorizontalIcon, PlusIcon, RefreshCcwIcon, Rows3Icon, SearchIcon, SlidersHorizontalIcon, SquarePenIcon, TagsIcon, Trash2Icon, UploadIcon, XIcon } from "lucide-react";
+import { BadgeCheckIcon, BadgeXIcon, ChevronDownIcon, ChevronFirstIcon, ChevronLastIcon, ChevronLeftIcon, ChevronRightIcon, ChevronsUpDownIcon, ChevronUpIcon, Columns3Icon, EyeIcon, FileTextIcon, GhostIcon, ImageIcon, MoreHorizontalIcon, PlusIcon, RefreshCcwIcon, Rows3Icon, SearchIcon, SlidersHorizontalIcon, SquarePenIcon, TagsIcon, Trash2Icon, UploadIcon } from "lucide-react";
 import { useActionState, useEffect, useMemo, useState, useTransition } from "react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle } from "./ui/alert-dialog";
-import { Attachment, AttachmentAction, AttachmentActions, AttachmentContent, AttachmentDescription, AttachmentMedia, AttachmentTitle } from "./ui/attachment";
+import { Attachment, AttachmentContent, AttachmentDescription, AttachmentMedia, AttachmentTitle } from "./ui/attachment";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
@@ -30,6 +30,15 @@ interface DashboardAdminProps {
   orders: Order[],
 }
 
+const formatBytes = (bytes: number, decimals = 2) => {
+  if (!bytes) return '0 Bytes';
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+};
+
 export default function DashboardAdmin({ products, categories, orders }: DashboardAdminProps) {
   const [isPending, startTransition] = useTransition();
 
@@ -38,11 +47,17 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
   const [productToUpdate, setProductToUpdate] = useState<Product | null>(null);
   const [upsertState, upsertFormAction, upsertIsPending] = useActionState(upsertProductAction, null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<{
+    name: string;
+    size: string;
+    type: string;
+  } | null>(null);
   // 1. Trigger untuk Tambah Produk
   const handleCreate = () => {
     setProductToUpdate(null);
     setImagePreview(null);
     setIsDialogOpen(true);
+    setSelectedFile(null);
   };
   // 2. Toast Handler
   useEffect(() => {
@@ -77,22 +92,26 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
   const confirmDelete = () => {
     if (!productToDelete) return;
 
-    // startTransition(async () => {
-    //   const res = await deleteProductAction(productToDelete);
+    startTransition(async () => {
+      const formData = new FormData();
+      formData.append("id", productToDelete);
+      const res = await deleteProductAction(formData);
 
-    //   if (res.success) {
-    //     mutate("/api/products");
-    //     toast.add({
-    //       type: "success",
-    //       description: res.message,
-    //     });
-    //   } else {
-    //     toast.add({
-    //       type: "error",
-    //       description: res.message,
-    //     });
-    //   }
-    // });
+      if (res.success) {
+        setIsAlertOpen(false);
+        setProductToDelete(null);
+        toast.add({
+          type: "success",
+          description: res.message,
+        });
+      } else {
+        toast.add({
+          type: "error",
+          description: res.message,
+          priority: "high"
+        });
+      }
+    });
   };
   // #endregion DELETE STATES (Hapus Produk)
 
@@ -218,6 +237,16 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
         },
       }),
 
+      columnHelper.accessor("short_desc", {
+        id: "keterangan",
+        header: "Keterangan",
+      }),
+
+      columnHelper.accessor("long_desc", {
+        id: "deskripsi",
+        header: "Deskripsi",
+      }),
+
       // 7. Kolom Aksi (Edit & Delete)
       columnHelper.display({
         id: "actions",
@@ -242,6 +271,17 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                       setProductToUpdate(product);
                       setImagePreview(product.image_url || null);
                       setIsDialogOpen(true);
+                      if (product.file_url) {
+                        const fileName = product.file_url.split('/').pop() || "file-produk";
+                        const ext = fileName.split('.').pop()?.toUpperCase() || "FILE";
+                        setSelectedFile({
+                          name: fileName,
+                          size: "Tersimpan di server",
+                          type: ext,
+                        });
+                      } else {
+                        setSelectedFile(null);
+                      }
                     }}>
                       <SquarePenIcon />
                       Edit
@@ -273,7 +313,10 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<ColumnVisibilityState>({});
+  const [columnVisibility, setColumnVisibility] = useState<ColumnVisibilityState>({
+    keterangan: false,
+    deskripsi: false,
+  });
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10,
@@ -282,7 +325,10 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
     setGlobalFilter("");
     setSorting([]);
     setColumnFilters([]);
-    setColumnVisibility({});
+    setColumnVisibility({
+      keterangan: false,
+      deskripsi: false,
+    });
     setPagination({
       pageIndex: 0,
       pageSize: 10,
@@ -342,178 +388,175 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between w-full">
             {
               // #region DATATABLE MENU
-            }
-            <div className="flex flex-row items-center gap-2 w-full lg:w-auto">
-              <DropdownMenu>
-                <DropdownMenuTrigger render={<Button variant="outline" className="min-h-8 text-sm w-full" />}>
-                  <SlidersHorizontalIcon />
-                  Atur Tabel
-                  <ChevronDownIcon className="size-4 ml-2 opacity-50" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="min-w-64" align="start">
-                  <DropdownMenuGroup>
-                    <DropdownMenuLabel>Kolom</DropdownMenuLabel>
+              <div className="flex flex-row items-center gap-2 w-full lg:w-auto">
+                <DropdownMenu>
+                  <DropdownMenuTrigger render={<Button variant="outline" className="min-h-8 text-sm w-full" />}>
+                    <SlidersHorizontalIcon />
+                    Atur Tabel
+                    <ChevronDownIcon className="size-4 ml-2 opacity-50" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="min-w-64" align="start">
+                    <DropdownMenuGroup>
+                      <DropdownMenuLabel>Kolom</DropdownMenuLabel>
 
-                    <DropdownMenuSub>
-                      <DropdownMenuSubTrigger>
-                        <TagsIcon />
-                        Kategori
-                      </DropdownMenuSubTrigger>
-                      <DropdownMenuPortal>
-                        <DropdownMenuSubContent>
-                          <DropdownMenuGroup>
-                            <DropdownMenuLabel>Pilih kategori</DropdownMenuLabel>
-                            <DropdownMenuCheckboxItem
-                              checked={filteredKategori.length === categories.length || filteredKategori.length === 0}
-                              onCheckedChange={() => table.getColumn("kategori")?.setFilterValue(undefined)}
+                      <DropdownMenuSub>
+                        <DropdownMenuSubTrigger>
+                          <TagsIcon />
+                          Kategori
+                        </DropdownMenuSubTrigger>
+                        <DropdownMenuPortal>
+                          <DropdownMenuSubContent>
+                            <DropdownMenuGroup>
+                              <DropdownMenuLabel>Pilih kategori</DropdownMenuLabel>
+                              <DropdownMenuCheckboxItem
+                                checked={filteredKategori.length === categories.length || filteredKategori.length === 0}
+                                onCheckedChange={() => table.getColumn("kategori")?.setFilterValue(undefined)}
+                              >
+                                Semua kategori
+                              </DropdownMenuCheckboxItem>
+                              {categories.map((category) => (
+                                <DropdownMenuCheckboxItem
+                                  key={category.id}
+                                  checked={filteredKategori.includes(category.id)}
+                                  onCheckedChange={(checked) => {
+                                    const newFilters = checked
+                                      ? [...filteredKategori, category.id]
+                                      : filteredKategori.filter((id) => id !== category.id);
+                                    table.getColumn("kategori")?.setFilterValue(newFilters.length === 0 || newFilters.length === categories.length ? undefined : newFilters);
+                                  }}
+                                >
+                                  {category.name}
+                                </DropdownMenuCheckboxItem>
+                              ))}
+                            </DropdownMenuGroup>
+                          </DropdownMenuSubContent>
+                        </DropdownMenuPortal>
+                      </DropdownMenuSub>
+
+                      <DropdownMenuSub>
+                        <DropdownMenuSubTrigger>
+                          <EyeIcon />
+                          Status
+                        </DropdownMenuSubTrigger>
+                        <DropdownMenuPortal>
+                          <DropdownMenuSubContent>
+                            <DropdownMenuLabel>Pilih status produk</DropdownMenuLabel>
+                            <DropdownMenuRadioGroup
+                              value={filteredStatus}
+                              onValueChange={(val) => {
+                                table.getColumn("status")?.setFilterValue(val === "all" ? undefined : [val === "true"]);
+                              }}
                             >
-                              Semua kategori
-                            </DropdownMenuCheckboxItem>
-                            {categories.map((category) => (
-                              <DropdownMenuCheckboxItem
-                                key={category.id}
-                                checked={filteredKategori.includes(category.id)}
-                                onCheckedChange={(checked) => {
-                                  const newFilters = checked
-                                    ? [...filteredKategori, category.id]
-                                    : filteredKategori.filter((id) => id !== category.id);
-                                  table.getColumn("kategori")?.setFilterValue(newFilters.length === 0 || newFilters.length === categories.length ? undefined : newFilters);
-                                }}
-                              >
-                                {category.name}
-                              </DropdownMenuCheckboxItem>
-                            ))}
-                          </DropdownMenuGroup>
-                        </DropdownMenuSubContent>
-                      </DropdownMenuPortal>
-                    </DropdownMenuSub>
-
-                    <DropdownMenuSub>
-                      <DropdownMenuSubTrigger>
-                        <EyeIcon />
-                        Status
-                      </DropdownMenuSubTrigger>
-                      <DropdownMenuPortal>
-                        <DropdownMenuSubContent>
-                          <DropdownMenuLabel>Pilih status produk</DropdownMenuLabel>
-                          <DropdownMenuRadioGroup
-                            value={filteredStatus}
-                            onValueChange={(val) => {
-                              table.getColumn("status")?.setFilterValue(val === "all" ? undefined : [val === "true"]);
-                            }}
-                          >
-                            <DropdownMenuRadioItem value="all">
-                              Semua
-                            </DropdownMenuRadioItem>
-                            <DropdownMenuRadioItem value="true">
-                              Aktif
-                            </DropdownMenuRadioItem>
-                            <DropdownMenuRadioItem value="false">
-                              Tidak aktif
-                            </DropdownMenuRadioItem>
-                          </DropdownMenuRadioGroup>
-                        </DropdownMenuSubContent>
-                      </DropdownMenuPortal>
-                    </DropdownMenuSub>
-
-                    <DropdownMenuSeparator />
-                    <DropdownMenuLabel>Kolom</DropdownMenuLabel>
-
-                    <DropdownMenuSub>
-                      <DropdownMenuSubTrigger>
-                        <Columns3Icon />
-                        Tampilkan
-                      </DropdownMenuSubTrigger>
-                      <DropdownMenuPortal>
-                        <DropdownMenuSubContent>
-                          <DropdownMenuGroup>
-                            <DropdownMenuLabel>Tampilkan kolom</DropdownMenuLabel>
-                            {table.getAllColumns().filter((col) => col.getCanHide()).map((col) => (
-                              <DropdownMenuCheckboxItem
-                                key={col.id}
-                                className="capitalize"
-                                checked={col.getIsVisible()}
-                                onCheckedChange={(val) => col.toggleVisibility(!!val)}
-                              >
-                                {col.id.replace("_", " ")}
-                              </DropdownMenuCheckboxItem>
-                            ))}
-                          </DropdownMenuGroup>
-                        </DropdownMenuSubContent>
-                      </DropdownMenuPortal>
-                    </DropdownMenuSub>
-
-                    <DropdownMenuSeparator />
-                    <DropdownMenuLabel>Baris</DropdownMenuLabel>
-
-                    <DropdownMenuSub>
-                      <DropdownMenuSubTrigger>
-                        <Rows3Icon />
-                        Tampilkan
-                      </DropdownMenuSubTrigger>
-                      <DropdownMenuPortal>
-                        <DropdownMenuSubContent>
-                          <DropdownMenuLabel>Tampilkan baris</DropdownMenuLabel>
-                          <DropdownMenuRadioGroup
-                            value={
-                              table.state.pagination.pageSize === table.getCoreRowModel().rows.length
-                                ? "all"
-                                : String(table.state.pagination.pageSize)
-                            }
-                            onValueChange={(val) => {
-                              if (val === "all") {
-                                table.setPageSize(table.getCoreRowModel().rows.length);
-                              } else {
-                                table.setPageSize(Number(val));
-                              }
-                            }}
-                          >
-                            {[10, 20, 50, 100].map((pageSize) => (
-                              <DropdownMenuRadioItem key={pageSize} value={String(pageSize)}>
-                                {pageSize}
+                              <DropdownMenuRadioItem value="all">
+                                Semua
                               </DropdownMenuRadioItem>
-                            ))}
-                            <DropdownMenuRadioItem value="all">
-                              Semua ({table.getCoreRowModel().rows.length})
-                            </DropdownMenuRadioItem>
-                          </DropdownMenuRadioGroup>
-                        </DropdownMenuSubContent>
-                      </DropdownMenuPortal>
-                    </DropdownMenuSub>
+                              <DropdownMenuRadioItem value="true">
+                                Aktif
+                              </DropdownMenuRadioItem>
+                              <DropdownMenuRadioItem value="false">
+                                Tidak aktif
+                              </DropdownMenuRadioItem>
+                            </DropdownMenuRadioGroup>
+                          </DropdownMenuSubContent>
+                        </DropdownMenuPortal>
+                      </DropdownMenuSub>
 
-                    <DropdownMenuSeparator />
+                      <DropdownMenuSeparator />
+                      <DropdownMenuLabel>Kolom</DropdownMenuLabel>
 
-                    <DropdownMenuItem onClick={handleResetFilters}>
-                      <RefreshCcwIcon />
-                      Reset
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-            {
+                      <DropdownMenuSub>
+                        <DropdownMenuSubTrigger>
+                          <Columns3Icon />
+                          Tampilkan
+                        </DropdownMenuSubTrigger>
+                        <DropdownMenuPortal>
+                          <DropdownMenuSubContent>
+                            <DropdownMenuGroup>
+                              <DropdownMenuLabel>Tampilkan kolom</DropdownMenuLabel>
+                              {table.getAllColumns().filter((col) => col.getCanHide()).map((col) => (
+                                <DropdownMenuCheckboxItem
+                                  key={col.id}
+                                  className="capitalize"
+                                  checked={col.getIsVisible()}
+                                  onCheckedChange={(val) => col.toggleVisibility(!!val)}
+                                >
+                                  {col.id.replace("_", " ")}
+                                </DropdownMenuCheckboxItem>
+                              ))}
+                            </DropdownMenuGroup>
+                          </DropdownMenuSubContent>
+                        </DropdownMenuPortal>
+                      </DropdownMenuSub>
+
+                      <DropdownMenuSeparator />
+                      <DropdownMenuLabel>Baris</DropdownMenuLabel>
+
+                      <DropdownMenuSub>
+                        <DropdownMenuSubTrigger>
+                          <Rows3Icon />
+                          Tampilkan
+                        </DropdownMenuSubTrigger>
+                        <DropdownMenuPortal>
+                          <DropdownMenuSubContent>
+                            <DropdownMenuLabel>Tampilkan baris</DropdownMenuLabel>
+                            <DropdownMenuRadioGroup
+                              value={
+                                table.state.pagination.pageSize === table.getCoreRowModel().rows.length
+                                  ? "all"
+                                  : String(table.state.pagination.pageSize)
+                              }
+                              onValueChange={(val) => {
+                                if (val === "all") {
+                                  table.setPageSize(table.getCoreRowModel().rows.length);
+                                } else {
+                                  table.setPageSize(Number(val));
+                                }
+                              }}
+                            >
+                              {[10, 20, 50, 100].map((pageSize) => (
+                                <DropdownMenuRadioItem key={pageSize} value={String(pageSize)}>
+                                  {pageSize}
+                                </DropdownMenuRadioItem>
+                              ))}
+                              <DropdownMenuRadioItem value="all">
+                                Semua ({table.getCoreRowModel().rows.length})
+                              </DropdownMenuRadioItem>
+                            </DropdownMenuRadioGroup>
+                          </DropdownMenuSubContent>
+                        </DropdownMenuPortal>
+                      </DropdownMenuSub>
+
+                      <DropdownMenuSeparator />
+
+                      <DropdownMenuItem onClick={handleResetFilters}>
+                        <RefreshCcwIcon />
+                        Reset
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
               // #endregion DATATABLE MENU
-
-              // #region DATATABLE SEARCH
             }
-            <div className="flex items-center justify-between sm:justify-end gap-2 w-full lg:w-auto border-t pt-4 lg:border-none lg:pt-0">
-              <Field className="flex-1 lg:w-64">
-                <InputGroup className="w-full min-h-8">
-                  <InputGroupInput
-                    className="text-sm!"
-                    type="search"
-                    placeholder="Pencarian..."
-                    autoComplete="off"
-                    value={globalFilter ?? ""}
-                    onChange={(e) => setGlobalFilter(e.target.value)}
-                  />
-                  <InputGroupAddon>
-                    <SearchIcon className="size-4" />
-                  </InputGroupAddon>
-                </InputGroup>
-              </Field>
-            </div>
             {
+              // #region DATATABLE SEARCH
+              <div className="flex items-center justify-between sm:justify-end gap-2 w-full lg:w-auto border-t pt-4 lg:border-none lg:pt-0">
+                <Field className="flex-1 lg:w-64">
+                  <InputGroup className="w-full min-h-8">
+                    <InputGroupInput
+                      className="text-sm!"
+                      type="search"
+                      placeholder="Pencarian..."
+                      autoComplete="off"
+                      value={globalFilter ?? ""}
+                      onChange={(e) => setGlobalFilter(e.target.value)}
+                    />
+                    <InputGroupAddon>
+                      <SearchIcon className="size-4" />
+                    </InputGroupAddon>
+                  </InputGroup>
+                </Field>
+              </div>
               // #endregion DATATABLE SEARCH
             }
           </div>
@@ -597,7 +640,28 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                     <TableRow key={headerGroup.id} className="*:border-border [&>:not(:last-child)]:border-r">
                       {headerGroup.headers.map((header) => (
                         <TableHead key={header.id} onClick={header.column.getToggleSortingHandler()}>
-                          {header.isPlaceholder
+                          {header.column.getCanSort() ? (
+                            <Button variant="ghost" className="p-0 m-0 flex justify-between w-full">
+                              <div className="flex">
+                                {header.isPlaceholder
+                                  ? null
+                                  : <table.FlexRender header={header} />
+                                }
+                              </div>
+                              <div className="flex">
+                                {header.column.getCanSort() && (
+                                  <span className="opacity-40">
+                                    {(() => {
+                                      const sortState = header.column.getIsSorted();
+                                      if (sortState === 'asc') return <ChevronUpIcon />;
+                                      if (sortState === 'desc') return <ChevronDownIcon />;
+                                      return <ChevronsUpDownIcon />;
+                                    })()}
+                                  </span>
+                                )}
+                              </div>
+                            </Button>
+                          ) : header.isPlaceholder
                             ? null
                             : <table.FlexRender header={header} />
                           }
@@ -708,322 +772,308 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
 
       {
         // #region CREATE & UPDATE DIALOG
-      }
-      <Dialog
-        open={isDialogOpen}
-        onOpenChange={(open) => {
-          setIsDialogOpen(open);
-          if (!open) {
-            setProductToUpdate(null);
-            setImagePreview(null);
-          }
-        }}
-      >
-        <DialogContent className="w-full sm:max-w-xl">
-          <DialogHeader>
-            <DialogTitle>{productToUpdate ? "Edit Produk" : "Tambah Produk Baru"}</DialogTitle>
-            <DialogDescription>
-              {productToUpdate
-                ? "Ubah detail informasi produk di bawah ini."
-                : "Isi form di bawah ini untuk menambahkan produk baru ke katalog."}
-              <span className="block text-xs text-destructive">Semua form wajib diisi!</span>
-            </DialogDescription>
-          </DialogHeader>
-          <Separator className="py-0" />
-          <div className="-mx-4 no-scrollbar max-h-[60vh] overflow-y-auto px-4">
-            {/* Satu form untuk Create & Update */}
-            <form
-              id="productForm"
-              action={upsertFormAction}
-              autoComplete="off"
-              key={productToUpdate ? productToUpdate.id : "new-product-form"}
-            >
-              {/* Hidden input untuk melempar ID jika mode edit */}
-              {productToUpdate && <input type="hidden" name="id" value={productToUpdate.id} />}
+        <Dialog
+          open={isDialogOpen}
+          onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) {
+              setProductToUpdate(null);
+              setImagePreview(null);
+              setSelectedFile(null);
+            }
+          }}
+        >
+          <DialogContent className="w-full sm:max-w-xl">
+            <DialogHeader>
+              <DialogTitle>{productToUpdate ? "Edit Produk" : "Tambah Produk Baru"}</DialogTitle>
+              <DialogDescription>
+                {productToUpdate
+                  ? "Ubah detail informasi produk di bawah ini."
+                  : "Isi form di bawah ini untuk menambahkan produk baru ke katalog."}
+                <span className="block text-xs text-destructive">Semua form wajib diisi!</span>
+              </DialogDescription>
+            </DialogHeader>
+            <Separator className="py-0" />
+            <div className="-mx-4 no-scrollbar max-h-[60vh] overflow-y-auto px-4">
+              {/* Satu form untuk Create & Update */}
+              <form
+                id="productForm"
+                action={upsertFormAction}
+                autoComplete="off"
+                key={productToUpdate ? productToUpdate.id : "new-product-form"}
+              >
+                {/* Hidden input untuk melempar ID jika mode edit */}
+                {productToUpdate && <input type="hidden" name="id" value={productToUpdate.id} />}
 
-              <FieldGroup>
-                <Field>
-                  <FieldLabel>Thumbnail Produk</FieldLabel>
-                  <div className="flex gap-4 items-start">
-                    <div className={`relative group flex items-center justify-center w-20 h-20 shrink-0 overflow-hidden rounded-xl transition-all ${!imagePreview ? "border-2 border-dashed border-muted-foreground/100" : "border-2 border-muted-foreground"} rounded-xl`}>
-                      {imagePreview ? (
-                        <img id={`preview-${productToUpdate?.id || "new"}`} src={imagePreview} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <ImageIcon className="w-8 h-8 text-muted-foreground" />
-                        </div>
-                      )}
-                      <Label htmlFor="imageFile" className="absolute flex flex-col gap-2 items-center justify-center text-foreground bg-background/50 backdrop-blur-xs inset-0 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                        <UploadIcon className="w-4 h-4" />
-                        Ubah
-                      </Label>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center gap-2">
-
-                        <Button type="button" variant="secondary" size="sm" onClick={() => document.getElementById("imageFile")?.click()}>
-                          {imagePreview ? "Ganti Thumbnail" : "Upload Thumbnail"}
-                        </Button>
-
-                        <input type="hidden" name="oldImageUrl" value={productToUpdate?.image_url} required />
-                        <input
-                          required={!productToUpdate}
-                          id="imageFile"
-                          name="imageFile"
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              if (file.size > 4 * 1024 * 1024) {
-                                toast.add({
-                                  type: "error",
-                                  description: "Ukuran gambar tidak boleh melebihi 4 MB!",
-                                  priority: "high",
-                                });
-                                e.target.value = "";
-                                return;
-                              }
-
-                              setImagePreview(URL.createObjectURL(file));
-                            }
-                          }}
-                        />
-
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Rekomendasi rasio 1:1, ukuran maksimal 2MB. <br />
-                        Format .JPG atau .PNG.
-                      </p>
-                    </div>
-                  </div>
-                </Field>
-
-                <Field>
-                  <Label htmlFor="title">Nama Produk</Label>
-                  <Input
-                    required
-                    id="title"
-                    name="title"
-                    placeholder="Nama produk"
-                    defaultValue={productToUpdate?.title || ""}
-                    minLength={3}
-                  />
-                </Field>
-
-                <FieldGroup className="grid md:grid-cols-2 gap-4">
+                <FieldGroup>
                   <Field>
-                    <FieldLabel htmlFor="price">Harga</FieldLabel>
+                    <FieldLabel>Thumbnail Produk</FieldLabel>
+                    <div className="flex gap-4 items-start">
+                      <div className={`relative group flex items-center justify-center w-20 h-20 shrink-0 overflow-hidden rounded-xl transition-all ${!imagePreview ? "border-2 border-dashed border-muted-foreground/100" : "border-2 border-muted-foreground"} rounded-xl`}>
+                        {imagePreview ? (
+                          <img id={`preview-${productToUpdate?.id || "new"}`} src={imagePreview} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <ImageIcon className="w-8 h-8 text-muted-foreground" />
+                          </div>
+                        )}
+                        <Label htmlFor="imageFile" className="absolute flex flex-col gap-2 items-center justify-center text-foreground bg-background/50 backdrop-blur-xs inset-0 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                          <UploadIcon className="w-4 h-4" />
+                          Ubah
+                        </Label>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-2">
+
+                          <Button type="button" variant="secondary" size="sm" onClick={() => document.getElementById("imageFile")?.click()}>
+                            {imagePreview ? "Ganti Thumbnail" : "Upload Thumbnail"}
+                          </Button>
+
+                          <input type="hidden" name="oldImageUrl" value={productToUpdate?.image_url} required />
+                          <input
+                            required={!productToUpdate}
+                            id="imageFile"
+                            name="imageFile"
+                            type="file"
+                            accept="image/*"
+                            className="sr-only"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                if (file.size > 4 * 1024 * 1024) {
+                                  toast.add({
+                                    type: "error",
+                                    description: "Ukuran gambar tidak boleh melebihi 4 MB!",
+                                    priority: "high",
+                                  });
+                                  e.target.value = "";
+                                  return;
+                                }
+
+                                setImagePreview(URL.createObjectURL(file));
+                              }
+                            }}
+                          />
+
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Rekomendasi rasio 1:1. <br />
+                          Ukuran maksimal 4MB.
+                        </p>
+                      </div>
+                    </div>
+                  </Field>
+
+                  <Field>
+                    <Label htmlFor="title">Nama Produk</Label>
                     <Input
                       required
-                      id="price"
-                      name="price"
-                      inputMode="numeric"
-                      placeholder="Harga Produk"
-                      defaultValue={productToUpdate?.price || ""}
-                      min={0}
+                      id="title"
+                      name="title"
+                      placeholder="Nama produk"
+                      defaultValue={productToUpdate?.title || ""}
+                      minLength={3}
                     />
                   </Field>
-                  <Field>
-                    <FieldLabel htmlFor="isActive">Status Publikasi</FieldLabel>
-                    <div className="flex items-center space-x-3 h-full">
-                      <Switch
+
+                  <FieldGroup className="grid md:grid-cols-2 gap-4">
+                    <Field>
+                      <FieldLabel htmlFor="price">Harga</FieldLabel>
+                      <Input
                         required
-                        id="isActive"
-                        name="isActive"
-                        defaultChecked={productToUpdate ? productToUpdate.is_active : true}
+                        id="price"
+                        name="price"
+                        inputMode="numeric"
+                        placeholder="Harga Produk"
+                        defaultValue={productToUpdate?.price || ""}
+                        min={0}
                       />
-                      <Label htmlFor="isActive">Aktifkan di toko</Label>
-                    </div>
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="isActive">Status Publikasi</FieldLabel>
+                      <div className="flex items-center space-x-3 h-full">
+                        <Switch
+                          id="isActive"
+                          name="isActive"
+                          defaultChecked={productToUpdate ? productToUpdate.is_active : true}
+                        />
+                        <Label htmlFor="isActive">Aktifkan di toko</Label>
+                      </div>
+                    </Field>
+                  </FieldGroup>
+
+                  <Field>
+                    <FieldLabel htmlFor="category">Kategori</FieldLabel>
+                    <Select
+                      required
+                      items={categoryList}
+                      name="category"
+                      defaultValue={productToUpdate?.category_id || ""}
+                    >
+                      <SelectTrigger id="category">
+                        <SelectValue placeholder="Pilih kategori" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Daftar Kategori</SelectLabel>
+                          {categoryList?.map((item) => (
+                            <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="shortDesc">Deskripsi Singkat</FieldLabel>
+                    <Textarea
+                      required
+                      id="shortDesc"
+                      name="shortDesc"
+                      placeholder="Tulis ringkasan singkat (maks. 150 karakter)..."
+                      defaultValue={productToUpdate?.short_desc || ""}
+                      minLength={10}
+                    />
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="longDesc">Deskripsi Lengkap</FieldLabel>
+                    <Textarea
+                      required
+                      id="longDesc"
+                      name="longDesc"
+                      className="min-h-[120px]"
+                      placeholder="Jelaskan detail produk selengkap-lengkapnya di sini..."
+                      defaultValue={productToUpdate?.long_desc || ""}
+                      minLength={10}
+                    />
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="features">Fitur (JSONB)</FieldLabel>
+                    <Textarea
+                      required
+                      id="features"
+                      name="features"
+                      placeholder="Ketik setiap fitur di baris baru (Enter)..."
+                      // Konversi array fitur dari DB menjadi string multi-baris
+                      defaultValue={productToUpdate?.features ? productToUpdate.features.join("\n") : ""}
+                      minLength={1}
+                    />
+                    <FieldDescription className="text-xs">Pisahkan dengan Enter</FieldDescription>
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="fileUrl">File Produk Digital</FieldLabel>
+
+                    {selectedFile && (
+                      <Attachment className="mt-3">
+                        <AttachmentMedia>
+                          <FileTextIcon />
+                        </AttachmentMedia>
+                        <AttachmentContent>
+                          <AttachmentTitle>{selectedFile.name}</AttachmentTitle>
+                          <AttachmentDescription>
+                            {selectedFile.type} · {selectedFile.size}
+                          </AttachmentDescription>
+                        </AttachmentContent>
+                      </Attachment>
+                    )}
+
+                    <Label htmlFor="fileUrl" className="flex justify-center space-x-4 rounded-md border border-input border-dashed cursor-pointer px-6 py-10 transition-colors duration-300 hover:bg-muted-foreground/10">
+                      <div className="flex sm:flex-row flex-col items-center gap-3 sm:gap-4 text-center">
+                        <UploadIcon
+                          aria-hidden={true}
+                          className="h-8 w-8 sm:h-6 sm:w-6 text-muted-foreground"
+                        />
+                        <div className="relative rounded-sm hover:underline hover:underline-offset-4">
+                          <span>Klik di sini untuk unggah file</span>
+                          <Input
+                            required={!productToUpdate && !selectedFile}
+                            className="sr-only"
+                            id="fileUrl"
+                            name="productFile"
+                            type="file"
+                            // accept=".xlsx,.xls,.csv,.pdf,.zip"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                if (file.size > 4.5 * 1024 * 1024) {
+                                  toast.add({
+                                    type: "error",
+                                    description: "Ukuran file tidak boleh melebihi 4.5 MB!",
+                                    priority: "high",
+                                  });
+                                  e.target.value = "";
+                                  setSelectedFile(null);
+                                  return;
+                                }
+
+                                // Set info file ke state
+                                const ext = file.name.split('.').pop()?.toUpperCase() || "FILE";
+                                setSelectedFile({
+                                  name: file.name,
+                                  size: formatBytes(file.size),
+                                  type: ext,
+                                });
+                              }
+                            }}
+                          />
+                        </div>
+                        {/* <p className="text-pretty pl-1">untuk di-upload</p> */}
+                      </div>
+                    </Label>
+                    <p className="flex items-center justify-between text-pretty text-muted-foreground text-xs leading-5">
+                      Recommended max. size: 10 MB, Accepted file types: XLSX, XLS, CSV.
+                    </p>
+
+                    <input type="hidden" name="oldFileUrl" value={productToUpdate?.file_url || ""} />
                   </Field>
                 </FieldGroup>
+              </form>
+            </div>
 
-                <Field>
-                  <FieldLabel htmlFor="category">Kategori</FieldLabel>
-                  <Select
-                    required
-                    items={categoryList}
-                    name="category"
-                    defaultValue={productToUpdate?.category_id || ""}
-                  >
-                    <SelectTrigger id="category">
-                      <SelectValue placeholder="Pilih kategori" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel>Daftar Kategori</SelectLabel>
-                        {categoryList?.map((item) => (
-                          <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </Field>
-
-                <Field>
-                  <FieldLabel htmlFor="shortDesc">Deskripsi Singkat</FieldLabel>
-                  <Textarea
-                    required
-                    id="shortDesc"
-                    name="shortDesc"
-                    placeholder="Tulis ringkasan singkat (maks. 150 karakter)..."
-                    defaultValue={productToUpdate?.short_desc || ""}
-                    minLength={10}
-                  />
-                </Field>
-
-                <Field>
-                  <FieldLabel htmlFor="longDesc">Deskripsi Lengkap</FieldLabel>
-                  <Textarea
-                    required
-                    id="longDesc"
-                    name="longDesc"
-                    className="min-h-[120px]"
-                    placeholder="Jelaskan detail produk selengkap-lengkapnya di sini..."
-                    defaultValue={productToUpdate?.long_desc || ""}
-                    minLength={10}
-                  />
-                </Field>
-
-                <Field>
-                  <FieldLabel htmlFor="features">Fitur (JSONB)</FieldLabel>
-                  <Textarea
-                    required
-                    id="features"
-                    name="features"
-                    placeholder="Ketik setiap fitur di baris baru (Enter)..."
-                    // Konversi array fitur dari DB menjadi string multi-baris
-                    defaultValue={productToUpdate?.features ? productToUpdate.features.join("\n") : ""}
-                    minLength={1}
-                  />
-                  <FieldDescription className="text-xs">Pisahkan dengan Enter</FieldDescription>
-                </Field>
-
-                <Field>
-                  <FieldLabel htmlFor="fileUrl">File Produk Digital</FieldLabel>
-
-                  <div className="flex justify-center space-x-4 rounded-md border border-input border-dashed px-6 py-10">
-                    <div className="flex sm:flex-row flex-col items-center gap-3 sm:gap-4 text-center">
-                      <UploadIcon
-                        aria-hidden={true}
-                        className="h-8 w-8 sm:h-6 sm:w-6 text-muted-foreground"
-                      />
-                      <Label
-                        className="relative cursor-pointer rounded-sm font-medium text-primary hover:underline hover:underline-offset-4"
-                        htmlFor="fileUrl"
-                      >
-                        <span>Tarik file atau klik untuk upload</span>
-                        <Input
-                          required
-                          className="sr-only"
-                          id="fileUrl"
-                          name="productFile"
-                          type="file"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              if (file.size > 4.5 * 1024 * 1024) {
-                                toast.add({
-                                  type: "error",
-                                  description: "Ukuran file tidak boleh melebihi 4.5 MB!",
-                                  priority: "high",
-                                });
-                                e.target.value = "";
-                              }
-                            }
-                          }}
-                        />
-                      </Label>
-                      {/* <p className="text-pretty pl-1">untuk di-upload</p> */}
-                    </div>
+            <DialogFooter className="pt-4">
+              <DialogClose render={<Button variant="outline" />}>
+                Batal
+              </DialogClose>
+              <Button form="productForm" type="submit" disabled={upsertIsPending}>
+                {upsertIsPending ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin"></div>
+                    Menyimpan...
                   </div>
-                  <p className="flex items-center justify-between text-pretty text-muted-foreground text-xs leading-5">
-                    Recommended max. size: 10 MB, Accepted file types: XLSX, XLS, CSV.
-                  </p>
-
-                  <Attachment>
-                    <AttachmentMedia>
-                      <FileTextIcon />
-                    </AttachmentMedia>
-                    <AttachmentContent>
-                      <AttachmentTitle>salse-dashboard.pdf</AttachmentTitle>
-                      <AttachmentDescription>PDF · 2.4 MB</AttachmentDescription>
-                    </AttachmentContent>
-                    <AttachmentActions>
-                      <AttachmentAction aria-label="Remove file"><XIcon /></AttachmentAction>
-                    </AttachmentActions>
-                  </Attachment>
-
-                  {/* <Input
-                    name="productFile"
-                    type="file"
-                    className="cursor-pointer file:cursor-pointer file:bg-muted file:border-0 file:rounded-md file:mr-4 file:px-3 file:py-1"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        if (file.size > 4.5 * 1024 * 1024) {
-                          toast.add({
-                            type: "error",
-                            description: "Ukuran file tidak boleh melebihi 4.5 MB!",
-                            priority: "high",
-                          });
-                          e.target.value = "";
-                        }
-                      }
-                    }}
-                  /> */}
-                  <input type="hidden" name="oldFileUrl" value={productToUpdate?.file_url || ""} />
-                </Field>
-              </FieldGroup>
-            </form>
-          </div>
-
-          <DialogFooter className="pt-4">
-            <DialogClose render={<Button variant="outline" />}>
-              Batal
-            </DialogClose>
-            <Button form="productForm" type="submit" disabled={upsertIsPending}>
-              {upsertIsPending ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin"></div>
-                  Menyimpan...
-                </div>
-              ) : productToUpdate ? (
-                "Simpan Perubahan"
-              ) : (
-                "Tambahkan Produk"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      {
+                ) : productToUpdate ? (
+                  "Simpan Perubahan"
+                ) : (
+                  "Tambahkan Produk"
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
         // #endregion CREATE & UPDATE DIALOG
       }
-
-
       {
         // #region DELETE ALERT DIALOG
-      }
-      <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
-        <AlertDialogContent size="sm">
-          <AlertDialogHeader>
-            <AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive">
-              <Trash2Icon />
-            </AlertDialogMedia>
-            <AlertDialogTitle>Hapus produk?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tindakan ini akan menghapus produk secara permanen dan tidak dapat dipulihkan.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel variant="outline" onClick={() => setProductToDelete(null)}>Batal</AlertDialogCancel>
-            <AlertDialogAction variant="destructive" disabled={upsertIsPending} onClick={confirmDelete}>{upsertIsPending ? "Menghapus..." : "Hapus"}</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      {
+        <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+          <AlertDialogContent size="sm">
+            <AlertDialogHeader>
+              <AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive">
+                <Trash2Icon />
+              </AlertDialogMedia>
+              <AlertDialogTitle>Hapus produk?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tindakan ini akan menghapus produk serta berkasnya secara permanen dan tidak dapat dipulihkan!<br />
+                <span className="text-destructive">Arsipkan produk (status tidak aktif) sebagai gantinya.</span>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel variant="outline" disabled={isPending} onClick={() => setProductToDelete(null)}>Batal</AlertDialogCancel>
+              <AlertDialogAction variant="destructive" disabled={isPending} onClick={confirmDelete}>{isPending ? "Menghapus..." : "Hapus"}</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
         // #endregion DELETE ALERT DIALOG
       }
     </>

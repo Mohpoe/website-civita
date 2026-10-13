@@ -1,6 +1,8 @@
 import { PageTitle } from "@/components/context/dashboard-page-title";
 import DashboardAdmin from "@/components/dashboard-admin";
-import { getCategories, getOrders, getProducts } from "@/lib/actions/product";
+import { getCategories } from "@/lib/actions/category";
+import { getOrders } from "@/lib/actions/order";
+import { getProducts } from "@/lib/actions/product";
 import { Category, Order, Product } from "@/types/global";
 import { Metadata } from "next";
 

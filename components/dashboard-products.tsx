@@ -15,57 +15,7 @@ interface DashboardProductsProps {
   products: Product[],
 }
 
-export function ProductSkeleton({ count = 6 }) {
-  // Membuat array tiruan berdasarkan jumlah count untuk merender list skeleton
-  const skeletons = Array.from({ length: count })
-
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-      {skeletons.map((_, idx) => (
-        <div
-          key={idx}
-          className="bg-background rounded-2xl overflow-hidden border border-foreground/5 shadow-[0_8px_30px_rgb(0,0,0,0.02)] flex flex-col animate-pulse"
-        >
-          {/* Placeholder Gambar (Aspect Ratio 4/3) */}
-          <div className="relative aspect-[4/3] bg-muted/80 flex items-center justify-center">
-            {/* Opsi tambahan: Efek placeholder ikon file jika ingin mempermanis */}
-            <div className="w-12 h-12 rounded-full bg-foreground/5 opacity-40" />
-
-            {/* Placeholder untuk Badge Kategori di kanan atas */}
-            <div className="absolute top-4 right-4 w-20 h-6 bg-foreground/10 rounded-full" />
-          </div>
-
-          {/* Konten Teks & Tombol */}
-          <div className="p-5 flex-1 flex flex-col">
-            {/* Placeholder Judul (2 Baris) */}
-            <div className="space-y-2 mb-3">
-              <div className="h-5 bg-foreground/10 rounded-md w-5/6" />
-              <div className="h-5 bg-foreground/10 rounded-md w-2/3" />
-            </div>
-
-            {/* Placeholder Deskripsi Singkat (2 Baris) */}
-            <div className="space-y-2 mb-6 flex-1">
-              <div className="h-4 bg-muted-foreground/15 rounded-md w-full" />
-              <div className="h-4 bg-muted-foreground/15 rounded-md w-4/5" />
-            </div>
-
-            {/* Bagian Bawah: Harga & Tombol */}
-            <div className="flex items-center justify-between mt-auto pt-4 border-t border-foreground/5">
-              {/* Placeholder Harga */}
-              <div className="h-5 bg-foreground/10 rounded-md w-24" />
-
-              {/* Placeholder Tombol Detail */}
-              <div className="h-9 bg-foreground/10 rounded-full w-20" />
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-}
-
 export default function DashboardProducs({ products }: DashboardProductsProps) {
-
   // Dialog/Modal State
   const [detailDialog, setDetailDialog] = useState(false);
 
@@ -153,11 +103,6 @@ export default function DashboardProducs({ products }: DashboardProductsProps) {
   const featureList = typeof selectedProduct?.features === "string"
     ? JSON.parse(selectedProduct.features)
     : (selectedProduct?.features || []);
-
-  // const openProductDetails = (product: Product) => {
-  //   setSelectedProduct(product);
-  //   setIsModalOpen(true);
-  // };
 
   return (
     <>

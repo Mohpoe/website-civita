@@ -3,12 +3,11 @@
 import { ROUTES } from "@/lib/constants";
 import { sql } from "@/lib/utils";
 import { productSchema } from "@/lib/zod-schemas";
-import { Category, Order, Product } from "@/types/global";
+import { Product } from "@/types/global";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { del, put, putImage } from "@vercel/blob";
 import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
-import { success } from "zod";
 
 // #region 1. GET PRODUCTS
 export async function getProducts(isActive = false): Promise<Product[]> {
@@ -48,61 +47,7 @@ export async function getProducts(isActive = false): Promise<Product[]> {
 }
 // #endregion 1. GET PRODUCTS
 
-// #region 2. GET CATEGORIES
-export async function getCategories(): Promise<Category[]> {
-  try {
-    const data = await sql`
-      SELECT * FROM categories ORDER BY name ASC
-    `;
-    return data as Category[];
-  } catch (error) {
-    console.error("Gagal mengambil kategori:", error);
-    return [];
-  }
-}
-// #endregion 2. GET CATEGORIES
-
-// #region 3. GET ORDERS
-export async function getOrders(userId?: string): Promise<Order[]> {
-  try {
-    const data = !userId
-      ? await sql`
-          SELECT
-            o.*,
-            CASE
-              WHEN p.id IS NOT NULL THEN
-                to_jsonb(p.*) || jsonb_build_object('category', CASE WHEN c.id IS NOT NULL THEN to_jsonb(c.*) ELSE null END)
-              ELSE null
-            END as product
-          FROM orders o
-          LEFT JOIN products p ON o.product_id = p.id
-          LEFT JOIN categories c ON p.category_id = c.id
-          ORDER BY o.created_at DESC
-      `
-      : await sql`
-        SELECT
-          o.*,
-          -- Jika product_id ada, gabungkan data produk dengan data kategori yang di-convert ke JSON
-          CASE
-            WHEN p.id IS NOT NULL THEN
-              to_jsonb(p.*) || jsonb_build_object('category', CASE WHEN c.id IS NOT NULL THEN to_jsonb(c.*) ELSE null END)
-            ELSE null
-          END as product
-        FROM orders o
-        LEFT JOIN products p ON o.product_id = p.id
-        LEFT JOIN categories c ON p.category_id = c.id
-        WHERE o.user_id = ${userId}
-        ORDER BY o.created_at DESC
-      `;
-    return data as Order[];
-  } catch (error) {
-    console.error("Gagal mengambil order:", error);
-    return [];
-  }
-}
-// #endregion 3. GET ORDERS
-
-// #region 4. CREATE/UPDATE PRODUCT
+// #region 2. CREATE/UPDATE PRODUCT
 export async function upsertProductAction(state: any, formData: FormData) {
   await auth.protect();
   const user = await currentUser();
@@ -116,7 +61,7 @@ export async function upsertProductAction(state: any, formData: FormData) {
     ? featuresRaw.split("\n").map((f) => f.trim()).filter((f) => f !== "")
     : [];
 
-  // #region THUMBNAIL HANDLER
+  // #region - THUMBNAIL HANDLER
   const imageFile = formData.get("imageFile") as File | null;
   const oldImageUrl = formData.get("oldImageUrl") as string | null;
   let finalImageUrl = oldImageUrl || "";
@@ -143,7 +88,7 @@ export async function upsertProductAction(state: any, formData: FormData) {
   }
   // #endregion THUMBNAIL HANDLER
 
-  // #region FILE HANDLER
+  // #region - FILE HANDLER
   const productFile = formData.get("productFile") as File | null;
   const oldFileUrl = formData.get("oldFileUrl") as string | null;
   let finalFileUrl = oldFileUrl || "";
@@ -231,26 +176,54 @@ export async function upsertProductAction(state: any, formData: FormData) {
     return { success: false, message: "Gagal menyimpan produk. Hubungi developer." };
   }
 }
-// #endregion 4. CREATE/UPDATE PRODUCT
+// #endregion 2. CREATE/UPDATE PRODUCT
 
-// #region 5. DELETE PRODUCT
-export async function deleteProductAction(state: any, formData: FormData) {
+// #region 3. DELETE PRODUCT
+export async function deleteProductAction(formData: FormData) {
   await auth.protect();
   const user = await currentUser();
   if (!user || user.publicMetadata.role !== "admin") return { success: false, message: "Akses tidak valid, silakan login!" };
 
   const id = formData.get("id") as string | null;
+  if (!id) return { success: false, message: "ID Produk tidak ditemukan!" };
 
   try {
+    const rows = await sql`SELECT image_url, file_url FROM products WHERE id = ${id}`;
+    if (rows.length === 0) return { success: false, message: "Produk tidak ditemukan di database." };
+
+    const product = rows[0];
+
+    if (product.image_url) {
+      try {
+        await del(product.image_url, {
+          storeId: process.env.PUBLIK_STORE_ID,
+          oidcToken: process.env.VERCEL_OIDC_TOKEN
+        });
+      } catch (e) {
+        console.error("Gagal menghapus thumbnail:", e);
+      }
+    }
+
+    if (product.file_url) {
+      try {
+        await del(product.file_url, {
+          storeId: process.env.PRIVATE_BLOB_STORE_ID,
+          oidcToken: process.env.VERCEL_OIDC_TOKEN,
+        });
+      } catch (e) {
+        console.error("Gagal menghapus file digital:", e);
+      }
+    }
+
     await sql`DELETE FROM products WHERE id = ${id}`;
 
     revalidatePath(ROUTES.DASHBOARD.HOME);
     revalidatePath(ROUTES.DASHBOARD.INVENTORY);
     revalidatePath(ROUTES.DASHBOARD.ADMIN);
-    return { success: true, message: "Produk berhasil dihapus!" };
+    return { success: true, message: "Produk dan file berhasil dihapus!" };
   } catch (error) {
     console.error("Error deleting product:", error);
     return { success: false, message: "Gagal menghapus produk." };
   }
 }
-// #endregion 5. DELETE PRODUCT
+// #endregion 3. DELETE PRODUCT

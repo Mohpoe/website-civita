@@ -23,5 +23,6 @@ export const ROUTES = {
     HOME: "/dashboard",
     INVENTORY: "/dashboard/inventory",
     ADMIN: "/dashboard/admin",
+    CATEGORY: "/dashboard/admin/category",
   },
 };
