@@ -4,7 +4,7 @@ import { deleteBlobFileAction, deleteProductAction, upsertProductAction } from "
 import { formatRupiah } from "@/lib/utils";
 import { Category, Order, Product } from "@/types/global";
 import { columnFilteringFeature, ColumnFiltersState, columnVisibilityFeature, ColumnVisibilityState, createColumnHelper, createFilteredRowModel, createPaginatedRowModel, createSortedRowModel, filterFn_includesString, globalFilteringFeature, rowPaginationFeature, rowSortingFeature, sortFn_alphanumeric, sortFn_text, SortingState, tableFeatures, useTable } from "@tanstack/react-table";
-import { upload } from "@vercel/blob/client";
+import { uploadPresigned } from "@vercel/blob/client";
 import { BadgeCheckIcon, BadgeXIcon, ChevronDownIcon, ChevronFirstIcon, ChevronLastIcon, ChevronLeftIcon, ChevronRightIcon, ChevronsUpDownIcon, ChevronUpIcon, Columns3Icon, EyeIcon, FileTextIcon, GhostIcon, ImageIcon, MoreHorizontalIcon, PlusIcon, RefreshCcwIcon, Rows3Icon, SearchIcon, SlidersHorizontalIcon, SquarePenIcon, TagsIcon, Trash2Icon, UploadIcon } from "lucide-react";
 import { useActionState, useEffect, useMemo, useState, useTransition } from "react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle } from "./ui/alert-dialog";
@@ -998,7 +998,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                   <Field>
                     <FieldLabel htmlFor="fileUrl">File Produk Digital <span className="text-destructive">*</span></FieldLabel>
 
-                    {selectedFile && (
+                    {(selectedFile || isUploadingFile) && (
                       <Attachment className="mt-3">
                         <AttachmentMedia>
                           {isUploadingFile ? (
@@ -1008,7 +1008,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                           )}
                         </AttachmentMedia>
                         <AttachmentContent>
-                          <AttachmentTitle>{selectedFile.name}</AttachmentTitle>
+                          <AttachmentTitle>{selectedFile?.name}</AttachmentTitle>
                           <AttachmentDescription>
                             {isUploadingFile ? (
                               <>
@@ -1016,7 +1016,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                               </>
                             ) : (
                               <>
-                                {selectedFile.type} · {selectedFile.size}
+                                {selectedFile?.type} · {selectedFile?.size}
                               </>
                             )}
                           </AttachmentDescription>
@@ -1024,7 +1024,10 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                       </Attachment>
                     )}
 
-                    <Label htmlFor="fileUrl" className="flex justify-center space-x-4 rounded-md border border-input border-dashed cursor-pointer px-6 py-10 transition-colors duration-300 hover:bg-muted-foreground/10">
+                    <Label
+                      htmlFor="fileUrl"
+                      className={`flex justify-center space-x-4 rounded-md border border-input border-dashed px-6 py-10 transition-all duration-300 ${isUploadingFile ? 'opacity-50 pointer-events-none grayscale' : 'cursor-pointer hover:bg-muted-foreground/10'}`}
+                    >
                       <div className="flex sm:flex-row flex-col items-center gap-3 sm:gap-4 text-center">
                         <UploadIcon
                           aria-hidden={true}
@@ -1036,12 +1039,22 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                             required={!productToUpdate && !selectedFile && !uploadedFileUrl}
                             className="sr-only"
                             id="fileUrl"
-                            name="productFile"
                             type="file"
                             disabled={isUploadingFile}
                             onChange={async (e) => {
                               const file = e.target.files?.[0];
                               if (!file) return;
+
+                              if (uploadedFileUrl && uploadedFileUrl !== productToUpdate?.file_url) {
+                                deleteBlobFileAction(uploadedFileUrl); // Jalankan di background
+                              }
+
+                              const ext = file.name.split('.').pop()?.toUpperCase() || "FILE";
+                              setSelectedFile({
+                                name: file.name,
+                                size: formatBytes(file.size),
+                                type: ext,
+                              });
 
                               setIsUploadingFile(true);
                               setUploadProgress(0);
@@ -1049,11 +1062,10 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
 
                               try {
                                 // PROSES CLIENT UPLOAD LANGSUNG KE VERCEL
-                                const newBlob = await upload(file.name, file, {
-                                  access: 'private', // atau 'private' jika Vercel Blob Anda disetup untuk itu
-                                  handleUploadUrl: '/api/upload', // Endpoint API route yang kita buat
+                                const newBlob = await uploadPresigned(`products/${file.name}`, file, {
+                                  access: "private",
+                                  handleUploadUrl: "/api/upload",
                                   onUploadProgress: (progressEvent) => {
-                                    // Opsional: Tampilkan persentase jika perlu
                                     const percentage = Math.round((progressEvent.loaded / progressEvent.total) * 100);
                                     setUploadProgress(percentage);
                                   },
@@ -1062,23 +1074,15 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                                 // Simpan URL yang didapat ke state
                                 setUploadedFileUrl(newBlob.url);
 
-                                // Update UI Selected File
-                                const ext = file.name.split('.').pop()?.toUpperCase() || "FILE";
-                                setSelectedFile({
-                                  name: file.name,
-                                  size: formatBytes(file.size),
-                                  type: ext,
-                                });
-
                                 toast.add({ type: "success", description: "File berhasil diunggah!" });
                               } catch (error) {
                                 console.error(error);
                                 toast.add({ type: "error", description: "Gagal mengunggah file. Coba lagi." });
-                                e.target.value = ""; // Kosongkan input jika gagal
                                 setSelectedFile(null);
                                 setUploadedFileUrl(null);
                               } finally {
                                 setIsUploadingFile(false);
+                                e.target.value = "";
                               }
                             }}
                           />
