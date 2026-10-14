@@ -822,7 +822,6 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                 {productToUpdate
                   ? "Ubah detail informasi produk di bawah ini."
                   : "Isi form di bawah ini untuk menambahkan produk baru ke katalog."}
-                <span className="block text-xs text-destructive">Semua form wajib diisi!</span>
               </DialogDescription>
             </DialogHeader>
             <Separator className="py-0" />
