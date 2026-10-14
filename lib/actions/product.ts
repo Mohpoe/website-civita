@@ -70,14 +70,14 @@ export async function upsertProductAction(state: any, formData: FormData) {
     if (imageFile.size > 4 * 1024 * 1024) return { success: false, message: "Ukuran gambar melebihi 4MB!" };
     try {
       if (oldImageUrl) await del(oldImageUrl, {
-        storeId: process.env.PUBLIK_STORE_ID,
+        storeId: process.env.PUBLIC_BLOB_STORE_ID,
         oidcToken: process.env.VERCEL_OIDC_TOKEN
       });
       const blob = await putImage(`thumbnails/${imageFile.name}`, imageFile, {
         access: "public",
         optimizeImage: { width: 500 },
         addRandomSuffix: true,
-        storeId: process.env.PUBLIK_STORE_ID,
+        storeId: process.env.PUBLIC_BLOB_STORE_ID,
         oidcToken: process.env.VERCEL_OIDC_TOKEN,
       });
       finalImageUrl = blob.url;
@@ -208,7 +208,7 @@ export async function deleteProductAction(formData: FormData) {
     if (product.image_url) {
       try {
         await del(product.image_url, {
-          storeId: process.env.PUBLIK_STORE_ID,
+          storeId: process.env.PUBLIC_BLOB_STORE_ID,
           oidcToken: process.env.VERCEL_OIDC_TOKEN
         });
       } catch (e) {
@@ -249,7 +249,7 @@ export async function deleteBlobFileAction(url: string) {
 
   try {
     await del(url, {
-      storeId: process.env.PRIVATE_BLOB_STORE_ID, // Ganti ke PUBLIK_STORE_ID jika itu thumbnail
+      storeId: process.env.PRIVATE_BLOB_STORE_ID, // Ganti ke PUBLIC_BLOB_STORE_ID jika itu thumbnail
       oidcToken: process.env.VERCEL_OIDC_TOKEN,
     });
     console.log("Orphaned file berhasil dihapus (Cleanup):", url);
