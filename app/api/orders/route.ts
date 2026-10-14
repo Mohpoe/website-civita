@@ -20,7 +20,6 @@ export async function GET(req: Request) {
       SELECT
         o.order_id,
         o.product_id,
-        o.product_name,
         o.amount,
         o.status,
         o.snap_token,

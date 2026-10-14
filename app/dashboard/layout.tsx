@@ -4,6 +4,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import Script from "next/script";
 
 export default async function DashBoardLayout({ children }: LayoutProps<"/dashboard">) {
   const { isAuthenticated } = await auth();
@@ -29,6 +30,11 @@ export default async function DashBoardLayout({ children }: LayoutProps<"/dashbo
               </div>
             </div>
           </main>
+          <Script
+            src="https://app.sandbox.midtrans.com/snap/snap.js"
+            data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
+            strategy="lazyOnload" // Tidak akan memperlambat loading web Anda
+          />
         </PageTitleProvider>
       </SidebarInset>
     </SidebarProvider>

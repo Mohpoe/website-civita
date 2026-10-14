@@ -1,4 +1,5 @@
 import { sql } from '@/lib/utils';
+import { Order } from '@/types/global';
 import { currentUser } from '@clerk/nextjs/server';
 import { get } from '@vercel/blob';
 import { NextResponse } from 'next/server';
@@ -19,13 +20,14 @@ export async function GET(req: Request) {
 
     // 2. Keamanan: Pastikan user sudah login
     const user = await currentUser();
-    if (!user) return NextResponse.json("Unauthorized", { status: 401 });
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    // 3. Pengecekan Otorisasi di Database (Kompabilitas Edge via HTTP)
+    // 3. Pengecekan Otorisasi di Database
     const rows = await sql`
-      SELECT status, download_url, product_name
-      FROM orders
-      WHERE order_id = ${orderId} AND user_id = ${user.id}
+      SELECT o.status, o.download_url, CASE WHEN p.id IS NOT NULL THEN jsonb_build_object('title', p.title) ELSE null END as product
+      FROM orders o
+      LEFT JOIN products p ON o.product_id = p.id
+      WHERE o.order_id = ${orderId} AND o.user_id = ${user.id}
       LIMIT 1
     `;
 
@@ -48,46 +50,32 @@ export async function GET(req: Request) {
     }
 
     // 4. PROSES STREAMING: Ambil file dari Private Blob
-    const result = await get(fileUrl, { access: "private", oidcToken: process.env.VERCEL_OIDC_TOKEN });
+    const result = await get(fileUrl, {
+      access: "private",
+      storeId: process.env.PRIVATE_BLOB_STORE_ID,
+      oidcToken: process.env.VERCEL_OIDC_TOKEN
+    });
 
     if (result?.statusCode !== 200) {
-      return new NextResponse("Tidak ditemukan", { status: 404 });
+      return new NextResponse("File tidak ditemukan di penyimpanan server", { status: 404 });
     }
 
     const originalExtension = fileUrl.substring(fileUrl.lastIndexOf('.'));
-    const safeProductName = order.product_name.replace(/[^a-zA-Z0-9]/g, '_');
+    const safeProductName = order.product.title.replace(/[^a-zA-Z0-9]/g, '_');
     const fileName = `${safeProductName}${originalExtension}`;
 
-    return new NextResponse(result.stream, {
+    return new NextResponse(result.stream as any, {
       headers: {
-        "Content-Type": result.blob.contentType,
-        'Content-Disposition': `attachment; filename="${fileName}"`,
+        // [PERBAIKAN FATAL]: Gunakan result.contentType, dan beri nilai fallback yang aman
+        "Content-Type": result.blob.contentType || "application/octet-stream",
+        "Content-Disposition": `attachment; filename="${fileName}"`,
         "X-Content-Type-Options": "nosniff",
+
+        // [TAMBAHAN UX & PERFORMA]: Header resmi anjuran Vercel untuk Private Blob
+        "Cache-Control": "private, no-cache",
+        "ETag": result.headers.get("etag") || "",
       },
     });
-
-    // try {
-    //   const response = await fetch(fileUrl);
-
-    //   if (!response.ok) {
-    //     throw new Error('Gagal mengambil file dari storage');
-    //   }
-
-    //   // Bersihkan nama file agar sesuai standar
-    //   const safeFilename = order.product_name.replace(/[^a-zA-Z0-9]/g, '_') + ".zip";
-
-    //   // MENGGUNAKAN STREAMING (response.body) ALIH-ALIH BUFFER
-    //   // File dialirkan layaknya air, sehingga tidak menumpuk di memori server!
-    //   return new NextResponse(response.body, {
-    //     headers: {
-    //       'Content-Type': response.headers.get('Content-Type') || 'application/octet-stream',
-    //       'Content-Disposition': `attachment; filename="${safeFilename}"`,
-    //     },
-    //   });
-    // } catch (fetchError) {
-    //   console.error('Error fetching file:', fetchError);
-    //   return NextResponse.json({ error: 'Gagal memproses file' }, { status: 500 });
-    // }
 
   } catch (error: any) {
     console.error('Download error:', error);

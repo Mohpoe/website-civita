@@ -66,8 +66,8 @@ export async function POST(req: Request) {
     const snapToken = data.token;
 
     await sql`
-      INSERT INTO orders (order_id, user_id, product_id, product_name, amount, status, snap_token, download_url)
-      VALUES (${orderId}, ${user.id}, ${productId}, ${product.title}, ${product.price}, 'pending', ${snapToken}, ${product.file_url})
+      INSERT INTO orders (order_id, user_id, product_id, amount, status, snap_token, download_url)
+      VALUES (${orderId}, ${user.id}, ${productId}, ${product.price}, 'pending', ${snapToken}, ${product.file_url})
     `;
 
     return NextResponse.json({ token: snapToken, orderId });

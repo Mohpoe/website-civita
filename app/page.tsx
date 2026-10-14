@@ -6,7 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { APP_CONFIG, ROUTES } from "@/lib/constants";
 import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, Briefcase, ChevronRight, FileText, Layout, Mail, MessageCircle, QuoteIcon, Sparkles, XIcon } from "lucide-react";
+import { ArrowRight, Briefcase, ChevronLeft, ChevronRight, FileText, Layout, Mail, MessageCircle, QuoteIcon, Sparkles, XIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -190,10 +190,10 @@ const Hero = () => {
 
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tighter leading-[1.05] text-foreground">
             Bantu kamu <br />
-            <span className="text-muted-foreground">lolos kerja!</span>
+            <span className="text-muted-foreground/80">lolos kerja!</span>
           </h1>
 
-          <p className="text-lg text-zinc-600 max-w-md leading-relaxed">
+          <p className="text-lg text-foreground/70 max-w-md leading-relaxed">
             Tersedia berbagai desain CV (Curriculum Vitae) & resume, mulai dari ATS-friendly, CV Creative, maupun CV basic yang bisa kamu sesuaikan dengan background kerja dan pendidikanmu.
           </p>
 
@@ -274,7 +274,7 @@ const Services = () => {
               </div>
               <div>
                 <h3 className="text-2xl font-bold mb-2 tracking-tight">Cover Letter</h3>
-                <p className="text-muted-foreground">Cover letter & surat lamaran kerja yang disusun secara profesional untuk perbesar peluang lolos kerja.</p>
+                <p className="text-background/80">Cover letter & surat lamaran kerja yang disusun secara profesional untuk perbesar peluang lolos kerja.</p>
               </div>
             </div>
           </div>
@@ -349,7 +349,7 @@ const Process = () => {
                   </div>
 
                   <div className="pt-2">
-                    <h3 className="text-xl font-bold mb-2 tracking-tight group-hover:text-zinc-600 transition-colors">{step.title}</h3>
+                    <h3 className="text-xl font-bold mb-2 tracking-tight group-hover:text-foreground/70 transition-colors">{step.title}</h3>
                     <p className="text-muted-foreground leading-relaxed max-w-md">{step.desc}</p>
                   </div>
                 </div>
@@ -432,7 +432,7 @@ const PortfolioShowcase = () => {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`relative px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 whitespace-nowrap ${activeTab === tab ? "text-foreground shadow-sm" : "text-muted-foreground hover:text-zinc-700"
+                className={`relative px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 whitespace-nowrap ${activeTab === tab ? "text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground/80"
                   }`}
               >
                 {activeTab === tab && (
@@ -519,7 +519,7 @@ const TestimonialTextVariant = () => {
       {reviews.map((review, i) => (
         <div key={i} className="bg-background border border-foreground/5 rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-shadow">
           <QuoteIcon className="w-8 h-8 text-input mb-6" />
-          <p className="text-zinc-600 mb-8 leading-relaxed">"{review.text}"</p>
+          <p className="text-foreground/70 mb-8 leading-relaxed">"{review.text}"</p>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center font-bold text-muted-foreground">
               {review.name.charAt(0)}
@@ -571,13 +571,13 @@ const TestimonialChatVariant = () => {
         onClick={() => scroll("left")}
         className="hidden md:flex absolute -left-12 top-1/2 -translate-y-1/2 w-12 h-12 bg-background/80 backdrop-blur-md border border-foreground/5 rounded-full items-center justify-center shadow-sm hover:scale-105 hover:shadow-md transition-all z-10"
       >
-        <ChevronRight className="w-5 h-5 text-zinc-600 rotate-180" />
+        <ChevronLeft className="w-5 h-5 text-foreground/70" />
       </button>
       <button
         onClick={() => scroll("right")}
         className="hidden md:flex absolute -right-12 top-1/2 -translate-y-1/2 w-12 h-12 bg-background/80 backdrop-blur-md border border-foreground/5 rounded-full items-center justify-center shadow-sm hover:scale-105 hover:shadow-md transition-all z-10"
       >
-        <ChevronRight className="w-5 h-5 text-zinc-600" />
+        <ChevronRight className="w-5 h-5 text-foreground/70" />
       </button>
 
       {/* Slider Container with Native Scroll Snap */}
@@ -637,7 +637,7 @@ const Testimonials = () => {
           <div className="bg-input/50 backdrop-blur-md p-1 rounded-full flex gap-1 border border-foreground/5">
             <button
               onClick={() => setActiveVariant("text")}
-              className={`relative px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 ${activeVariant === "text" ? "text-foreground shadow-sm" : "text-muted-foreground hover:text-zinc-700"
+              className={`relative px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 ${activeVariant === "text" ? "text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground/80"
                 }`}
             >
               {activeVariant === "text" && (
@@ -647,7 +647,7 @@ const Testimonials = () => {
             </button>
             <button
               onClick={() => setActiveVariant("chat")}
-              className={`relative px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 ${activeVariant === "chat" ? "text-foreground shadow-sm" : "text-muted-foreground hover:text-zinc-700"
+              className={`relative px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 ${activeVariant === "chat" ? "text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground/80"
                 }`}
             >
               {activeVariant === "chat" && (
