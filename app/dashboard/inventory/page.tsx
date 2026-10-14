@@ -1,9 +1,9 @@
-import { PageTitle } from "@/components/context/dashboard-page-title"
+import { PageTitle } from "@/components/context/dashboard-page-title";
 import DashboardInventory from "@/components/dashboard-inventory";
-import { getOrders } from "@/lib/actions/product";
+import { getOrders } from "@/lib/actions/order";
 import { Order } from "@/types/global";
 import { currentUser } from "@clerk/nextjs/server";
-import { Metadata } from "next"
+import { Metadata } from "next";
 
 const mainTitle = "Pesanan Saya";
 
