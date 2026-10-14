@@ -1,9 +1,10 @@
 "use client";
 
-import { deleteProductAction, upsertProductAction } from "@/lib/actions/product";
+import { deleteBlobFileAction, deleteProductAction, upsertProductAction } from "@/lib/actions/product";
 import { formatRupiah } from "@/lib/utils";
 import { Category, Order, Product } from "@/types/global";
 import { columnFilteringFeature, ColumnFiltersState, columnVisibilityFeature, ColumnVisibilityState, createColumnHelper, createFilteredRowModel, createPaginatedRowModel, createSortedRowModel, filterFn_includesString, globalFilteringFeature, rowPaginationFeature, rowSortingFeature, sortFn_alphanumeric, sortFn_text, SortingState, tableFeatures, useTable } from "@tanstack/react-table";
+import { upload } from "@vercel/blob/client";
 import { BadgeCheckIcon, BadgeXIcon, ChevronDownIcon, ChevronFirstIcon, ChevronLastIcon, ChevronLeftIcon, ChevronRightIcon, ChevronsUpDownIcon, ChevronUpIcon, Columns3Icon, EyeIcon, FileTextIcon, GhostIcon, ImageIcon, MoreHorizontalIcon, PlusIcon, RefreshCcwIcon, Rows3Icon, SearchIcon, SlidersHorizontalIcon, SquarePenIcon, TagsIcon, Trash2Icon, UploadIcon } from "lucide-react";
 import { useActionState, useEffect, useMemo, useState, useTransition } from "react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle } from "./ui/alert-dialog";
@@ -19,6 +20,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from "./ui/input-group";
 import { Label } from "./ui/label";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "./ui/select";
 import { Separator } from "./ui/separator";
+import { Spinner } from "./ui/spinner";
 import { Switch } from "./ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import { Textarea } from "./ui/textarea";
@@ -52,12 +54,17 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
     size: string;
     type: string;
   } | null>(null);
+  const [isUploadingFile, setIsUploadingFile] = useState(false);
+  const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
   // 1. Trigger untuk Tambah Produk
   const handleCreate = () => {
     setProductToUpdate(null);
     setImagePreview(null);
     setIsDialogOpen(true);
     setSelectedFile(null);
+    setUploadedFileUrl(null);
+    setUploadProgress(0);
   };
   // 2. Toast Handler
   useEffect(() => {
@@ -279,8 +286,10 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                           size: "Tersimpan di server",
                           type: ext,
                         });
+                        setUploadedFileUrl(product.file_url);
                       } else {
                         setSelectedFile(null);
+                        setUploadedFileUrl(null);
                       }
                     }}>
                       <SquarePenIcon />
@@ -774,16 +783,39 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
         // #region CREATE & UPDATE DIALOG
         <Dialog
           open={isDialogOpen}
+          modal={isUploadingFile || upsertIsPending}
           onOpenChange={(open) => {
-            setIsDialogOpen(open);
+            if (!open && isUploadingFile) {
+              toast.add({
+                type: "error",
+                description: "Harap tunggu, file sedang diunggah!",
+                priority: "high"
+              });
+              return;
+            }
+
             if (!open) {
+              // Cek apakah ada file baru yang terlanjur di-upload namun batal disimpan
+              if (uploadedFileUrl && uploadedFileUrl !== productToUpdate?.file_url) {
+                // Jalankan proses hapus di background tanpa perlu await/memblokir UI
+                deleteBlobFileAction(uploadedFileUrl);
+              }
+
+              // Reset semua state agar bersih untuk percobaan berikutnya
               setProductToUpdate(null);
               setImagePreview(null);
               setSelectedFile(null);
+              setUploadedFileUrl(null);
+              setUploadProgress(0);
             }
+
+            setIsDialogOpen(open);
           }}
         >
-          <DialogContent className="w-full sm:max-w-xl">
+          <DialogContent
+            className="w-full sm:max-w-xl"
+            showCloseButton={!isUploadingFile && !upsertIsPending}
+          >
             <DialogHeader>
               <DialogTitle>{productToUpdate ? "Edit Produk" : "Tambah Produk Baru"}</DialogTitle>
               <DialogDescription>
@@ -969,12 +1001,24 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                     {selectedFile && (
                       <Attachment className="mt-3">
                         <AttachmentMedia>
-                          <FileTextIcon />
+                          {isUploadingFile ? (
+                            <Spinner />
+                          ) : (
+                            <FileTextIcon />
+                          )}
                         </AttachmentMedia>
                         <AttachmentContent>
                           <AttachmentTitle>{selectedFile.name}</AttachmentTitle>
                           <AttachmentDescription>
-                            {selectedFile.type} · {selectedFile.size}
+                            {isUploadingFile ? (
+                              <>
+                                Mengunggah · {uploadProgress}%
+                              </>
+                            ) : (
+                              <>
+                                {selectedFile.type} · {selectedFile.size}
+                              </>
+                            )}
                           </AttachmentDescription>
                         </AttachmentContent>
                       </Attachment>
@@ -989,33 +1033,52 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                         <div className="relative rounded-sm hover:underline hover:underline-offset-4">
                           <span>Klik di sini untuk unggah file</span>
                           <Input
-                            required={!productToUpdate && !selectedFile}
+                            required={!productToUpdate && !selectedFile && !uploadedFileUrl}
                             className="sr-only"
                             id="fileUrl"
                             name="productFile"
                             type="file"
-                            // accept=".xlsx,.xls,.csv,.pdf,.zip"
-                            onChange={(e) => {
+                            disabled={isUploadingFile}
+                            onChange={async (e) => {
                               const file = e.target.files?.[0];
-                              if (file) {
-                                if (file.size > 4.5 * 1024 * 1024) {
-                                  toast.add({
-                                    type: "error",
-                                    description: "Ukuran file tidak boleh melebihi 4.5 MB!",
-                                    priority: "high",
-                                  });
-                                  e.target.value = "";
-                                  setSelectedFile(null);
-                                  return;
-                                }
+                              if (!file) return;
 
-                                // Set info file ke state
+                              setIsUploadingFile(true);
+                              setUploadProgress(0);
+                              toast.add({ description: "Memulai proses unggah..." });
+
+                              try {
+                                // PROSES CLIENT UPLOAD LANGSUNG KE VERCEL
+                                const newBlob = await upload(file.name, file, {
+                                  access: 'private', // atau 'private' jika Vercel Blob Anda disetup untuk itu
+                                  handleUploadUrl: '/api/upload', // Endpoint API route yang kita buat
+                                  onUploadProgress: (progressEvent) => {
+                                    // Opsional: Tampilkan persentase jika perlu
+                                    const percentage = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+                                    setUploadProgress(percentage);
+                                  },
+                                });
+
+                                // Simpan URL yang didapat ke state
+                                setUploadedFileUrl(newBlob.url);
+
+                                // Update UI Selected File
                                 const ext = file.name.split('.').pop()?.toUpperCase() || "FILE";
                                 setSelectedFile({
                                   name: file.name,
                                   size: formatBytes(file.size),
                                   type: ext,
                                 });
+
+                                toast.add({ type: "success", description: "File berhasil diunggah!" });
+                              } catch (error) {
+                                console.error(error);
+                                toast.add({ type: "error", description: "Gagal mengunggah file. Coba lagi." });
+                                e.target.value = ""; // Kosongkan input jika gagal
+                                setSelectedFile(null);
+                                setUploadedFileUrl(null);
+                              } finally {
+                                setIsUploadingFile(false);
                               }
                             }}
                           />
@@ -1028,6 +1091,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                     </p> */}
 
                     <input type="hidden" name="oldFileUrl" value={productToUpdate?.file_url || ""} />
+                    <input type="hidden" name="finalFileUrl" value={uploadedFileUrl || ""} />
                   </Field>
                 </FieldGroup>
               </form>
@@ -1037,7 +1101,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
               <DialogClose render={<Button variant="outline" />} disabled={upsertIsPending}>
                 Batal
               </DialogClose>
-              <Button form="productForm" type="submit" disabled={upsertIsPending}>
+              <Button form="productForm" type="submit" disabled={upsertIsPending || isUploadingFile}>
                 {upsertIsPending ? (
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin"></div>

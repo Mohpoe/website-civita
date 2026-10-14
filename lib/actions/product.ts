@@ -5,7 +5,7 @@ import { sql } from "@/lib/utils";
 import { productSchema } from "@/lib/zod-schemas";
 import { Product } from "@/types/global";
 import { auth, currentUser } from "@clerk/nextjs/server";
-import { del, put, putImage } from "@vercel/blob";
+import { del, putImage } from "@vercel/blob";
 import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 
@@ -45,7 +45,7 @@ export async function getProducts(isActive = false): Promise<Product[]> {
     return [];
   }
 }
-// #endregion 1. GET PRODUCTS
+// #endregion
 
 // #region 2. CREATE/UPDATE PRODUCT
 export async function upsertProductAction(state: any, formData: FormData) {
@@ -86,32 +86,44 @@ export async function upsertProductAction(state: any, formData: FormData) {
       return { success: false, message: "Gagal mengunggah gambar thumbnail." };
     }
   }
-  // #endregion THUMBNAIL HANDLER
+  // #endregion
 
   // #region - FILE HANDLER
-  const productFile = formData.get("productFile") as File | null;
+  // const productFile = formData.get("productFile") as File | null;
   const oldFileUrl = formData.get("oldFileUrl") as string | null;
-  let finalFileUrl = oldFileUrl || "";
+  const finalFileUrl = formData.get("finalFileUrl") as string;
 
-  if (productFile && productFile.size > 0) {
+  if (oldFileUrl && oldFileUrl !== finalFileUrl) {
     try {
-      if (oldFileUrl) await del(oldFileUrl, {
+      await del(oldFileUrl, {
         storeId: process.env.PRIVATE_BLOB_STORE_ID,
         oidcToken: process.env.VERCEL_OIDC_TOKEN,
       });
-      const fileBlob = await put(`products/${productFile.name}`, productFile, {
-        access: "private",
-        addRandomSuffix: true,
-        storeId: process.env.PRIVATE_BLOB_STORE_ID,
-        oidcToken: process.env.VERCEL_OIDC_TOKEN,
-      });
-      finalFileUrl = fileBlob.url;
+      console.log("File lama berhasil dihapus untuk diganti baru.");
     } catch (error) {
-      console.error("Gagal upload file produk:", error);
-      return { success: false, message: "Gagal mengunggah file produk!" };
+      console.error("Gagal menghapus file digital lama:", error);
     }
   }
-  // #endregion FILE HANDLER
+
+  // if (productFile && productFile.size > 0) {
+  //   try {
+  //     if (oldFileUrl) await del(oldFileUrl, {
+  //       storeId: process.env.PRIVATE_BLOB_STORE_ID,
+  //       oidcToken: process.env.VERCEL_OIDC_TOKEN,
+  //     });
+  //     const fileBlob = await put(`products/${productFile.name}`, productFile, {
+  //       access: "private",
+  //       addRandomSuffix: true,
+  //       storeId: process.env.PRIVATE_BLOB_STORE_ID,
+  //       oidcToken: process.env.VERCEL_OIDC_TOKEN,
+  //     });
+  //     finalFileUrl = fileBlob.url;
+  //   } catch (error) {
+  //     console.error("Gagal upload file produk:", error);
+  //     return { success: false, message: "Gagal mengunggah file produk!" };
+  //   }
+  // }
+  // #endregion
 
   const rawData = {
     title: formData.get("title"),
@@ -176,7 +188,7 @@ export async function upsertProductAction(state: any, formData: FormData) {
     return { success: false, message: "Gagal menyimpan produk. Hubungi developer." };
   }
 }
-// #endregion 2. CREATE/UPDATE PRODUCT
+// #endregion
 
 // #region 3. DELETE PRODUCT
 export async function deleteProductAction(formData: FormData) {
@@ -226,4 +238,25 @@ export async function deleteProductAction(formData: FormData) {
     return { success: false, message: "Gagal menghapus produk." };
   }
 }
-// #endregion 3. DELETE PRODUCT
+// #endregion
+
+// #region 4. CLEANUP ORPHANED FILE
+// Fungsi ini dipanggil jika admin membatalkan form setelah terlanjur mengunggah file
+export async function deleteBlobFileAction(url: string) {
+  await auth.protect();
+  const user = await currentUser();
+  if (!user || user.publicMetadata.role !== "admin") return { success: false };
+
+  try {
+    await del(url, {
+      storeId: process.env.PRIVATE_BLOB_STORE_ID, // Ganti ke PUBLIK_STORE_ID jika itu thumbnail
+      oidcToken: process.env.VERCEL_OIDC_TOKEN,
+    });
+    console.log("Orphaned file berhasil dihapus (Cleanup):", url);
+    return { success: true };
+  } catch (error) {
+    console.error("Gagal melakukan cleanup file:", error);
+    return { success: false };
+  }
+}
+// #endregion

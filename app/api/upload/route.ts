@@ -7,28 +7,37 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   try {
     const user = await currentUser();
-    if (!user) return NextResponse.json("Unauthorized", { status: 401 });
+    if (!user || user.publicMetadata.role !== "admin") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const jsonResponse = await handleUpload({
       body,
       request,
       onBeforeGenerateToken: async (pathname) => {
-        if (!user) throw new Error('Not authenticated');
-
+        // Opsi ini akan digunakan oleh @vercel/blob/client di frontend
+        if (!user || user.publicMetadata.role !== "admin") throw new Error("Not authenticated!");
         return {
-          allowedContentTypes: ['image/jpeg', 'image/png', 'image/webp'],
+          // Tentukan tipe file yang diizinkan untuk produk digital
+          // allowedContentTypes: [
+          //   'application/pdf',
+          //   'application/zip',
+          //   'application/x-zip-compressed',
+          //   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // xlsx
+          //   'application/vnd.ms-excel', // xls
+          //   'text/csv' // csv
+          // ],
+          // Batasi ukuran maksimal (contoh: 50MB). Sesuaikan dengan kebutuhan.
+          maximumSizeInBytes: 50 * 1024 * 1024,
+          // Gunakan suffix acak agar nama file tidak bentrok
           addRandomSuffix: true,
-          tokenPayload: JSON.stringify({
-            userId: user.id,
-          }),
+          tokenPayload: JSON.stringify({ userId: user.id }),
         };
       },
       onUploadCompleted: async ({ blob, tokenPayload }) => {
-        try {
-          const { userId } = JSON.parse(tokenPayload || "");
-          // Update your database with the blob URL for the authenticated user
-        } catch (error) {
-          throw new Error("Gagal upload thumbnail!");
-        }
+        // Hook ini dijalankan oleh Vercel setelah upload selesai.
+        // Di sini Anda BISA (opsional) mencatat log, tapi kita TIDAK menyimpan
+        // data ke database di sini. Penyimpanan ke database dilakukan di Server Action
+        // bersamaan dengan data produk (nama, harga, dll).
+        console.log("Upload selesai via Client Upload:", blob.url);
       },
     });
 
