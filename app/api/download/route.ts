@@ -48,7 +48,7 @@ export async function GET(req: Request) {
     }
 
     // 4. PROSES STREAMING: Ambil file dari Private Blob
-    const result = await get(fileUrl, { access: "private", token: process.env.BLOB_READ_WRITE_TOKEN });
+    const result = await get(fileUrl, { access: "private", oidcToken: process.env.VERCEL_OIDC_TOKEN });
 
     if (result?.statusCode !== 200) {
       return new NextResponse("Tidak ditemukan", { status: 404 });

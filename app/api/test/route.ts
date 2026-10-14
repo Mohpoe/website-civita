@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
   if (!pathname) { return NextResponse.json({ error: "Tidak ada pathname" }, { status: 400 }) }
 
   try {
-    const result = await get(pathname, { access: "private", token: process.env.BLOB_READ_WRITE_TOKEN });
+    const result = await get(pathname, { access: "private", oidcToken: process.env.VERCEL_OIDC_TOKEN });
 
     if (result?.statusCode !== 200) {
       return new NextResponse("Tidak ditemukan", { status: 404 });
