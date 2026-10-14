@@ -1102,7 +1102,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
             </div>
 
             <DialogFooter className="pt-4">
-              <DialogClose render={<Button variant="outline" />} disabled={upsertIsPending}>
+              <DialogClose render={<Button variant="outline" />} disabled={upsertIsPending || isUploadingFile}>
                 Batal
               </DialogClose>
               <Button form="productForm" type="submit" disabled={upsertIsPending || isUploadingFile}>
