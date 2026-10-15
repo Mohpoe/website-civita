@@ -1,24 +1,22 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
-import { AwardIcon, CheckCircle2Icon, ChevronLeftIcon, ChevronRightIcon, FileTextIcon, PackageSearchIcon, ShoppingBagIcon, TagIcon, TagsIcon } from "lucide-react";
-import { useState } from "react";
-
-// Import Shadcn UI Components
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-
-import { toast } from "@/components/ui/toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatRupiah } from "@/lib/utils";
-import { Product } from "@/types/global";
+import { Category, Product } from "@/types/global";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowDownUpIcon, AwardIcon, CheckCircle2Icon, ChevronLeftIcon, ChevronRightIcon, FileTextIcon, PackageSearchIcon, ShoppingBagIcon, TagIcon, TagsIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { Separator } from "./ui/separator";
 import { Spinner } from "./ui/spinner";
-import { APP_CONFIG } from "@/lib/constants";
+import { toast } from "./ui/toast";
 
 interface DashboardProductsProps {
   products: Product[],
+  categories: Category[],
 }
 
 // Konfigurasi Warna Neo-Pop untuk Light & Dark Mode
@@ -30,26 +28,58 @@ const NEO_COLORS = [
   { light: '#FFB5E8', dark: '#4D1B3E', textLight: '#151722', textDark: '#FDF2F8' }, // Pink / Plum
 ];
 
-export default function DashboardProducts({ products }: DashboardProductsProps) {
+export default function DashboardProducts({ products, categories }: DashboardProductsProps) {
   const router = useRouter();
 
   // Dialog/Modal State
   const [detailDialog, setDetailDialog] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedColorIdx, setSelectedColorIdx] = useState<number>(0);
-
-  // Checkout Processing State
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Pagination State
+  // #region Filter & Sort States
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>("newest");
+
+  // Reset pagination ke halaman 1 setiap kali user mengubah filter atau sort
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, sortBy]);
+
+  // Ekstrak daftar kategori unik dari data produk untuk tombol filter
+  const categoryOptions = useMemo(() => {
+    const cats = products?.map(p => p.category?.name).filter(Boolean);
+    return Array.from(new Set(cats)) as string[];
+  }, [products]);
+
+  // Logika Filter dan Sortir (Pre-compute)
+  const processedProducts = useMemo(() => {
+    let result = [...(products || [])];
+
+    // 1. Jalankan Filter Kategori
+    if (selectedCategory !== "all") {
+      result = result.filter(p => p.category?.name === selectedCategory);
+    }
+
+    // 2. Jalankan Sortir Harga
+    if (sortBy === "price_asc") {
+      result.sort((a, b) => a.price - b.price); // Termurah
+    } else if (sortBy === "price_desc") {
+      result.sort((a, b) => b.price - a.price); // Termahal
+    }
+    // Jika 'newest' (default), kita biarkan urutan dari DB (karena biasanya sudah DESC dari kueri backend)
+
+    return result;
+  }, [products, selectedCategory, sortBy]);
+  // #endregion
+
+  // Pagination Logic (Diarahkan ke processedProducts, BUKAN products mentah)
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
-
-  // Pagination Logic
-  const totalPages = Math.ceil((products?.length ?? 0) / itemsPerPage);
+  const totalPages = Math.ceil((processedProducts?.length ?? 0) / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = (products ?? []).slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = (processedProducts ?? []).slice(indexOfFirstItem, indexOfLastItem);
 
   const handleNextPage = () => {
     if (currentPage < totalPages) setCurrentPage(prev => prev + 1);
@@ -58,7 +88,6 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
     if (currentPage > 1) setCurrentPage(prev => prev - 1);
   };
 
-  // Fungsi Pembuka Modal (Menyimpan index warna untuk dicocokkan di Dialog)
   const openProductModal = (product: Product, idx: number) => {
     setSelectedProduct(product);
     setSelectedColorIdx(idx % NEO_COLORS.length);
@@ -138,7 +167,6 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
     ? JSON.parse(selectedProduct.features || "[]")
     : (selectedProduct?.features || []);
 
-  // Ambil palet warna aktif untuk modal dialog
   const activeDialogTheme = NEO_COLORS[selectedColorIdx];
   const dialogStyleProps = {
     "--bg-light": activeDialogTheme.light,
@@ -167,16 +195,106 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
 
         <Separator className="border-border" />
 
-        {/* Empty State */}
-        {(products?.length ?? 0) === 0 ? (
+        {
+          // #region Filter & Sort
+          (products?.length ?? 0) > 0 && (
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-card p-3.5 rounded-[2rem] border-4 border-foreground shadow-[4px_4px_0_0_hsl(var(--foreground))] transition-all">
+
+              {/* LOGIKA HYBRID: Jika kategori <= 6 pakai Pill Buttons, jika > 6 otomatis switch ke Dropdown */}
+              {categoryOptions.length <= 6 && false ? (
+                <div className="flex w-full md:w-auto overflow-x-auto no-scrollbar gap-2 pb-1 md:pb-0">
+                  <Button
+                    onClick={() => setSelectedCategory("all")}
+                    variant={selectedCategory === "all" ? "default" : "outline"}
+                    className={`rounded-full border-2 font-bold px-5 shrink-0 transition-all ${selectedCategory === "all"
+                      ? "border-foreground shadow-[2px_2px_0_0_hsl(var(--foreground))]"
+                      : "border-transparent bg-muted/40 text-muted-foreground hover:bg-muted"
+                      }`}
+                  >
+                    Semua
+                  </Button>
+                  {categoryOptions.map((cat) => (
+                    <Button
+                      key={cat}
+                      onClick={() => setSelectedCategory(cat)}
+                      variant={selectedCategory === cat ? "default" : "outline"}
+                      className={`rounded-full border-2 font-bold px-5 shrink-0 transition-all ${selectedCategory === cat
+                        ? "border-foreground shadow-[2px_2px_0_0_hsl(var(--foreground))]"
+                        : "border-transparent bg-muted/40 text-muted-foreground hover:bg-muted"
+                        }`}
+                    >
+                      {cat}
+                    </Button>
+                  ))}
+                </div>
+              ) : (
+                /* Fallback Kategori Banyak (> 6) */
+                <div className="w-full md:w-64">
+                  <Select
+                    value={selectedCategory}
+                    onValueChange={(val) => setSelectedCategory(val || "all")}
+                  >
+                    <SelectTrigger className="w-full rounded-full border-2 border-foreground font-bold bg-background h-10 hover:shadow-[2px_2px_0_0_hsl(var(--foreground))] transition-all">
+                      <div className="flex items-center gap-2 truncate">
+                        <TagsIcon className="w-4 h-4 text-muted-foreground shrink-0" />
+                        <SelectValue placeholder="Pilih Kategori" />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border-2 border-foreground font-bold shadow-[4px_4px_0_0_hsl(var(--foreground))] max-h-60">
+                      <SelectItem value="all">Semua Kategori ({products.length})</SelectItem>
+                      {categoryOptions.map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          {cat}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Dropdown Sortir Harga */}
+              <div className="w-full md:w-56 shrink-0">
+                <Select
+                  value={sortBy}
+                  onValueChange={(val) => setSortBy(val || "newest")}
+                  items={[
+                    { value: "newest", label: "Terbaru" },
+                    { value: "price_asc", label: "Harga Terendah" },
+                    { value: "price_desc", label: "Harga Tertinggi" },
+                  ]}
+                >
+                  <SelectTrigger className="w-full rounded-full border-2 border-foreground font-bold bg-background h-10">
+                    <div className="flex items-center gap-2">
+                      <ArrowDownUpIcon className="w-4 h-4 text-muted-foreground" />
+                      <SelectValue placeholder="Urutkan" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent className="border-2 border-foreground font-bold w-full">
+                    <SelectItem value="newest">Terbaru</SelectItem>
+                    <SelectItem value="price_asc">Harga Terendah</SelectItem>
+                    <SelectItem value="price_desc">Harga Tertinggi</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+            </div>
+          )
+          // #endregion
+        }
+
+        {/* Empty State (Disesuaikan untuk kondisi Filter Kosong) */}
+        {(processedProducts?.length ?? 0) === 0 ? (
           <div className="bg-background/50 backdrop-blur-sm rounded-[2.2rem] border-2 border-dashed border-muted-foreground/30 min-h-[400px] flex flex-col items-center justify-center p-12 text-center shadow-sm">
             <div className="w-20 h-20 bg-muted/50 rounded-full flex items-center justify-center mb-6 shadow-inner border border-foreground/5 relative overflow-hidden">
               <ShoppingBagIcon className="w-10 h-10 text-muted-foreground/40 absolute z-10" />
             </div>
-            <h3 className="text-2xl font-bold tracking-tight mb-2">Produk Belum Tersedia</h3>
+            <h3 className="text-2xl font-bold tracking-tight mb-2">
+              {products.length > 0 ? "Produk Tidak Ditemukan" : "Produk Belum Tersedia"}
+            </h3>
             <p className="text-muted-foreground max-w-md text-sm md:text-base">
-              Saat ini belum ada produk yang tersedia di katalog ini, silakan kembali lagi nanti. <br />
-              &copy; {APP_CONFIG.NAME}
+              {products.length > 0
+                ? `Tidak ada produk yang cocok dengan kategori "${selectedCategory}". Silakan pilih kategori lain.`
+                : "Saat ini belum ada produk yang tersedia di katalog ini, silakan kembali lagi nanti."}
             </p>
           </div>
         ) : (
@@ -189,7 +307,6 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
                     const theme = NEO_COLORS[idx % NEO_COLORS.length];
                     const rotationClass = idx % 2 === 0 ? 'rotate-2' : '-rotate-2';
 
-                    // Inject CSS Variables untuk warna spesifik kartu ini (Mendukung Dark Mode)
                     const styleProps = {
                       "--bg-light": theme.light,
                       "--bg-dark": theme.dark,
@@ -204,7 +321,7 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
                         initial={{ opacity: 0, y: 24, scale: 0.98 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        transition={{ duration: 0.5, delay: idx * 0.09, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ duration: 0.5, delay: (idx % itemsPerPage) * 0.09, ease: [0.16, 1, 0.3, 1] }}
                         onClick={() => openProductModal(product, idx)}
                         className="group relative flex flex-col justify-between overflow-hidden rounded-[2.2rem] p-6 shadow-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-xl cursor-pointer border-2 border-transparent hover:border-foreground/10 dark:hover:border-white/10 bg-[var(--bg-light)] dark:bg-[var(--bg-dark)] text-[var(--text-light)] dark:text-[var(--text-dark)]"
                       >
@@ -266,7 +383,7 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
               totalPages > 1 && (
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 mt-4 border-t border-border/40">
                   <p className="text-sm text-muted-foreground font-medium">
-                    Menampilkan <span className="text-foreground">{indexOfFirstItem + 1}</span> - <span className="text-foreground">{Math.min(indexOfLastItem, (products?.length ?? 0))}</span> dari <span className="text-foreground">{(products?.length ?? 0)}</span> produk
+                    Menampilkan <span className="text-foreground">{indexOfFirstItem + 1}</span> - <span className="text-foreground">{Math.min(indexOfLastItem, (processedProducts?.length ?? 0))}</span> dari <span className="text-foreground">{(processedProducts?.length ?? 0)}</span> produk
                   </p>
 
                   <div className="flex items-center gap-1.5 bg-muted/30 p-1.5 rounded-full border border-border/50">
@@ -397,8 +514,7 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
               </div>
             </div>
 
-            {/* Footer Aksi */}
-            <DialogFooter className="pb-8 px-8 border-t-2">
+            <DialogFooter className="pb-8 px-8 border-t-2 pt-6 mt-2">
               <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
                 <DialogClose render={
                   <Button
@@ -411,7 +527,7 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
                 </DialogClose>
                 <Button
                   variant="outline"
-                  className="w-full sm:w-auto rounded-full font-bold border-2 border-foreground hover:scale-110 transition-transform"
+                  className="w-full sm:w-auto rounded-full font-bold border-2 border-foreground hover:scale-110 transition-transform bg-foreground text-background hover:bg-foreground hover:text-background"
                   onClick={checkoutHandler}
                   disabled={isProcessing}
                 >
@@ -429,7 +545,6 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
                 </Button>
               </div>
             </DialogFooter>
-
           </DialogContent>
         </Dialog>
         // #endregion

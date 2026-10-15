@@ -1,7 +1,8 @@
 import { PageTitle } from "@/components/context/dashboard-page-title";
 import DashboardProducs from "@/components/dashboard-products";
+import { getCategories } from "@/lib/actions/category";
 import { getProducts } from "@/lib/actions/product";
-import { Product } from "@/types/global";
+import { Category, Product } from "@/types/global";
 import { Metadata } from "next";
 
 const mainTitle = "Produk";
@@ -16,14 +17,15 @@ export default async function DashboardPage() {
   // throw new Error("Ini adalah pesan error simulasi untuk keperluan desain!");
   // await delay(10000);
   try {
-    const [products] = await Promise.all([
+    const [products, categories] = await Promise.all([
       getProducts(true) as Promise<Product[]>,
+      getCategories() as Promise<Category[]>,
     ]);
 
     return (
       <>
         <PageTitle title={mainTitle} />
-        <DashboardProducs products={products} />
+        <DashboardProducs products={products} categories={categories} />
       </>
     );
   } catch (error) {
