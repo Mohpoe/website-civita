@@ -24,5 +24,7 @@ export const ROUTES = {
     INVENTORY: "/dashboard/inventory",
     ADMIN: "/dashboard/admin",
     CATEGORY: "/dashboard/admin/category",
+    REPORT: "/dashboard/admin/report",
+    USERS: "/dashboard/admin/users",
   },
 };

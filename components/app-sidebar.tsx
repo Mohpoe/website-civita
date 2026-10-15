@@ -5,7 +5,7 @@ import { NavUser } from "@/components/nav-user"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar"
 import { ROUTES } from "@/lib/constants"
 import { useUser } from "@clerk/nextjs"
-import { GroupIcon, PackageIcon, PackagePlusIcon, ShoppingBagIcon, SquareTextIcon } from "lucide-react"
+import { GroupIcon, PackageIcon, PackagePlusIcon, ShoppingBagIcon, SquareTextIcon, UsersIcon } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import * as React from "react"
@@ -54,8 +54,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           ),
         },
         {
-          title: "Laporan Penjualan",
-          url: ROUTES.DASHBOARD.ADMIN,
+          title: "[TBA] Kelola Pengguna",
+          url: ROUTES.DASHBOARD.USERS,
+          icon: (
+            <UsersIcon />
+          ),
+        },
+        {
+          title: "[TBA] Laporan Penjualan",
+          url: ROUTES.DASHBOARD.REPORT,
           icon: (
             <SquareTextIcon />
           ),
