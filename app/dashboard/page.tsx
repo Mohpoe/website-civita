@@ -22,7 +22,7 @@ export default async function DashboardPage() {
 
     return (
       <>
-        <PageTitle title="Produk Digital" />
+        <PageTitle title={mainTitle} />
         <DashboardProducs products={products} />
       </>
     );
