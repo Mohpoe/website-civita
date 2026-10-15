@@ -20,6 +20,9 @@ interface DashboardProductsProps {
   products: Product[],
 }
 
+// Array Warna Pastel ala Neo-Pop
+const NEO_COLORS = ['#FFE66D', '#FF9E79', '#B3A2FF', '#98F5E1', '#FFB5E8'];
+
 export default function DashboardProducts({ products }: DashboardProductsProps) {
   const router = useRouter();
 
@@ -168,71 +171,72 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
           <>
             {
               // #region Produk Grid
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-3">
                 <AnimatePresence mode="popLayout">
-                  {currentItems.map((product, idx) => (
-                    <motion.div
-                      key={product.id}
-                      initial={{ opacity: 0, y: 30 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.4, delay: idx * 0.08, ease: "easeOut" }}
-                      onClick={() => openProductModal(product)}
-                      className="relative flex flex-col bg-card rounded-3xl overflow-hidden border border-border/50 shadow-sm hover:shadow-[0_20px_50px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-300 cursor-pointer"
-                    >
-                      {/* Gambar/Cover Section */}
-                      <div className="relative aspect-[4/3] w-full bg-muted/30 overflow-hidden">
-                        {product.image_url ? (
-                          <img
-                            src={product.image_url}
-                            alt={product.title}
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div className="absolute inset-0 flex items-center justify-center opacity-60">
-                            <FileTextIcon className="w-12 h-12 text-muted-foreground/30" />
+                  {currentItems.map((product, idx) => {
+                    // Penentuan Warna Dinamis & Rotasi Zig-zag
+                    const bgColor = NEO_COLORS[idx % NEO_COLORS.length];
+                    const rotationClass = idx % 2 === 0 ? 'rotate-2' : '-rotate-2';
+
+                    return (
+                      <motion.article
+                        key={product.id}
+                        initial={{ opacity: 0, y: 24, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.5, delay: idx * 0.09, ease: [0.16, 1, 0.3, 1] }}
+                        onClick={() => openProductModal(product)}
+                        className="group relative flex flex-col justify-between overflow-hidden rounded-[2.2rem] p-6 text-[#151722] shadow-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl cursor-pointer"
+                        style={{ backgroundColor: bgColor }} // Menggunakan style inline untuk warna latar neo-pop
+                      >
+                        <div>
+                          {/* Label Kategori & Harga */}
+                          <div className="flex items-center justify-between">
+                            <span className="rounded-full bg-black/90 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-white">
+                              {product.category?.name || "Digital"}
+                            </span>
+                            <span className="text-sm font-extrabold opacity-70">
+                              {formatRupiah(product.price)}
+                            </span>
                           </div>
-                        )}
 
-                        {/* Gradient Overlay Premium */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 transition-opacity duration-300" />
+                          {/* Bingkai Gambar Quirky */}
+                          <div className={`relative mt-6 ${rotationClass} overflow-hidden rounded-2xl border-4 border-white shadow-md transition-transform duration-500 ease-out group-hover:rotate-0 group-hover:scale-105 bg-white`}>
+                            {product.image_url ? (
+                              <img
+                                src={product.image_url}
+                                alt={product.title}
+                                loading="lazy"
+                                className="aspect-[5/4] w-full object-cover"
+                              />
+                            ) : (
+                              <div className="aspect-[5/4] w-full flex items-center justify-center bg-slate-50">
+                                <FileTextIcon className="w-12 h-12 text-slate-300" />
+                              </div>
+                            )}
+                          </div>
 
-                        {/* Badge Kategori & Harga Floating */}
-                        <div className="absolute top-4 left-4 right-4 flex justify-between items-start z-10">
-                          <Badge className="bg-background/90 hover:bg-background/90 text-foreground backdrop-blur-md border-none shadow-sm font-semibold tracking-wide uppercase text-[10px]">
-                            {product.category?.name || "Digital"}
-                          </Badge>
-                        </div>
-
-                        <div className="absolute bottom-4 left-4 right-4 z-10 flex flex-col">
-                          <h3 className="font-bold text-xl text-white leading-tight line-clamp-2 drop-shadow-md">
+                          {/* Judul & Deskripsi */}
+                          <h3 className="mt-6 text-2xl font-bold leading-snug line-clamp-2">
                             {product.title}
                           </h3>
+                          <p className="mt-2 text-sm font-medium leading-relaxed opacity-75 line-clamp-2">
+                            {product.short_desc}
+                          </p>
                         </div>
-                      </div>
 
-                      {/* Deskripsi & Aksi Section */}
-                      <div className="p-5 flex flex-col flex-1 bg-card">
-                        <p className="text-sm text-muted-foreground line-clamp-2 mb-6 flex-1 leading-relaxed">
-                          {product.short_desc}
-                        </p>
-
-                        <div className="flex items-center justify-between pt-4 border-t border-border/60">
-                          <span className="font-extrabold text-lg tracking-tight">
-                            {formatRupiah(product.price)}
-                          </span>
-
-                          <Button
-                            className="rounded-full"
-                            variant="secondary"
-                          >
+                        {/* Tombol Aksi Magnetic */}
+                        <div className="mt-8">
+                          <div className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white transition-all duration-300 group-hover:bg-white group-hover:text-black">
                             Lihat Detail
-                          </Button>
+                            <svg className="h-3.5 w-3.5 transition group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                            </svg>
+                          </div>
                         </div>
-                      </div>
-                    </motion.div>
-                  ))}
+                      </motion.article>
+                    );
+                  })}
                 </AnimatePresence>
               </div>
               // #endregion
