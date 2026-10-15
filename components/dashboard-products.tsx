@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { AwardIcon, BanknoteIcon, CheckCircle2Icon, ChevronLeftIcon, ChevronRightIcon, FileTextIcon, PackageSearchIcon, ShoppingBagIcon, TagsIcon } from "lucide-react";
+import { AwardIcon, CheckCircle2Icon, ChevronLeftIcon, ChevronRightIcon, FileTextIcon, PackageSearchIcon, ShoppingBagIcon, TagIcon, TagsIcon } from "lucide-react";
 import { useState } from "react";
 
 // Import Shadcn UI Components
@@ -15,6 +15,7 @@ import { Product } from "@/types/global";
 import { useRouter } from "next/navigation";
 import { Separator } from "./ui/separator";
 import { Spinner } from "./ui/spinner";
+import { APP_CONFIG } from "@/lib/constants";
 
 interface DashboardProductsProps {
   products: Product[],
@@ -153,13 +154,13 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-2">
             <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
-              Katalog Eksklusif
+              Katalog Produk
             </h2>
-            <p className="text-muted-foreground max-w-2xl text-base">
+            <p className="text-muted-foreground max-w-2xl">
               Akselerasikan karirmu dengan berbagai produk digital dari CIVITA!
             </p>
           </div>
-          <Badge variant="outline" className="text-xs text-muted-foreground border-2 rounded-full px-4 py-1">
+          <Badge variant="outline" className="text-xs text-muted-foreground border-2 rounded-full px-4 py-3">
             {(products?.length ?? 0)} Produk Tersedia
           </Badge>
         </div>
@@ -172,9 +173,10 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
             <div className="w-20 h-20 bg-muted/50 rounded-full flex items-center justify-center mb-6 shadow-inner border border-foreground/5 relative overflow-hidden">
               <ShoppingBagIcon className="w-10 h-10 text-muted-foreground/40 absolute z-10" />
             </div>
-            <h3 className="text-2xl font-bold tracking-tight mb-2">Etalase Kosong</h3>
+            <h3 className="text-2xl font-bold tracking-tight mb-2">Produk Belum Tersedia</h3>
             <p className="text-muted-foreground max-w-md text-sm md:text-base">
-              Kami sedang meracik produk digital terbaik untuk Anda. Silakan kembali lagi nanti untuk melihat pembaruan katalog.
+              Saat ini belum ada produk yang tersedia di katalog ini, silakan kembali lagi nanti. <br />
+              &copy; {APP_CONFIG.NAME}
             </p>
           </div>
         ) : (
@@ -209,10 +211,10 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
                         <div>
                           {/* Header Kartu */}
                           <div className="flex items-center justify-between">
-                            <span className="rounded-full bg-black/90 dark:bg-white/90 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-white dark:text-black">
-                              {product.category?.name || "Digital"}
+                            <span className="flex items-center gap-1 rounded-full bg-foreground/90 px-3 py-1 text-xs font-bold tracking-wider text-background">
+                              <TagIcon className="w-3.5 h-3.5" /> {product.category?.name || "Digital"}
                             </span>
-                            <span className="text-lg">
+                            <span className="text-lg font-bold">
                               {formatRupiah(product.price)}
                             </span>
                           </div>
