@@ -47,10 +47,17 @@ export default function DashboardProducts({ products, categories }: DashboardPro
   }, [selectedCategory, sortBy]);
 
   // Ekstrak daftar kategori unik dari data produk untuk tombol filter
-  const categoryOptions = useMemo(() => {
-    const cats = products?.map(p => p.category?.name).filter(Boolean);
-    return Array.from(new Set(cats)) as string[];
-  }, [products]);
+  const activeCategories = useMemo(() => {
+    if (!categories || !products) return [];
+    return categories
+      .map((cat) => {
+        // Hitung produk yang memakai nama kategori ini
+        const count = products.filter((p) => p.category?.name === cat.name).length;
+        return { ...cat, count };
+      })
+      // Saring agar hanya merender kategori yang memiliki 1 produk atau lebih
+      .filter((cat) => cat.count > 0);
+  }, [categories, products]);
 
   // Logika Filter dan Sortir (Pre-compute)
   const processedProducts = useMemo(() => {
@@ -176,8 +183,8 @@ export default function DashboardProducts({ products, categories }: DashboardPro
   } as React.CSSProperties;
 
   const categoryItems = [
-    { value: "all", label: "Semua Kategori" },
-    ...(categories || []).map(cat => ({ value: cat.name, label: cat.name }))
+    { value: "all", label: `Semua Kategori (${products?.length || 0})` },
+    ...(activeCategories || []).map(cat => ({ value: cat.name, label: `${cat.name} (${cat.count})` }))
   ];
 
   return (
@@ -205,7 +212,7 @@ export default function DashboardProducts({ products, categories }: DashboardPro
 
             {
               // #region Filter Category
-              categories.length <= 6 ? (
+              activeCategories.length <= 6 ? (
                 <div className="flex w-full md:w-auto overflow-x-auto no-scrollbar gap-2 pb-1 md:pb-0">
                   <Button
                     onClick={() => setSelectedCategory("all")}
@@ -215,10 +222,10 @@ export default function DashboardProducts({ products, categories }: DashboardPro
                       : "border-transparent bg-muted/40 text-muted-foreground hover:bg-muted"
                       }`}
                   >
-                    Semua
+                    Semua ({products?.length || 0})
                   </Button>
                   {/* Looping langsung dari database (categories) */}
-                  {categories.map((cat) => (
+                  {activeCategories.map((cat) => (
                     <Button
                       key={cat.id}
                       onClick={() => setSelectedCategory(cat.name)}
@@ -228,7 +235,7 @@ export default function DashboardProducts({ products, categories }: DashboardPro
                         : "border-transparent bg-muted/40 text-muted-foreground hover:bg-muted"
                         }`}
                     >
-                      {cat.name}
+                      {cat.name} ({cat.count})
                     </Button>
                   ))}
                 </div>
@@ -240,18 +247,18 @@ export default function DashboardProducts({ products, categories }: DashboardPro
                     onValueChange={(val) => setSelectedCategory(val || "all")}
                     items={categoryItems}
                   >
-                    <SelectTrigger className="w-full rounded-full border-2 border-foreground font-bold bg-background h-10 hover:shadow-[2px_2px_0_0_hsl(var(--foreground))] transition-all">
+                    <SelectTrigger className="w-full rounded-full border-2 border-foreground font-bold bg-background h-10">
                       <div className="flex items-center gap-2 truncate">
                         <TagsIcon className="w-4 h-4 text-muted-foreground shrink-0" />
                         <SelectValue placeholder="Pilih Kategori" />
                       </div>
                     </SelectTrigger>
                     <SelectContent className="rounded-xl border-2 border-foreground font-bold shadow-[4px_4px_0_0_hsl(var(--foreground))] max-h-60">
-                      <SelectItem value="all">Semua Kategori</SelectItem>
+                      <SelectItem value="all">Semua Kategori ({products?.length || 0})</SelectItem>
                       {/* Looping langsung dari database (categories) */}
-                      {categories.map((cat) => (
+                      {activeCategories.map((cat) => (
                         <SelectItem key={cat.id} value={cat.name}>
-                          {cat.name}
+                          {cat.name} ({cat.count})
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -260,7 +267,6 @@ export default function DashboardProducts({ products, categories }: DashboardPro
               )
               // #endregion
             }
-
             {
               // #region Price Sort
               <div className="w-full md:w-56 shrink-0">
