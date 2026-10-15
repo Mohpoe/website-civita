@@ -72,7 +72,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton
               className="data-[slot=sidebar-menu-button]:p-1.5!"
               render={<Link href={ROUTES.DASHBOARD.HOME} />}
-              onClick={() => { if (isMobile) setOpenMobile(false) }}
+              onClick={() => setOpenMobile(!isMobile)}
             >
               <Image alt="Logo" src="/assets/Icon.svg" className="size-5" width={100} height={100} />
               <span className="text-base font-bold">CIVITA.ID</span>

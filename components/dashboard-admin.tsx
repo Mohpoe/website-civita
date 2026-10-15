@@ -122,6 +122,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
   };
   // #endregion
 
+  // #region COLUMN
   // 1. Table Initiation
   const features = tableFeatures({
     rowSortingFeature,
@@ -142,8 +143,6 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
   });
 
   const columnHelper = createColumnHelper<typeof features, Product>();
-
-  // #region COLUMN
   const columns = useMemo(() =>
     columnHelper.columns([
       // 1. Kolom Nomor Urut

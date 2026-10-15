@@ -26,19 +26,6 @@ export default function DashboardInventory({ orders }: DashboardInventoryProps) 
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const itemsPerPage = 5;
-  // useEffect(() => {
-  //   // Gunakan URL production ("https://app.midtrans.com/snap/snap.js") jika web sudah live
-  //   const snapScript = "https://app.sandbox.midtrans.com/snap/snap.js";
-  //   const clientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || "";
-
-  //   if (!document.querySelector(`script[src="${snapScript}"]`)) {
-  //     const script = document.createElement("script");
-  //     script.src = snapScript;
-  //     script.setAttribute("data-client-key", clientKey);
-  //     script.async = true;
-  //     document.body.appendChild(script);
-  //   }
-  // }, []);
 
   // Reset pagination ketika tab atau pencarian berubah
   useEffect(() => {
@@ -121,7 +108,8 @@ export default function DashboardInventory({ orders }: DashboardInventoryProps) 
 
             return (
               <motion.div
-                key={order.order_id}
+                // [PERBAIKAN FATAL]: Menambahkan activeTab ke dalam key agar Framer Motion tidak kebingungan saat berpindah tab
+                key={`${activeTab}-${order.order_id}`}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.98 }}
@@ -161,7 +149,7 @@ export default function DashboardInventory({ orders }: DashboardInventoryProps) 
                             {order.product?.title || "Produk Tidak Tersedia"}
                           </h3>
 
-                          {/* UI Limited Edition: Muncul jika is_active false atau produk telah dihapus (null) */}
+                          {/* UI Limited Edition */}
                           {(order.product?.is_active === false) && (
                             <Badge
                               variant="secondary"
@@ -200,8 +188,7 @@ export default function DashboardInventory({ orders }: DashboardInventoryProps) 
                                   window.snap.pay(order.snap_token, {
                                     onSuccess: function (result: any) {
                                       console.log("Pembayaran Berhasil!", result);
-                                      // Opsional: Anda bisa menambahkan toast.success di sini
-                                      window.location.reload(); // Refresh halaman agar status berubah jadi 'Berhasil'
+                                      window.location.reload();
                                     },
                                     onPending: function (result: any) {
                                       console.log("Menunggu Pembayaran", result);
@@ -215,7 +202,7 @@ export default function DashboardInventory({ orders }: DashboardInventoryProps) 
                                       });
                                     },
                                     onClose: function () {
-                                      console.log("Customer menutup popup tanpa menyelesaikan pembayaran");
+                                      console.log("Customer menutup popup");
                                     }
                                   });
                                 } else {
@@ -251,9 +238,10 @@ export default function DashboardInventory({ orders }: DashboardInventoryProps) 
 
   // Fungsi untuk render Pagination Shadcn UI
   const renderPagination = () => {
+    // INFO: Ini adalah alasan kenapa Pagination tidak muncul sebelumnya.
+    // Pagination hanya muncul jika total halaman lebih dari 1 (artinya total pesanan > 5).
     if (totalPages <= 1) return null;
 
-    // Logika pembuatan angka halaman (windowing sederhana)
     const getPageNumbers = () => {
       const pages = [];
       if (totalPages <= 5) {
@@ -317,19 +305,17 @@ export default function DashboardInventory({ orders }: DashboardInventoryProps) 
 
   return (
     <div className="w-full space-y-6">
-      {/* Header & Search */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">Pesanan Saya</h2>
           <p className="text-muted-foreground">Kelola riwayat transaksimu dan unduh produk digital.</p>
         </div>
 
-        {/* Shadcn Input for Search */}
         <div className="relative w-full sm:w-72">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Percarian..."
+            placeholder="Pencarian..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 bg-background"
@@ -337,16 +323,13 @@ export default function DashboardInventory({ orders }: DashboardInventoryProps) 
         </div>
       </div>
 
-      {/* Main Content with Tabs */}
-      <Tabs defaultValue="all" className="w-full" onValueChange={setActiveTab}>
+      {/* [PERBAIKAN FATAL]: Menjadikan Tabs sepenuhnya terkontrol (controlled component) dengan properti `value` */}
+      <Tabs value={activeTab} className="w-full" onValueChange={setActiveTab}>
         <div className="flex justify-between items-center mb-6 overflow-x-auto sm:pb-0 no-scrollbar">
           <TabsList variant="line">
             <TabsTrigger value="all" className="px-4">Semua Pesanan</TabsTrigger>
-            {/* <Separator orientation='vertical' /> */}
             <TabsTrigger value="success" className="px-4">Berhasil</TabsTrigger>
-            {/* <Separator orientation='vertical' /> */}
             <TabsTrigger value="pending" className="px-4">Menunggu</TabsTrigger>
-            {/* <Separator orientation='vertical' /> */}
             <TabsTrigger value="failed" className="px-4">Gagal</TabsTrigger>
           </TabsList>
         </div>
@@ -367,7 +350,6 @@ export default function DashboardInventory({ orders }: DashboardInventoryProps) 
 
       {/* Render Pagination only if there are items */}
       {filteredOrders.length > 0 && renderPagination()}
-
     </div>
   );
 }

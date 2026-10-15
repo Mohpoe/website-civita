@@ -1,8 +1,8 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { AwardIcon, CheckCircle2Icon, ChevronLeftIcon, ChevronRightIcon, FileTextIcon, PackageSearchIcon, ShoppingBagIcon, TagsIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { AwardIcon, BanknoteIcon, CheckCircle2Icon, ChevronLeftIcon, ChevronRightIcon, FileTextIcon, PackageSearchIcon, ShoppingBagIcon, TagsIcon } from "lucide-react";
+import { useState } from "react";
 
 // Import Shadcn UI Components
 import { Badge } from "@/components/ui/badge";
@@ -20,8 +20,14 @@ interface DashboardProductsProps {
   products: Product[],
 }
 
-// Array Warna Pastel ala Neo-Pop
-const NEO_COLORS = ['#FFE66D', '#FF9E79', '#B3A2FF', '#98F5E1', '#FFB5E8'];
+// Konfigurasi Warna Neo-Pop untuk Light & Dark Mode
+const NEO_COLORS = [
+  { light: '#FFE66D', dark: '#4A4310', textLight: '#151722', textDark: '#FEFCE8' }, // Yellow / Mustard
+  { light: '#FF9E79', dark: '#522814', textLight: '#151722', textDark: '#FFF7ED' }, // Orange / Rust
+  { light: '#B3A2FF', dark: '#32275C', textLight: '#151722', textDark: '#F5F3FF' }, // Purple / Violet
+  { light: '#98F5E1', dark: '#154D40', textLight: '#151722', textDark: '#F0FDFA' }, // Mint / Deep Teal
+  { light: '#FFB5E8', dark: '#4D1B3E', textLight: '#151722', textDark: '#FDF2F8' }, // Pink / Plum
+];
 
 export default function DashboardProducts({ products }: DashboardProductsProps) {
   const router = useRouter();
@@ -29,6 +35,7 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
   // Dialog/Modal State
   const [detailDialog, setDetailDialog] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedColorIdx, setSelectedColorIdx] = useState<number>(0);
 
   // Checkout Processing State
   const [isProcessing, setIsProcessing] = useState(false);
@@ -50,9 +57,10 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
     if (currentPage > 1) setCurrentPage(prev => prev - 1);
   };
 
-  // Fungsi Pembuka Modal (Mencegah bubbling ganda)
-  const openProductModal = (product: Product) => {
+  // Fungsi Pembuka Modal (Menyimpan index warna untuk dicocokkan di Dialog)
+  const openProductModal = (product: Product, idx: number) => {
     setSelectedProduct(product);
+    setSelectedColorIdx(idx % NEO_COLORS.length);
     setDetailDialog(true);
   };
 
@@ -60,7 +68,7 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
   const checkoutHandler = async () => {
     if (!selectedProduct || detailDialog === false || isProcessing) return;
 
-    setIsProcessing(true); // Kunci tombol agar tidak di-spam klik
+    setIsProcessing(true);
 
     try {
       const response = await fetch("/api/checkout", {
@@ -75,7 +83,6 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
 
       if (!response.ok) throw new Error(data.error);
 
-      // Tutup dialog saat memanggil Midtrans Snap
       setDetailDialog(false);
 
       window.snap.pay(data.token, {
@@ -110,7 +117,6 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
           setIsProcessing(false);
         },
         onClose: function () {
-          // Buka blokir loading jika user klik X tutup popup snap
           setIsProcessing(false);
         }
       });
@@ -127,40 +133,44 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
   };
   // #endregion
 
-  // Parse fitur dengan aman
   const featureList = typeof selectedProduct?.features === "string"
     ? JSON.parse(selectedProduct.features || "[]")
     : (selectedProduct?.features || []);
 
+  // Ambil palet warna aktif untuk modal dialog
+  const activeDialogTheme = NEO_COLORS[selectedColorIdx];
+  const dialogStyleProps = {
+    "--bg-light": activeDialogTheme.light,
+    "--bg-dark": activeDialogTheme.dark,
+    "--text-light": activeDialogTheme.textLight,
+    "--text-dark": activeDialogTheme.textDark,
+  } as React.CSSProperties;
+
   return (
     <>
       <div className="space-y-8">
-        {
-          // #region Header Section
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div className="space-y-2">
-              <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
-                Katalog Eksklusif
-              </h2>
-              <p className="text-muted-foreground max-w-2xl text-base">
-                Akselerasikan karirmu dengan berbagai produk digital dari CIVITA!
-              </p>
-            </div>
-            <Badge variant="outline" className="text-xs text-muted-foreground">
-              {(products?.length ?? 0)} Produk Tersedia
-            </Badge>
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="space-y-2">
+            <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
+              Katalog Eksklusif
+            </h2>
+            <p className="text-muted-foreground max-w-2xl text-base">
+              Akselerasikan karirmu dengan berbagai produk digital dari CIVITA!
+            </p>
           </div>
-          // #endregion
-        }
+          <Badge variant="outline" className="text-xs text-muted-foreground border-2 rounded-full px-4 py-1">
+            {(products?.length ?? 0)} Produk Tersedia
+          </Badge>
+        </div>
 
-        <Separator />
+        <Separator className="border-border" />
 
         {/* Empty State */}
         {(products?.length ?? 0) === 0 ? (
-          <div className="bg-background/50 backdrop-blur-sm rounded-3xl border border-dashed border-muted-foreground/30 min-h-[400px] flex flex-col items-center justify-center p-12 text-center shadow-sm">
+          <div className="bg-background/50 backdrop-blur-sm rounded-[2.2rem] border-2 border-dashed border-muted-foreground/30 min-h-[400px] flex flex-col items-center justify-center p-12 text-center shadow-sm">
             <div className="w-20 h-20 bg-muted/50 rounded-full flex items-center justify-center mb-6 shadow-inner border border-foreground/5 relative overflow-hidden">
               <ShoppingBagIcon className="w-10 h-10 text-muted-foreground/40 absolute z-10" />
-              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-primary/5 to-transparent animate-pulse" />
             </div>
             <h3 className="text-2xl font-bold tracking-tight mb-2">Etalase Kosong</h3>
             <p className="text-muted-foreground max-w-md text-sm md:text-base">
@@ -170,38 +180,45 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
         ) : (
           <>
             {
-              // #region Produk Grid
+              // #region Product Grid
               <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-3">
                 <AnimatePresence mode="popLayout">
                   {currentItems.map((product, idx) => {
-                    // Penentuan Warna Dinamis & Rotasi Zig-zag
-                    const bgColor = NEO_COLORS[idx % NEO_COLORS.length];
+                    const theme = NEO_COLORS[idx % NEO_COLORS.length];
                     const rotationClass = idx % 2 === 0 ? 'rotate-2' : '-rotate-2';
+
+                    // Inject CSS Variables untuk warna spesifik kartu ini (Mendukung Dark Mode)
+                    const styleProps = {
+                      "--bg-light": theme.light,
+                      "--bg-dark": theme.dark,
+                      "--text-light": theme.textLight,
+                      "--text-dark": theme.textDark,
+                    } as React.CSSProperties;
 
                     return (
                       <motion.article
                         key={product.id}
+                        style={styleProps}
                         initial={{ opacity: 0, y: 24, scale: 0.98 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
                         transition={{ duration: 0.5, delay: idx * 0.09, ease: [0.16, 1, 0.3, 1] }}
-                        onClick={() => openProductModal(product)}
-                        className="group relative flex flex-col justify-between overflow-hidden rounded-[2.2rem] p-6 text-[#151722] shadow-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl cursor-pointer"
-                        style={{ backgroundColor: bgColor }} // Menggunakan style inline untuk warna latar neo-pop
+                        onClick={() => openProductModal(product, idx)}
+                        className="group relative flex flex-col justify-between overflow-hidden rounded-[2.2rem] p-6 shadow-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-xl cursor-pointer border-2 border-transparent hover:border-foreground/10 dark:hover:border-white/10 bg-[var(--bg-light)] dark:bg-[var(--bg-dark)] text-[var(--text-light)] dark:text-[var(--text-dark)]"
                       >
                         <div>
-                          {/* Label Kategori & Harga */}
+                          {/* Header Kartu */}
                           <div className="flex items-center justify-between">
-                            <span className="rounded-full bg-black/90 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-white">
+                            <span className="rounded-full bg-black/90 dark:bg-white/90 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-white dark:text-black">
                               {product.category?.name || "Digital"}
                             </span>
-                            <span className="text-sm font-extrabold opacity-70">
+                            <span className="text-lg">
                               {formatRupiah(product.price)}
                             </span>
                           </div>
 
-                          {/* Bingkai Gambar Quirky */}
-                          <div className={`relative mt-6 ${rotationClass} overflow-hidden rounded-2xl border-4 border-white shadow-md transition-transform duration-500 ease-out group-hover:rotate-0 group-hover:scale-105 bg-white`}>
+                          {/* Gambar Quirky dengan Border Putih/Gelap */}
+                          <div className={`relative mt-6 ${rotationClass} overflow-hidden rounded-2xl border-4 border-white dark:border-foreground shadow-md transition-transform duration-500 ease-out group-hover:rotate-0 group-hover:scale-105 bg-white dark:bg-card`}>
                             {product.image_url ? (
                               <img
                                 src={product.image_url}
@@ -210,13 +227,13 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
                                 className="aspect-[5/4] w-full object-cover"
                               />
                             ) : (
-                              <div className="aspect-[5/4] w-full flex items-center justify-center bg-slate-50">
-                                <FileTextIcon className="w-12 h-12 text-slate-300" />
+                              <div className="aspect-[5/4] w-full flex items-center justify-center bg-slate-50 dark:bg-slate-800">
+                                <FileTextIcon className="w-12 h-12 text-slate-300 dark:text-slate-600" />
                               </div>
                             )}
                           </div>
 
-                          {/* Judul & Deskripsi */}
+                          {/* Judul */}
                           <h3 className="mt-6 text-2xl font-bold leading-snug line-clamp-2">
                             {product.title}
                           </h3>
@@ -225,9 +242,9 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
                           </p>
                         </div>
 
-                        {/* Tombol Aksi Magnetic */}
+                        {/* Tombol Magnetik */}
                         <div className="mt-8">
-                          <div className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white transition-all duration-300 group-hover:bg-white group-hover:text-black">
+                          <div className="inline-flex items-center gap-2 rounded-full bg-slate-950 dark:bg-slate-50 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white dark:text-black transition-all duration-300 group-hover:bg-white group-hover:text-black dark:group-hover:bg-slate-900 dark:group-hover:text-white border-2 border-transparent group-hover:border-slate-950 dark:group-hover:border-slate-50">
                             Lihat Detail
                             <svg className="h-3.5 w-3.5 transition group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
@@ -254,7 +271,7 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="rounded-full w-9 h-9 hover:bg-background shadow-sm disabled:opacity-30 disabled:shadow-none"
+                      className="rounded-full w-9 h-9 hover:bg-background shadow-sm disabled:opacity-30"
                       onClick={handlePrevPage}
                       disabled={currentPage === 1}
                     >
@@ -279,7 +296,7 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="rounded-full w-9 h-9 hover:bg-background shadow-sm disabled:opacity-30 disabled:shadow-none"
+                      className="rounded-full w-9 h-9 hover:bg-background shadow-sm disabled:opacity-30"
                       onClick={handleNextPage}
                       disabled={currentPage === totalPages}
                     >
@@ -295,89 +312,120 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
       </div>
 
       {
-        // #region Modal
-        <Dialog
-          open={detailDialog}
-          onOpenChange={setDetailDialog}
-          modal={true}
-        >
-          <DialogContent className="sm:max-w-xl">
-            {/* 2. Area Teks & Informasi (Diberi padding) */}
-            <DialogHeader className="text-left">
-              <DialogTitle className="text-lg font-bold leading-tight">
-                {selectedProduct?.title}
-              </DialogTitle>
-              <DialogDescription className="text-xs leading-relaxed">
-                {selectedProduct?.short_desc}
-              </DialogDescription>
-            </DialogHeader>
+        // #region Detail Dialog
+        <Dialog open={detailDialog} onOpenChange={setDetailDialog} modal={true}>
+          <DialogContent
+            style={dialogStyleProps}
+            className="sm:max-w-xl p-0 overflow-hidden max-h-screen border-4 border-foreground rounded-4xl"
+          >
+            <div className="flex flex-col gap-4 no-scrollbar max-h-[80vh] overflow-y-auto">
+              {/* Header Bawaan (Tersembunyi secara visual, untuk Screen Reader) */}
+              <DialogHeader className="sr-only">
+                <DialogTitle>{selectedProduct?.title}</DialogTitle>
+                <DialogDescription>{selectedProduct?.short_desc}</DialogDescription>
+              </DialogHeader>
 
-            <div className="flex flex-col gap-4 -mx-4 no-scrollbar max-h-[60vh] overflow-y-auto px-5 py-2">
-              {/* 1. Area Gambar (Penuh di atas) */}
-              <div className="group w-full h-full min-h-60 aspect-video bg-muted relative rounded-xl overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={selectedProduct?.image_url}
-                  alt={selectedProduct?.title}
-                  className="w-full h-full object-cover group-hover:scale-110 group-hover:rotate-2 transition-transform duration-250"
-                />
-                <div className="absolute top-3 left-3">
-                  <Badge className="flex gap-2 bg-secondary/70 backdrop-blur-sm" variant="secondary">
-                    <TagsIcon /> {selectedProduct?.category?.name || "Produk Digital"}
+              {/* Area Top Banner Warna-warni */}
+              <div className="w-full px-6 py-8 bg-[var(--bg-light)] dark:bg-[var(--bg-dark)] border-b-4 border-foreground flex items-center justify-center">
+                {/* Gambar Miring di Dalam Modal */}
+                <div className="w-[85%] relative rotate-2 hover:rotate-0 transition-transform duration-500 rounded-2xl overflow-hidden border-4 border-white dark:border-foreground shadow-[8px_8px_0_0_rgba(0,0,0,1)] dark:shadow-[8px_8px_0_0_rgba(255,255,255,0.2)] bg-card aspect-video flex items-center justify-center">
+                  {selectedProduct?.image_url ? (
+                    <img
+                      src={selectedProduct?.image_url}
+                      alt={selectedProduct?.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <FileTextIcon className="w-16 h-16 text-muted-foreground/30" />
+                  )}
+                </div>
+              </div>
+
+              {/* Konten Scrollable */}
+              <div className="flex flex-col gap-5 px-6">
+                <div className="flex flex-row justify-between items-center">
+                  <div className="font-extrabold text-2xl text-foreground">
+                    {formatRupiah(selectedProduct?.price || 0)}
+                  </div>
+
+                  <Badge className="bg-foreground/90 text-background border-none px-3 py-3">
+                    <TagsIcon className="w-3.5 h-3.5 mr-2" /> {selectedProduct?.category?.name || "Digital"}
                   </Badge>
                 </div>
-              </div>
 
-              {/* Grid Informasi Metadata */}
-              <div className="space-y-2 bg-muted/50 p-3 rounded-2xl border">
-                <h4 className="text-sm font-bold uppercase tracking-wider text-foreground/70 flex items-center gap-2">
-                  <AwardIcon className="w-4 h-4 text-primary" /> Yang Anda Dapatkan
-                </h4>
-                <ul className="grid grid-cols-1 md:grid-cols-2 gap-1">
-                  {featureList.length > 0 ? (
-                    featureList.map((feature: string, idx: number) => (
-                      <li key={idx} className="flex items-start gap-2.5 text-xs">
-                        <CheckCircle2Icon className="w-4 h-4 text-green-600 shrink-0 mt-0.5" />
-                        <span className="leading-snug">{feature}</span>
-                      </li>
-                    ))
-                  ) : (
-                    <li className="text-sm text-muted-foreground col-span-2 italic">Detail fitur tidak tersedia.</li>
-                  )}
-                </ul>
-              </div>
-
-              <div className="group p-4 rounded-xl border relative">
-                <div className="absolute top-0 right-0 p-6 opacity-10 transition-transform group-hover:scale-140 group-hover:rotate-6 duration-200">
-                  <PackageSearchIcon className="w-32 h-32" />
+                {/* Area Judul Utama */}
+                <div>
+                  <h2 className="text-2xl md:text-3xl font-black leading-tight text-foreground tracking-tight">
+                    {selectedProduct?.title}
+                  </h2>
+                  <p className="text-muted-foreground text-sm font-medium mt-2 leading-relaxed">
+                    {selectedProduct?.short_desc}
+                  </p>
                 </div>
-                <h4 className="text-lg font-bold mb-1">Deskripsi produk ini:</h4>
-                <p className="text-foreground/80">{selectedProduct?.long_desc}</p>
+
+                {/* Fitur Box Neo-Brutalism */}
+                <div className="bg-[var(--bg-light)] dark:bg-[var(--bg-dark)] text-[var(--text-light)] dark:text-[var(--text-dark)] p-4 rounded-2xl border-2 border-foreground shadow-[4px_4px_0_0_hsl(var(--foreground))]">
+                  <h4 className="text-sm font-black uppercase tracking-wider flex items-center gap-2 mb-3">
+                    <AwardIcon className="w-5 h-5" /> Yang Anda Dapatkan
+                  </h4>
+                  <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {featureList.length > 0 ? (
+                      featureList.map((feature: string, idx: number) => (
+                        <li key={idx} className="flex items-start gap-2.5 text-xs font-semibold">
+                          <CheckCircle2Icon className="w-4 h-4 shrink-0 mt-0.5" />
+                          <span className="leading-snug">{feature}</span>
+                        </li>
+                      ))
+                    ) : (
+                      <li className="text-sm opacity-70 col-span-2 italic font-medium">Detail fitur tidak tersedia.</li>
+                    )}
+                  </ul>
+                </div>
+
+                {/* Area Deskripsi Panjang */}
+                {selectedProduct?.long_desc && (
+                  <div className="p-5 rounded-2xl border-2 border-dashed border-border relative group bg-[var(--bg-light)]/10 dark:bg-[var(--bg-dark)]/10">
+                    <div className="absolute top-0 right-0 p-4 opacity-5 transition-transform group-hover:scale-125 group-hover:rotate-6 duration-300">
+                      <PackageSearchIcon className="w-24 h-24" />
+                    </div>
+                    <h4 className="text-sm font-bold uppercase tracking-wider mb-2 text-foreground/70">Deskripsi Lengkap</h4>
+                    <p className="text-foreground/80 text-sm leading-relaxed">{selectedProduct?.long_desc}</p>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* 3. Footer Action */}
-            <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2">
-              <DialogClose render={<Button type="button" variant="outline" className="w-full sm:w-auto" />}>
-                Tutup
-              </DialogClose>
-              <Button
-                className="w-full sm:w-auto"
-                onClick={checkoutHandler}
-                disabled={isProcessing}
-              >
-                {isProcessing ? (
-                  <>
-                    <Spinner />
-                    Memproses...
-                  </>
-                ) : (
-                  <>
-                    <ShoppingBagIcon />
-                    Beli Sekarang
-                  </>
-                )}
-              </Button>
+            {/* Footer Aksi */}
+            <DialogFooter className="pb-8 px-8 border-t-2">
+              <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
+                <DialogClose render={
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full sm:w-auto rounded-full font-bold border-2 border-foreground hover:scale-110 transition-transform"
+                  />
+                }>
+                  Batal
+                </DialogClose>
+                <Button
+                  variant="outline"
+                  className="w-full sm:w-auto rounded-full font-bold border-2 border-foreground hover:scale-110 transition-transform"
+                  onClick={checkoutHandler}
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? (
+                    <>
+                      <Spinner />
+                      Memproses...
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingBagIcon className="w-4 h-4" />
+                      Beli Sekarang
+                    </>
+                  )}
+                </Button>
+              </div>
             </DialogFooter>
 
           </DialogContent>
