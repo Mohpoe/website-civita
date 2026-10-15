@@ -47,8 +47,10 @@ export default function DashboardInventory({ orders }: DashboardInventoryProps) 
 
   // Filter Data berdasarkan Pencarian & Tab Status
   const filteredOrders = orders.filter(order => {
+    const productTitle = order.product?.title || "Produk Tidak Tersedia";
+
     const matchesSearch =
-      order.product?.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      productTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.order_id?.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesTab = activeTab === "all" || order.status === activeTab;
@@ -156,7 +158,7 @@ export default function DashboardInventory({ orders }: DashboardInventoryProps) 
                         </div>
                         <div className="flex flex-wrap items-center gap-2">
                           <h3 className="font-bold text-lg leading-tight">
-                            {order.product?.title}
+                            {order.product?.title || "Produk Tidak Tersedia"}
                           </h3>
 
                           {/* UI Limited Edition: Muncul jika is_active false atau produk telah dihapus (null) */}

@@ -1,31 +1,39 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
+import { BadgeCheckIcon, CheckCircle2Icon, ChevronLeftIcon, ChevronRightIcon, FileTextIcon, ShoppingBagIcon, TagsIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+
+// Import Shadcn UI Components
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+
+import { toast } from "@/components/ui/toast";
 import { formatRupiah } from "@/lib/utils";
 import { Product } from "@/types/global";
-import { AnimatePresence, motion } from "framer-motion";
-import { CheckCircle2Icon, ChevronLeftIcon, ChevronRightIcon, FileTextIcon, ShoppingBagIcon } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog";
-import { toast } from "./ui/toast";
-import Script from "next/script";
+import { Field, FieldGroup } from "./ui/field";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { Separator } from "./ui/separator";
 
 interface DashboardProductsProps {
   products: Product[],
 }
 
-export default function DashboardProducs({ products }: DashboardProductsProps) {
+export default function DashboardProducts({ products }: DashboardProductsProps) {
   // Dialog/Modal State
   const [detailDialog, setDetailDialog] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  // Checkout Processing State
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
-  // Modal State
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-
+  // Midtrans Script Injector
   useEffect(() => {
     const snapScript = "https://app.sandbox.midtrans.com/snap/snap.js";
     const clientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || "";
@@ -44,6 +52,7 @@ export default function DashboardProducs({ products }: DashboardProductsProps) {
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = (products ?? []).slice(indexOfFirstItem, indexOfLastItem);
+
   const handleNextPage = () => {
     if (currentPage < totalPages) setCurrentPage(prev => prev + 1);
   };
@@ -51,9 +60,17 @@ export default function DashboardProducs({ products }: DashboardProductsProps) {
     if (currentPage > 1) setCurrentPage(prev => prev - 1);
   };
 
-  // Checkout Handler
+  // Fungsi Pembuka Modal (Mencegah bubbling ganda)
+  const openProductModal = (product: Product) => {
+    setSelectedProduct(product);
+    setDetailDialog(true);
+  };
+
+  // #region Checkout Handler
   const checkoutHandler = async () => {
-    if (!selectedProduct || detailDialog === false) return;
+    if (!selectedProduct || detailDialog === false || isProcessing) return;
+
+    setIsProcessing(true); // Kunci tombol agar tidak di-spam klik
 
     try {
       const response = await fetch("/api/checkout", {
@@ -68,256 +85,323 @@ export default function DashboardProducs({ products }: DashboardProductsProps) {
 
       if (!response.ok) throw new Error(data.error);
 
+      // Tutup dialog saat memanggil Midtrans Snap
+      setDetailDialog(false);
+
       window.snap.pay(data.token, {
         onSuccess: function (result: any) {
           console.log("Pembayaran Berhasil!", result);
           toast.add({
+            title: "Pembayaran Berhasil! 🎉",
+            description: "Silakan cek tab 'Pesanan Saya' untuk mengunduh produk.",
             type: "success",
-            description: "Pembayaran berhasil! Silakan cek tab 'Pesanan Saya' untuk mengunduh produk."
           });
+          setIsProcessing(false);
         },
         onPending: function (result: any) {
           console.log("Menunggu Pembayaran", result);
           toast.add({
-            type: "warning",
-            description: "Pesanan dibuat. Silakan selesaikan pembayaran di tab 'Pesanan Saya'."
+            title: "Pesanan Dibuat",
+            description: "Silakan selesaikan pembayaran di tab 'Pesanan Saya'.",
+            type: "info",
           });
+          setIsProcessing(false);
         },
         onError: function (result: any) {
           console.error("Pembayaran Gagal", result);
           toast.add({
+            title: "Pembayaran Gagal",
+            description: "Terjadi kesalahan pada sistem bank/e-wallet. Silakan coba lagi.",
             type: "error",
-            description: "Pembayaran gagal. Silakan coba lagi."
+            priority: "high"
           });
+          setIsProcessing(false);
         },
+        onClose: function () {
+          // Buka blokir loading jika user klik X tutup popup snap
+          setIsProcessing(false);
+        }
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Gagal memproses checkout:", error);
       toast.add({
+        title: "Sistem Sibuk",
+        description: error.message || "Gagal menghubungi server. Periksa koneksi internet Anda.",
         type: "error",
-        description: "Terjadi kesalahan saat memproses pesanan."
+        priority: "high"
       });
+      setIsProcessing(false);
     }
   };
+  // #endregion
 
+  // Parse fitur dengan aman
   const featureList = typeof selectedProduct?.features === "string"
-    ? JSON.parse(selectedProduct.features)
+    ? JSON.parse(selectedProduct.features || "[]")
     : (selectedProduct?.features || []);
 
   return (
     <>
-      <div className="w-full font-mono text-foreground">
-        <div className="mb-8">
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">Produk Digital CIVITA</h2>
-          <p className="text-muted-foreground">Tingkatkan peluang lolos kerja kamu dengan template dan panduan eksklusif siap pakai.</p>
-        </div>
-
-        {(products?.length ?? 0) === 0 ? (
-          <div className="bg-background rounded-3xl border border-foreground/5 shadow-sm min-h-[300px] flex flex-col items-center justify-center p-12 text-center">
-            <div className="w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mb-4 shadow-inner border border-foreground/5">
-              <ShoppingBagIcon className="w-8 h-8 text-muted-foreground/50" />
+      <div className="space-y-8">
+        {
+          // #region Header Section
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="space-y-2">
+              <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
+                Katalog Eksklusif
+              </h2>
+              <p className="text-muted-foreground max-w-2xl text-base">
+                Akselerasikan karirmu dengan berbagai produk digital dari CIVITA!
+              </p>
             </div>
-            <h3 className="text-xl font-bold tracking-tight mb-2">Belum Ada Produk</h3>
-            <p className="text-muted-foreground max-w-sm">
-              Produk digital sedang disiapkan dan akan segera tersedia di toko.
+            <Badge variant="outline" className="text-xs text-muted-foreground">
+              {(products?.length ?? 0)} Produk Tersedia
+            </Badge>
+          </div>
+          // #endregion
+        }
+
+        <Separator />
+
+        {/* Empty State */}
+        {(products?.length ?? 0) === 0 ? (
+          <div className="bg-background/50 backdrop-blur-sm rounded-3xl border border-dashed border-muted-foreground/30 min-h-[400px] flex flex-col items-center justify-center p-12 text-center shadow-sm">
+            <div className="w-20 h-20 bg-muted/50 rounded-full flex items-center justify-center mb-6 shadow-inner border border-foreground/5 relative overflow-hidden">
+              <ShoppingBagIcon className="w-10 h-10 text-muted-foreground/40 absolute z-10" />
+              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-primary/5 to-transparent animate-pulse" />
+            </div>
+            <h3 className="text-2xl font-bold tracking-tight mb-2">Etalase Kosong</h3>
+            <p className="text-muted-foreground max-w-md text-sm md:text-base">
+              Kami sedang meracik produk digital terbaik untuk Anda. Silakan kembali lagi nanti untuk melihat pembaruan katalog.
             </p>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-              <AnimatePresence mode="popLayout">
-                {currentItems.map((product, idx) => (
-                  <motion.div
-                    key={product.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 0.3, delay: idx * 0.05 }}
-                    className="group bg-background rounded-2xl overflow-hidden border border-foreground/5 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] transition-all duration-300 flex flex-col cursor-pointer"
-                    // onClick={() => openProductDetails(product)}
-                    onClick={() => {
-                      setSelectedProduct(product);
-                      setDetailDialog(true);
-                    }}
-                  >
-                    <div className={`relative aspect-[4/3] bg-muted overflow-hidden`}>
-                      {product.image_url ? (
-                        <img
-                          src={product.image_url}
-                          alt={product.title}
-                          className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <div className="absolute inset-0 flex items-center justify-center opacity-50 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500">
-                          <div className="w-20 h-24 bg-background/50 backdrop-blur-sm rounded-lg border border-foreground/10 shadow-sm flex items-center justify-center">
-                            <FileTextIcon className="w-8 h-8 text-foreground/40" />
+            {
+              // #region Produk Grid
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <AnimatePresence mode="popLayout">
+                  {currentItems.map((product, idx) => (
+                    <motion.div
+                      key={product.id}
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ duration: 0.4, delay: idx * 0.08, ease: "easeOut" }}
+                      onClick={() => openProductModal(product)}
+                      className="relative flex flex-col bg-card rounded-3xl overflow-hidden border border-border/50 shadow-sm hover:shadow-[0_20px_50px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+                    >
+                      {/* Gambar/Cover Section */}
+                      <div className="relative aspect-[4/3] w-full bg-muted/30 overflow-hidden">
+                        {product.image_url ? (
+                          <img
+                            src={product.image_url}
+                            alt={product.title}
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 flex items-center justify-center opacity-60">
+                            <FileTextIcon className="w-12 h-12 text-muted-foreground/30" />
                           </div>
+                        )}
+
+                        {/* Gradient Overlay Premium */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 transition-opacity duration-300" />
+
+                        {/* Badge Kategori & Harga Floating */}
+                        <div className="absolute top-4 left-4 right-4 flex justify-between items-start z-10">
+                          <Badge className="bg-background/90 hover:bg-background/90 text-foreground backdrop-blur-md border-none shadow-sm font-semibold tracking-wide uppercase text-[10px]">
+                            {product.category?.name || "Digital"}
+                          </Badge>
                         </div>
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                      <Badge className="absolute top-4 right-4 bg-background/80 backdrop-blur text-foreground border-none shadow-sm pointer-events-none">
-                        {product.category?.name}
-                      </Badge>
-                    </div>
 
-                    <div className="p-5 flex-1 flex flex-col">
-                      <h3 className="font-bold text-lg leading-tight mb-2 group-hover:text-zinc-600 transition-colors line-clamp-2">
-                        {product.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground line-clamp-2 mb-4 flex-1">
-                        {product.short_desc}
-                      </p>
-
-                      <div className="flex items-center justify-between mt-auto pt-4 border-t border-foreground/5">
-                        <span className="font-bold text-base">{formatRupiah(product.price)}</span>
-                        <Button
-                          size="sm"
-                          className="rounded-full shadow-sm hover:scale-105 transition-transform px-4"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedProduct(product);
-                            setDetailDialog(true);
-                            // openProductDetails(product);
-                          }}
-                        >
-                          Detail
-                        </Button>
+                        <div className="absolute bottom-4 left-4 right-4 z-10 flex flex-col">
+                          <h3 className="font-bold text-xl text-white leading-tight line-clamp-2 drop-shadow-md">
+                            {product.title}
+                          </h3>
+                        </div>
                       </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
 
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between border-t border-foreground/5 pt-6">
-                <p className="text-sm text-muted-foreground hidden sm:block">
-                  Menampilkan <span className="font-bold text-foreground">{indexOfFirstItem + 1}</span> - <span className="font-bold text-foreground">{Math.min(indexOfLastItem, (products?.length ?? 0))}</span> dari <span className="font-bold text-foreground">{(products?.length ?? 0)}</span> produk
-                </p>
+                      {/* Deskripsi & Aksi Section */}
+                      <div className="p-5 flex flex-col flex-1 bg-card">
+                        <p className="text-sm text-muted-foreground line-clamp-2 mb-6 flex-1 leading-relaxed">
+                          {product.short_desc}
+                        </p>
 
-                <div className="flex items-center gap-2 w-full sm:w-auto justify-center sm:justify-end">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="rounded-full w-9 h-9 border-foreground/10 disabled:opacity-50"
-                    onClick={handlePrevPage}
-                    disabled={currentPage === 1}
-                  >
-                    <ChevronLeftIcon className="w-4 h-4" />
-                  </Button>
+                        <div className="flex items-center justify-between pt-4 border-t border-border/60">
+                          <span className="font-extrabold text-lg tracking-tight">
+                            {formatRupiah(product.price)}
+                          </span>
 
-                  <div className="flex items-center gap-1 mx-2">
-                    {[...Array(totalPages)].map((_, i) => (
-                      <button
-                        key={i}
-                        onClick={() => setCurrentPage(i + 1)}
-                        className={`w-8 h-8 rounded-full text-sm font-medium transition-colors flex items-center justify-center ${currentPage === i + 1
-                          ? "bg-foreground text-background shadow-sm"
-                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                          }`}
-                      >
-                        {i + 1}
-                      </button>
-                    ))}
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="rounded-full w-9 h-9 border-foreground/10 disabled:opacity-50"
-                    onClick={handleNextPage}
-                    disabled={currentPage === totalPages}
-                  >
-                    <ChevronRightIcon className="w-4 h-4" />
-                  </Button>
-                </div>
+                          <Button
+                            className="rounded-full"
+                            variant="secondary"
+                          >
+                            Lihat Detail
+                          </Button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
               </div>
-            )}
+              // #endregion
+            }
+
+            {
+              // #region Pagination
+              totalPages > 1 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 mt-4 border-t border-border/40">
+                  <p className="text-sm text-muted-foreground font-medium">
+                    Menampilkan <span className="text-foreground">{indexOfFirstItem + 1}</span> - <span className="text-foreground">{Math.min(indexOfLastItem, (products?.length ?? 0))}</span> dari <span className="text-foreground">{(products?.length ?? 0)}</span> produk
+                  </p>
+
+                  <div className="flex items-center gap-1.5 bg-muted/30 p-1.5 rounded-full border border-border/50">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="rounded-full w-9 h-9 hover:bg-background shadow-sm disabled:opacity-30 disabled:shadow-none"
+                      onClick={handlePrevPage}
+                      disabled={currentPage === 1}
+                    >
+                      <ChevronLeftIcon className="w-4 h-4" />
+                    </Button>
+
+                    <div className="flex items-center px-2 gap-1">
+                      {[...Array(totalPages)].map((_, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setCurrentPage(i + 1)}
+                          className={`w-8 h-8 rounded-full text-sm font-bold transition-all duration-200 ${currentPage === i + 1
+                            ? "bg-foreground text-background shadow-md scale-105"
+                            : "text-muted-foreground hover:bg-background hover:text-foreground"
+                            }`}
+                        >
+                          {i + 1}
+                        </button>
+                      ))}
+                    </div>
+
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="rounded-full w-9 h-9 hover:bg-background shadow-sm disabled:opacity-30 disabled:shadow-none"
+                      onClick={handleNextPage}
+                      disabled={currentPage === totalPages}
+                    >
+                      <ChevronRightIcon className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              )
+              // #endregion
+            }
           </>
         )}
       </div>
 
-      <Dialog open={detailDialog} onOpenChange={setDetailDialog}>
-        <DialogContent className="w-full md:max-w-xl">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold">{selectedProduct?.title}</DialogTitle>
-            <DialogDescription>
-              {selectedProduct?.short_desc}
-            </DialogDescription>
-          </DialogHeader>
-
-          {/* Konten Utama */}
-          <div className="flex flex-col gap-4 py-4">
-            {/* Gambar/Banner Produk */}
-            <div className="aspect-video w-full overflow-hidden rounded-md border bg-muted">
-              <img
-                src={selectedProduct?.image_url}
-                alt={selectedProduct?.title}
-                className="h-full w-full object-contain"
-              />
-            </div>
-
-            {/* Harga dan Deskripsi */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <h3 className="text-2xl font-bold text-primary">{formatRupiah(selectedProduct?.price as number)}</h3>
-                {/* Opsional: Gunakan komponen Badge dari Shadcn jika Anda sudah menginstalnya */}
-                <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-secondary text-secondary-foreground">
-                  {selectedProduct?.category?.name}
-                </span>
-              </div>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {selectedProduct?.long_desc}
-              </p>
-            </div>
-
-            {/* Fitur / Benefit */}
-            <div className="space-y-1 mt-2">
-              <h4 className="text-sm font-semibold">Yang Anda dapatkan:</h4>
-              <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
-                {featureList.map((feature: string, idx: number) => (
-                  <li key={idx} className="flex items-start gap-2 text-sm text-foreground">
-                    <CheckCircle2Icon className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          {/* Footer dengan Tombol Beli */}
-          <DialogFooter className="flex items-center justify-between sm:justify-between">
-            <p className="text-xs text-muted-foreground hidden sm:block">
-              Transaksi dilindungi oleh Midtrans.
-            </p>
-            <div className="flex flex-col-reverse sm:flex-row gap-2 w-full sm:w-auto">
-              <DialogClose render={
-                <Button
-                  variant="outline"
-                  onClick={() => setDetailDialog(false)}
-                  className="w-full sm:w-auto"
-                />
-              }>
-                Batal
-              </DialogClose>
-              <Button
-                className="w-full sm:w-auto"
-                onClick={checkoutHandler}
-              >
-                Beli Sekarang
-              </Button>
-            </div>
-          </DialogFooter>
-        </DialogContent>
+      <Dialog>
+        <form>
+          <DialogTrigger render={<Button variant="outline">Open Dialog</Button>} />
+          <DialogContent className="sm:max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Edit profile</DialogTitle>
+              <DialogDescription>
+                Make changes to your profile here. Click save when you&apos;re
+                done.
+              </DialogDescription>
+            </DialogHeader>
+            <FieldGroup>
+              <Field>
+                <Label htmlFor="name-1">Name</Label>
+                <Input id="name-1" name="name" defaultValue="Pedro Duarte" />
+              </Field>
+              <Field>
+                <Label htmlFor="username-1">Username</Label>
+                <Input id="username-1" name="username" defaultValue="@peduarte" />
+              </Field>
+            </FieldGroup>
+            <DialogFooter>
+              <DialogClose render={<Button variant="outline">Cancel</Button>} />
+              <Button type="submit">Save changes</Button>
+            </DialogFooter>
+          </DialogContent>
+        </form>
       </Dialog>
 
-      {/* <script
-        type="text/javascript"
-        src={process.env.MIDTRANS_SNAP_URL}
-        data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
-      ></script> */}
+      {
+        // #region Modal
+        <Dialog
+          open={detailDialog}
+          onOpenChange={setDetailDialog}
+          modal={true}
+        >
+          <DialogContent className="sm:max-w-xl">
+            <div className="flex flex-col gap-4 -mx-4 no-scrollbar max-h-[80vh] overflow-y-auto px-5 py-2">
+              {/* 2. Area Teks & Informasi (Diberi padding) */}
+              <DialogHeader className="text-left">
+                <DialogTitle className="text-lg font-bold leading-tight">
+                  {selectedProduct?.title}
+                </DialogTitle>
+                <DialogDescription className="text-xs leading-relaxed">
+                  {selectedProduct?.short_desc}
+                </DialogDescription>
+              </DialogHeader>
+
+              {/* 1. Area Gambar (Penuh di atas) */}
+              <div className="w-full max-h-60 aspect-video bg-muted relative border-b">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={selectedProduct?.image_url}
+                  alt={selectedProduct?.title}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute top-3 left-3">
+                  <Badge className="flex gap-2 bg-secondary/70 backdrop-blur-sm" variant="secondary">
+                    <TagsIcon /> {selectedProduct?.category?.name || "Produk Digital"}
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Grid Informasi Metadata */}
+              <div className="space-y-2 bg-muted/30 p-3 rounded-2xl border border-border/40">
+                <h4 className="text-sm font-bold uppercase tracking-wider text-foreground/70 flex items-center gap-2">
+                  <BadgeCheckIcon className="w-4 h-4 text-primary" /> Yang Anda Dapatkan
+                </h4>
+                <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {featureList.length > 0 ? (
+                    featureList.map((feature: string, idx: number) => (
+                      <li key={idx} className="flex items-start gap-2.5 text-xs">
+                        <CheckCircle2Icon className="w-4 h-4 text-green-600 shrink-0 mt-0.5" />
+                        <span className="leading-snug">{feature}</span>
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-sm text-muted-foreground col-span-2 italic">Detail fitur tidak tersedia.</li>
+                  )}
+                </ul>
+              </div>
+
+              <div>
+                {selectedProduct?.long_desc}
+              </div>
+            </div>
+
+            {/* 3. Footer Action */}
+            <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2">
+              <DialogClose render={<Button type="button" variant="outline" className="w-full sm:w-auto" />}>
+                Tutup
+              </DialogClose>
+              <Button type="button" className="w-full sm:w-auto">
+                Unduh Gambar
+              </Button>
+            </DialogFooter>
+
+          </DialogContent>
+        </Dialog>
+        // #endregion
+      }
     </>
   );
 }
-

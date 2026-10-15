@@ -36,7 +36,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Pesanan tidak ditemukan atau bukan milik Anda.' }, { status: 404 });
     }
 
-    const order = rows[0];
+    const order = rows[0] as Order;
 
     // Jika pesanan belum lunas
     if (order.status !== 'success') {
@@ -61,7 +61,8 @@ export async function GET(req: Request) {
     }
 
     const originalExtension = fileUrl.substring(fileUrl.lastIndexOf('.'));
-    const safeProductName = order.product.title.replace(/[^a-zA-Z0-9]/g, '_');
+    const rawTitle = order.product?.title || "Produk_Digital_CIVITA";
+    const safeProductName = rawTitle.replace(/[^a-zA-Z0-9]/g, '_');
     const fileName = `${safeProductName}${originalExtension}`;
 
     return new NextResponse(result.stream as any, {
