@@ -1,27 +1,28 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { BadgeCheckIcon, CheckCircle2Icon, ChevronLeftIcon, ChevronRightIcon, FileTextIcon, ShoppingBagIcon, TagsIcon } from "lucide-react";
+import { AwardIcon, CheckCircle2Icon, ChevronLeftIcon, ChevronRightIcon, FileTextIcon, PackageSearchIcon, ShoppingBagIcon, TagsIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 // Import Shadcn UI Components
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 import { toast } from "@/components/ui/toast";
 import { formatRupiah } from "@/lib/utils";
 import { Product } from "@/types/global";
-import { Field, FieldGroup } from "./ui/field";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
+import { useRouter } from "next/navigation";
 import { Separator } from "./ui/separator";
+import { Spinner } from "./ui/spinner";
 
 interface DashboardProductsProps {
   products: Product[],
 }
 
 export default function DashboardProducts({ products }: DashboardProductsProps) {
+  const router = useRouter();
+
   // Dialog/Modal State
   const [detailDialog, setDetailDialog] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -32,20 +33,6 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
-
-  // Midtrans Script Injector
-  useEffect(() => {
-    const snapScript = "https://app.sandbox.midtrans.com/snap/snap.js";
-    const clientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || "";
-
-    if (!document.querySelector(`script[src="${snapScript}"]`)) {
-      const script = document.createElement("script");
-      script.src = snapScript;
-      script.setAttribute("data-client-key", clientKey);
-      script.async = true;
-      document.body.appendChild(script);
-    }
-  }, []);
 
   // Pagination Logic
   const totalPages = Math.ceil((products?.length ?? 0) / itemsPerPage);
@@ -96,6 +83,7 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
             description: "Silakan cek tab 'Pesanan Saya' untuk mengunduh produk.",
             type: "success",
           });
+          router.refresh();
           setIsProcessing(false);
         },
         onPending: function (result: any) {
@@ -105,6 +93,7 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
             description: "Silakan selesaikan pembayaran di tab 'Pesanan Saya'.",
             type: "info",
           });
+          router.refresh();
           setIsProcessing(false);
         },
         onError: function (result: any) {
@@ -301,35 +290,6 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
         )}
       </div>
 
-      <Dialog>
-        <form>
-          <DialogTrigger render={<Button variant="outline">Open Dialog</Button>} />
-          <DialogContent className="sm:max-w-sm">
-            <DialogHeader>
-              <DialogTitle>Edit profile</DialogTitle>
-              <DialogDescription>
-                Make changes to your profile here. Click save when you&apos;re
-                done.
-              </DialogDescription>
-            </DialogHeader>
-            <FieldGroup>
-              <Field>
-                <Label htmlFor="name-1">Name</Label>
-                <Input id="name-1" name="name" defaultValue="Pedro Duarte" />
-              </Field>
-              <Field>
-                <Label htmlFor="username-1">Username</Label>
-                <Input id="username-1" name="username" defaultValue="@peduarte" />
-              </Field>
-            </FieldGroup>
-            <DialogFooter>
-              <DialogClose render={<Button variant="outline">Cancel</Button>} />
-              <Button type="submit">Save changes</Button>
-            </DialogFooter>
-          </DialogContent>
-        </form>
-      </Dialog>
-
       {
         // #region Modal
         <Dialog
@@ -338,24 +298,24 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
           modal={true}
         >
           <DialogContent className="sm:max-w-xl">
-            <div className="flex flex-col gap-4 -mx-4 no-scrollbar max-h-[80vh] overflow-y-auto px-5 py-2">
-              {/* 2. Area Teks & Informasi (Diberi padding) */}
-              <DialogHeader className="text-left">
-                <DialogTitle className="text-lg font-bold leading-tight">
-                  {selectedProduct?.title}
-                </DialogTitle>
-                <DialogDescription className="text-xs leading-relaxed">
-                  {selectedProduct?.short_desc}
-                </DialogDescription>
-              </DialogHeader>
+            {/* 2. Area Teks & Informasi (Diberi padding) */}
+            <DialogHeader className="text-left">
+              <DialogTitle className="text-lg font-bold leading-tight">
+                {selectedProduct?.title}
+              </DialogTitle>
+              <DialogDescription className="text-xs leading-relaxed">
+                {selectedProduct?.short_desc}
+              </DialogDescription>
+            </DialogHeader>
 
+            <div className="flex flex-col gap-4 -mx-4 no-scrollbar max-h-[60vh] overflow-y-auto px-5 py-2">
               {/* 1. Area Gambar (Penuh di atas) */}
-              <div className="w-full max-h-60 aspect-video bg-muted relative border-b">
+              <div className="group w-full h-full min-h-60 aspect-video bg-muted relative rounded-xl overflow-hidden">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={selectedProduct?.image_url}
                   alt={selectedProduct?.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover group-hover:scale-110 group-hover:rotate-2 transition-transform duration-250"
                 />
                 <div className="absolute top-3 left-3">
                   <Badge className="flex gap-2 bg-secondary/70 backdrop-blur-sm" variant="secondary">
@@ -365,11 +325,11 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
               </div>
 
               {/* Grid Informasi Metadata */}
-              <div className="space-y-2 bg-muted/30 p-3 rounded-2xl border border-border/40">
+              <div className="space-y-2 bg-muted/50 p-3 rounded-2xl border">
                 <h4 className="text-sm font-bold uppercase tracking-wider text-foreground/70 flex items-center gap-2">
-                  <BadgeCheckIcon className="w-4 h-4 text-primary" /> Yang Anda Dapatkan
+                  <AwardIcon className="w-4 h-4 text-primary" /> Yang Anda Dapatkan
                 </h4>
-                <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <ul className="grid grid-cols-1 md:grid-cols-2 gap-1">
                   {featureList.length > 0 ? (
                     featureList.map((feature: string, idx: number) => (
                       <li key={idx} className="flex items-start gap-2.5 text-xs">
@@ -383,8 +343,12 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
                 </ul>
               </div>
 
-              <div>
-                {selectedProduct?.long_desc}
+              <div className="group p-4 rounded-xl border relative">
+                <div className="absolute top-0 right-0 p-6 opacity-10 transition-transform group-hover:scale-140 group-hover:rotate-6 duration-200">
+                  <PackageSearchIcon className="w-32 h-32" />
+                </div>
+                <h4 className="text-lg font-bold mb-1">Deskripsi produk ini:</h4>
+                <p className="text-foreground/80">{selectedProduct?.long_desc}</p>
               </div>
             </div>
 
@@ -393,8 +357,22 @@ export default function DashboardProducts({ products }: DashboardProductsProps) 
               <DialogClose render={<Button type="button" variant="outline" className="w-full sm:w-auto" />}>
                 Tutup
               </DialogClose>
-              <Button type="button" className="w-full sm:w-auto">
-                Unduh Gambar
+              <Button
+                className="w-full sm:w-auto"
+                onClick={checkoutHandler}
+                disabled={isProcessing}
+              >
+                {isProcessing ? (
+                  <>
+                    <Spinner />
+                    Memproses...
+                  </>
+                ) : (
+                  <>
+                    <ShoppingBagIcon />
+                    Beli Sekarang
+                  </>
+                )}
               </Button>
             </DialogFooter>
 
