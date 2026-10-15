@@ -10,7 +10,15 @@ import { revalidatePath } from "next/cache";
 // #region 1. GET CATEGORIES
 export async function getCategories(): Promise<Category[]> {
   try {
-    const data = await sql`SELECT * FROM categories ORDER BY name ASC`;
+    const data = await sql`
+      SELECT
+        c.*,
+        COUNT(p.id)::int AS product_count
+      FROM categories c
+      LEFT JOIN products p ON c.id = p.category_id
+      GROUP BY c.id
+      ORDER BY c.name ASC
+    `;
     return data as Category[];
   } catch (error) {
     console.error("Gagal mengambil kategori:", error);

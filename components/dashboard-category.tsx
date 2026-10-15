@@ -138,7 +138,19 @@ export default function DashboardCategory({ categories }: DashboardCategoryProps
       columnHelper.accessor("description", {
         id: "deskripsi",
         header: "Deskripsi",
-        cell: (info) => <span className="font-medium">{info.getValue()}</span>,
+        cell: (info) => <div className="text-xs max-w-lg text-wrap">{info.getValue()}</div>,
+      }),
+      columnHelper.accessor("product_count", {
+        id: "total_produk",
+        header: () => <div className="text-center w-full">Total Produk</div>,
+        cell: (info) => {
+          const count = info.getValue() || 0;
+          return (
+            <div>
+              {count} <span className="text-muted-foreground">produk</span>
+            </div>
+          );
+        },
       }),
       columnHelper.display({
         id: "actions",

@@ -5,7 +5,7 @@ import { formatRupiah } from "@/lib/utils";
 import { Category, Order, Product } from "@/types/global";
 import { columnFilteringFeature, ColumnFiltersState, columnVisibilityFeature, ColumnVisibilityState, createColumnHelper, createFilteredRowModel, createPaginatedRowModel, createSortedRowModel, filterFn_includesString, globalFilteringFeature, rowPaginationFeature, rowSortingFeature, sortFn_alphanumeric, sortFn_text, SortingState, tableFeatures, useTable } from "@tanstack/react-table";
 import { uploadPresigned } from "@vercel/blob/client";
-import { BadgeCheckIcon, BadgeXIcon, ChevronDownIcon, ChevronFirstIcon, ChevronLastIcon, ChevronLeftIcon, ChevronRightIcon, ChevronsUpDownIcon, ChevronUpIcon, Columns3Icon, EyeIcon, FileTextIcon, GhostIcon, ImageIcon, MoreHorizontalIcon, PlusIcon, RefreshCcwIcon, Rows3Icon, SearchIcon, SlidersHorizontalIcon, SquarePenIcon, TagsIcon, Trash2Icon, UploadIcon } from "lucide-react";
+import { BadgeAlertIcon, BadgeCheckIcon, BadgeXIcon, ChevronDownIcon, ChevronFirstIcon, ChevronLastIcon, ChevronLeftIcon, ChevronRightIcon, ChevronsUpDownIcon, ChevronUpIcon, Columns3Icon, EyeIcon, FileTextIcon, GhostIcon, ImageIcon, MoreHorizontalIcon, PlusIcon, RefreshCcwIcon, Rows3Icon, SearchIcon, SlidersHorizontalIcon, SquarePenIcon, TagsIcon, Trash2Icon, UploadIcon } from "lucide-react";
 import { useActionState, useEffect, useMemo, useState, useTransition } from "react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle } from "./ui/alert-dialog";
 import { Attachment, AttachmentContent, AttachmentDescription, AttachmentMedia, AttachmentTitle } from "./ui/attachment";
@@ -123,6 +123,19 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
   // #endregion
 
   // #region COLUMN
+  // 0. Rekap Statistik Pesanan
+  const orderStats = useMemo(() => {
+    const stats: Record<string, { success: number; pending: number; failed: number }> = {};
+    orders?.forEach(order => {
+      if (!order.product_id) return;
+      if (!stats[order.product_id]) stats[order.product_id] = { success: 0, pending: 0, failed: 0 };
+      if (order.status === "success") stats[order.product_id].success += 1;
+      if (order.status === "pending") stats[order.product_id].pending += 1;
+      if (order.status === "failed") stats[order.product_id].failed += 1;
+    });
+    return stats;
+  }, [orders]);
+
   // 1. Table Initiation
   const features = tableFeatures({
     rowSortingFeature,
@@ -222,6 +235,39 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
         ),
       }),
 
+      columnHelper.accessor(row => orderStats[row.id]?.success || 0, {
+        id: "terjual",
+        header: () => <BadgeCheckIcon className="text-success" />,
+        cell: (info) => (
+          <div className="flex flex-col text-center">
+            <span className="text-xs text-muted-foreground">Laku:</span>
+            <span className="font-semibold bg-success/80 rounded-full text-background">{info.getValue() > 0 ? info.getValue() : "--"}</span>
+          </div>
+        )
+      }),
+
+      columnHelper.accessor(row => orderStats[row.id]?.pending || 0, {
+        id: "menunggu",
+        header: () => <BadgeAlertIcon className="text-warning" />,
+        cell: (info) => (
+          <div className="flex flex-col text-center">
+            <span className="text-xs text-muted-foreground">Tunda:</span>
+            <span className="font-semibold bg-warning/80 rounded-full text-background">{info.getValue() > 0 ? info.getValue() : "--"}</span>
+          </div>
+        )
+      }),
+
+      columnHelper.accessor(row => orderStats[row.id]?.failed || 0, {
+        id: "gagal",
+        header: () => <BadgeXIcon className="text-destructive" />,
+        cell: (info) => (
+          <div className="flex flex-col text-center">
+            <span className="text-xs text-muted-foreground">Gagal:</span>
+            <span className="font-semibold bg-destructive/80 rounded-full text-background">{info.getValue() > 0 ? info.getValue() : "--"}</span>
+          </div>
+        )
+      }),
+
       // 6. Kolom Status
       columnHelper.accessor("is_active", {
         id: "status",
@@ -229,7 +275,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
         cell: (info) => {
           return info.getValue() ? (
             <Badge variant="secondary">
-              <BadgeCheckIcon data-icon="inline-start" className="text-emerald-500" /> Aktif
+              <BadgeCheckIcon data-icon="inline-start" className="text-success" /> Aktif
             </Badge>
           ) : (
             <Badge variant="secondary" className="text-muted-foreground">
