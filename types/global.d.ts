@@ -18,6 +18,7 @@ export interface Category {
   slug: string;
   description?: string;
   created_at: string;
+  product_count?: number;
 };
 
 export interface Product {
