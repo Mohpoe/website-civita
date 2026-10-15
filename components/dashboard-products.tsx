@@ -175,6 +175,11 @@ export default function DashboardProducts({ products, categories }: DashboardPro
     "--text-dark": activeDialogTheme.textDark,
   } as React.CSSProperties;
 
+  const categoryItems = [
+    { value: "all", label: "Semua Kategori" },
+    ...(categories || []).map(cat => ({ value: cat.name, label: cat.name }))
+  ];
+
   return (
     <>
       <div className="space-y-8">
@@ -195,13 +200,12 @@ export default function DashboardProducts({ products, categories }: DashboardPro
 
         <Separator className="border-border" />
 
-        {
-          // #region Filter & Sort
-          (products?.length ?? 0) > 0 && (
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-card p-3.5 rounded-[2rem] border-4 border-foreground shadow-[4px_4px_0_0_hsl(var(--foreground))] transition-all">
+        {(products?.length ?? 0) > 0 && (
+          <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-card p-3.5 rounded-[2rem] border-4 border-foreground shadow-[4px_4px_0_0_hsl(var(--foreground))] transition-all">
 
-              {/* LOGIKA HYBRID: Jika kategori <= 6 pakai Pill Buttons, jika > 6 otomatis switch ke Dropdown */}
-              {categoryOptions.length <= 6 && false ? (
+            {
+              // #region Filter Category
+              categories.length <= 6 ? (
                 <div className="flex w-full md:w-auto overflow-x-auto no-scrollbar gap-2 pb-1 md:pb-0">
                   <Button
                     onClick={() => setSelectedCategory("all")}
@@ -213,17 +217,18 @@ export default function DashboardProducts({ products, categories }: DashboardPro
                   >
                     Semua
                   </Button>
-                  {categoryOptions.map((cat) => (
+                  {/* Looping langsung dari database (categories) */}
+                  {categories.map((cat) => (
                     <Button
-                      key={cat}
-                      onClick={() => setSelectedCategory(cat)}
-                      variant={selectedCategory === cat ? "default" : "outline"}
-                      className={`rounded-full border-2 font-bold px-5 shrink-0 transition-all ${selectedCategory === cat
+                      key={cat.id}
+                      onClick={() => setSelectedCategory(cat.name)}
+                      variant={selectedCategory === cat.name ? "default" : "outline"}
+                      className={`rounded-full border-2 font-bold px-5 shrink-0 transition-all ${selectedCategory === cat.name
                         ? "border-foreground shadow-[2px_2px_0_0_hsl(var(--foreground))]"
                         : "border-transparent bg-muted/40 text-muted-foreground hover:bg-muted"
                         }`}
                     >
-                      {cat}
+                      {cat.name}
                     </Button>
                   ))}
                 </div>
@@ -233,6 +238,7 @@ export default function DashboardProducts({ products, categories }: DashboardPro
                   <Select
                     value={selectedCategory}
                     onValueChange={(val) => setSelectedCategory(val || "all")}
+                    items={categoryItems}
                   >
                     <SelectTrigger className="w-full rounded-full border-2 border-foreground font-bold bg-background h-10 hover:shadow-[2px_2px_0_0_hsl(var(--foreground))] transition-all">
                       <div className="flex items-center gap-2 truncate">
@@ -241,18 +247,22 @@ export default function DashboardProducts({ products, categories }: DashboardPro
                       </div>
                     </SelectTrigger>
                     <SelectContent className="rounded-xl border-2 border-foreground font-bold shadow-[4px_4px_0_0_hsl(var(--foreground))] max-h-60">
-                      <SelectItem value="all">Semua Kategori ({products.length})</SelectItem>
-                      {categoryOptions.map((cat) => (
-                        <SelectItem key={cat} value={cat}>
-                          {cat}
+                      <SelectItem value="all">Semua Kategori</SelectItem>
+                      {/* Looping langsung dari database (categories) */}
+                      {categories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.name}>
+                          {cat.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-              )}
+              )
+              // #endregion
+            }
 
-              {/* Dropdown Sortir Harga */}
+            {
+              // #region Price Sort
               <div className="w-full md:w-56 shrink-0">
                 <Select
                   value={sortBy}
@@ -269,18 +279,18 @@ export default function DashboardProducts({ products, categories }: DashboardPro
                       <SelectValue placeholder="Urutkan" />
                     </div>
                   </SelectTrigger>
-                  <SelectContent className="border-2 border-foreground font-bold w-full">
+                  <SelectContent className="border-2 border-foreground font-bold w-full shadow-[4px_4px_0_0_hsl(var(--foreground))] rounded-xl">
                     <SelectItem value="newest">Terbaru</SelectItem>
                     <SelectItem value="price_asc">Harga Terendah</SelectItem>
                     <SelectItem value="price_desc">Harga Tertinggi</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+              // #endregion
+            }
 
-            </div>
-          )
-          // #endregion
-        }
+          </div>
+        )}
 
         {/* Empty State (Disesuaikan untuk kondisi Filter Kosong) */}
         {(processedProducts?.length ?? 0) === 0 ? (
