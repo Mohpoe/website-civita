@@ -7,12 +7,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { formatRupiah } from "@/lib/utils";
 import { Category, Product } from "@/types/global";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowDownUpIcon, AwardIcon, CheckCircle2Icon, ChevronLeftIcon, ChevronRightIcon, FileTextIcon, PackageSearchIcon, ShoppingBagIcon, TagIcon, TagsIcon } from "lucide-react";
+import { ArrowDownUpIcon, AwardIcon, CheckCircle2Icon, ChevronLeftIcon, ChevronRightIcon, FileTextIcon, PackageSearchIcon, SearchIcon, ShoppingBagIcon, TagIcon, TagsIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Separator } from "./ui/separator";
 import { Spinner } from "./ui/spinner";
 import { toast } from "./ui/toast";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "./ui/input-group";
 
 interface DashboardProductsProps {
   products: Product[],
@@ -38,13 +39,14 @@ export default function DashboardProducts({ products, categories }: DashboardPro
   const [isProcessing, setIsProcessing] = useState(false);
 
   // #region Filter & Sort States
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("newest");
 
-  // Reset pagination ke halaman 1 setiap kali user mengubah filter atau sort
+  // Reset pagination ke halaman 1 setiap kali user mengubah pencarian, filter, atau sort
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedCategory, sortBy]);
+  }, [searchQuery, selectedCategory, sortBy]);
 
   // Ekstrak daftar kategori unik dari data produk untuk tombol filter
   const activeCategories = useMemo(() => {
@@ -63,12 +65,21 @@ export default function DashboardProducts({ products, categories }: DashboardPro
   const processedProducts = useMemo(() => {
     let result = [...(products || [])];
 
-    // 1. Jalankan Filter Kategori
+    // 1. Jalankan Pencarian Teks
+    if (searchQuery.trim() !== "") {
+      const lowerQuery = searchQuery.toLowerCase();
+      result = result.filter(p =>
+        p.title.toLowerCase().includes(lowerQuery) ||
+        (p.short_desc && p.short_desc.toLowerCase().includes(lowerQuery))
+      );
+    }
+
+    // 2. Jalankan Filter Kategori
     if (selectedCategory !== "all") {
       result = result.filter(p => p.category?.name === selectedCategory);
     }
 
-    // 2. Jalankan Sortir Harga
+    // 3. Jalankan Sortir Harga
     if (sortBy === "price_asc") {
       result.sort((a, b) => a.price - b.price); // Termurah
     } else if (sortBy === "price_desc") {
@@ -77,7 +88,7 @@ export default function DashboardProducts({ products, categories }: DashboardPro
     // Jika 'newest' (default), kita biarkan urutan dari DB (karena biasanya sudah DESC dari kueri backend)
 
     return result;
-  }, [products, selectedCategory, sortBy]);
+  }, [products, searchQuery, selectedCategory, sortBy]);
   // #endregion
 
   // Pagination Logic (Diarahkan ke processedProducts, BUKAN products mentah)
@@ -191,7 +202,7 @@ export default function DashboardProducts({ products, categories }: DashboardPro
     <>
       <div className="space-y-8">
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
           <div className="space-y-2">
             <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
               Katalog Produk
@@ -200,15 +211,36 @@ export default function DashboardProducts({ products, categories }: DashboardPro
               Akselerasikan karirmu dengan berbagai produk digital dari CIVITA!
             </p>
           </div>
-          <Badge variant="outline" className="text-xs text-muted-foreground border-2 rounded-full px-4 py-3">
-            {(products?.length ?? 0)} Produk Tersedia
-          </Badge>
+
+          {/* Search Input Neo-Pop menggantikan teks Badge statis */}
+          <div className="w-full lg:w-80 shrink-0">
+            <InputGroup className="w-full h-10 px-2 rounded-full border-2 border-foreground font-bold bg-card shadow-[4px_4px_0_0] shadow-foreground focus:outline-none focus:translate-y-[2px] focus:shadow-[4px_4px_0_0] shadow-foreground transition-all">
+              <InputGroupInput
+                type="text"
+                placeholder="Cari nama produk..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <InputGroupAddon align="inline-start">
+                <SearchIcon />
+              </InputGroupAddon>
+            </InputGroup>
+
+            {/* <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Cari nama produk..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full h-12 pl-12 pr-4 rounded-full border-2 border-foreground font-bold bg-card shadow-[4px_4px_0_0] shadow-foreground focus:outline-none focus:translate-y-[2px] focus:shadow-[4px_4px_0_0] shadow-foreground transition-all"
+            /> */}
+          </div>
         </div>
 
         <Separator className="border-border" />
 
         {(products?.length ?? 0) > 0 && (
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-card p-3.5 rounded-[2rem] border-4 border-foreground shadow-[4px_4px_0_0_hsl(var(--foreground))] transition-all">
+          <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-card p-3.5 rounded-[2rem] border-4 border-foreground shadow-[4px_4px_0_0] shadow-foreground transition-all">
 
             {
               // #region Filter Category
@@ -218,7 +250,7 @@ export default function DashboardProducts({ products, categories }: DashboardPro
                     onClick={() => setSelectedCategory("all")}
                     variant={selectedCategory === "all" ? "default" : "outline"}
                     className={`rounded-full border-2 font-bold px-5 shrink-0 transition-all ${selectedCategory === "all"
-                      ? "border-foreground shadow-[2px_2px_0_0_hsl(var(--foreground))]"
+                      ? "border-foreground"
                       : "border-transparent bg-muted/40 text-muted-foreground hover:bg-muted"
                       }`}
                   >
@@ -231,7 +263,7 @@ export default function DashboardProducts({ products, categories }: DashboardPro
                       onClick={() => setSelectedCategory(cat.name)}
                       variant={selectedCategory === cat.name ? "default" : "outline"}
                       className={`rounded-full border-2 font-bold px-5 shrink-0 transition-all ${selectedCategory === cat.name
-                        ? "border-foreground shadow-[2px_2px_0_0_hsl(var(--foreground))]"
+                        ? "border-foreground"
                         : "border-transparent bg-muted/40 text-muted-foreground hover:bg-muted"
                         }`}
                     >
@@ -253,7 +285,7 @@ export default function DashboardProducts({ products, categories }: DashboardPro
                         <SelectValue placeholder="Pilih Kategori" />
                       </div>
                     </SelectTrigger>
-                    <SelectContent className="rounded-xl border-2 border-foreground font-bold shadow-[4px_4px_0_0_hsl(var(--foreground))] max-h-60">
+                    <SelectContent className="rounded-xl border-2 border-foreground font-bold shadow-[4px_4px_0_0] shadow-foreground max-h-60">
                       <SelectItem value="all">Semua Kategori ({products?.length || 0})</SelectItem>
                       {/* Looping langsung dari database (categories) */}
                       {activeCategories.map((cat) => (
@@ -285,7 +317,7 @@ export default function DashboardProducts({ products, categories }: DashboardPro
                       <SelectValue placeholder="Urutkan" />
                     </div>
                   </SelectTrigger>
-                  <SelectContent className="border-2 border-foreground font-bold w-full shadow-[4px_4px_0_0_hsl(var(--foreground))] rounded-xl">
+                  <SelectContent className="border-2 border-foreground font-bold w-full shadow-[4px_4px_0_0] shadow-foreground rounded-xl">
                     <SelectItem value="newest">Terbaru</SelectItem>
                     <SelectItem value="price_asc">Harga Terendah</SelectItem>
                     <SelectItem value="price_desc">Harga Tertinggi</SelectItem>
@@ -302,15 +334,23 @@ export default function DashboardProducts({ products, categories }: DashboardPro
         {(processedProducts?.length ?? 0) === 0 ? (
           <div className="bg-background/50 backdrop-blur-sm rounded-[2.2rem] border-2 border-dashed border-muted-foreground/30 min-h-[400px] flex flex-col items-center justify-center p-12 text-center shadow-sm">
             <div className="w-20 h-20 bg-muted/50 rounded-full flex items-center justify-center mb-6 shadow-inner border border-foreground/5 relative overflow-hidden">
-              <ShoppingBagIcon className="w-10 h-10 text-muted-foreground/40 absolute z-10" />
+              {searchQuery.trim() !== "" ? (
+                <SearchIcon className="w-10 h-10 text-muted-foreground/40 absolute z-10" />
+              ) : (
+                <ShoppingBagIcon className="w-10 h-10 text-muted-foreground/40 absolute z-10" />
+              )}
             </div>
             <h3 className="text-2xl font-bold tracking-tight mb-2">
-              {products.length > 0 ? "Produk Tidak Ditemukan" : "Produk Belum Tersedia"}
+              {searchQuery.trim() !== ""
+                ? "Pencarian Tidak Ditemukan"
+                : products.length > 0 ? "Produk Tidak Ditemukan" : "Produk Belum Tersedia"}
             </h3>
             <p className="text-muted-foreground max-w-md text-sm md:text-base">
-              {products.length > 0
-                ? `Tidak ada produk yang cocok dengan kategori "${selectedCategory}". Silakan pilih kategori lain.`
-                : "Saat ini belum ada produk yang tersedia di katalog ini, silakan kembali lagi nanti."}
+              {searchQuery.trim() !== ""
+                ? `Tidak ada produk yang cocok dengan kata kunci "${searchQuery}". Coba gunakan kata kunci lain.`
+                : products.length > 0
+                  ? `Tidak ada produk yang cocok dengan kategori "${selectedCategory}". Silakan pilih kategori lain.`
+                  : "Saat ini belum ada produk yang tersedia di katalog ini, silakan kembali lagi nanti."}
             </p>
           </div>
         ) : (
@@ -499,7 +539,7 @@ export default function DashboardProducts({ products, categories }: DashboardPro
                 </div>
 
                 {/* Fitur Box Neo-Brutalism */}
-                <div className="bg-[var(--bg-light)] dark:bg-[var(--bg-dark)] text-[var(--text-light)] dark:text-[var(--text-dark)] p-4 rounded-2xl border-2 border-foreground shadow-[4px_4px_0_0_hsl(var(--foreground))]">
+                <div className="bg-[var(--bg-light)] dark:bg-[var(--bg-dark)] text-[var(--text-light)] dark:text-[var(--text-dark)] p-4 rounded-2xl border-2 border-foreground shadow-[4px_4px_0_0] shadow-foreground">
                   <h4 className="text-sm font-black uppercase tracking-wider flex items-center gap-2 mb-3">
                     <AwardIcon className="w-5 h-5" /> Yang Anda Dapatkan
                   </h4>
