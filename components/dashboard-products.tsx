@@ -575,7 +575,7 @@ export default function DashboardProducts({ products, categories }: DashboardPro
                 </DialogClose>
                 <Button
                   variant="outline"
-                  className="w-full sm:w-auto rounded-full font-bold border-2 border-foreground hover:scale-110 transition-transform bg-foreground text-background hover:bg-foreground hover:text-background"
+                  className="w-full sm:w-auto rounded-full font-bold !border-2 !border-foreground hover:scale-110 transition-transform !bg-foreground !text-background hover:!bg-foreground hover:!text-background"
                   onClick={checkoutHandler}
                   disabled={isProcessing}
                 >
