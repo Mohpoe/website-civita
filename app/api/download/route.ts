@@ -24,7 +24,7 @@ export async function GET(req: Request) {
 
     // 3. Pengecekan Otorisasi di Database
     const rows = await sql`
-      SELECT o.status, o.download_url, CASE WHEN p.id IS NOT NULL THEN jsonb_build_object('title', p.title) ELSE null END as product
+      SELECT o.status, CASE WHEN p.id IS NOT NULL THEN jsonb_build_object('title', p.title, 'file_url', p.file_url) ELSE null END as product
       FROM orders o
       LEFT JOIN products p ON o.product_id = p.id
       WHERE o.order_id = ${orderId} AND o.user_id = ${user.id}
@@ -43,7 +43,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Selesaikan pembayaran terlebih dahulu untuk mengunduh.' }, { status: 403 });
     }
 
-    const fileUrl = order.download_url;
+    const fileUrl = order.product?.file_url;
 
     if (!fileUrl) {
       return NextResponse.json({ error: 'File tidak ditemukan' }, { status: 404 });

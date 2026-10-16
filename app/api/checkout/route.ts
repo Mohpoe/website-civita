@@ -1,4 +1,5 @@
 import { sql } from "@/lib/utils";
+import { Product } from "@/types/global";
 import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
@@ -25,7 +26,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Produk tidak ditemukan atau tidak tersedia!" }, { status: 404 });
     }
 
-    const product = rows[0];
+    const product = rows[0] as Product;
 
     if (!product.file_url) {
       return NextResponse.json({ error: "File untuk produk ini belum tersedia! Hubungi Admin." }, { status: 400 });
@@ -66,8 +67,8 @@ export async function POST(req: Request) {
     const snapToken = data.token;
 
     await sql`
-      INSERT INTO orders (order_id, user_id, product_id, amount, status, snap_token, download_url)
-      VALUES (${orderId}, ${user.id}, ${productId}, ${product.price}, 'pending', ${snapToken}, ${product.file_url})
+      INSERT INTO orders (order_id, user_id, product_id, amount, status, snap_token)
+      VALUES (${orderId}, ${user.id}, ${productId}, ${product.price}, 'pending', ${snapToken})
     `;
 
     return NextResponse.json({ token: snapToken, orderId });
