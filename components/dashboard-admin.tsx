@@ -5,7 +5,7 @@ import { formatRupiah } from "@/lib/utils";
 import { Category, Order, Product } from "@/types/global";
 import { columnFilteringFeature, ColumnFiltersState, columnVisibilityFeature, ColumnVisibilityState, createColumnHelper, createFilteredRowModel, createPaginatedRowModel, createSortedRowModel, filterFn_includesString, globalFilteringFeature, rowPaginationFeature, rowSortingFeature, sortFn_alphanumeric, sortFn_text, SortingState, tableFeatures, useTable } from "@tanstack/react-table";
 import { uploadPresigned } from "@vercel/blob/client";
-import { BadgeAlertIcon, BadgeCheckIcon, BadgeXIcon, ChevronDownIcon, ChevronFirstIcon, ChevronLastIcon, ChevronLeftIcon, ChevronRightIcon, ChevronsUpDownIcon, ChevronUpIcon, Columns3Icon, EyeIcon, FileTextIcon, GhostIcon, ImageIcon, MoreHorizontalIcon, PlusIcon, RefreshCcwIcon, Rows3Icon, SearchIcon, SlidersHorizontalIcon, SquarePenIcon, TagsIcon, Trash2Icon, UploadIcon } from "lucide-react";
+import { BadgeAlertIcon, BadgeCheckIcon, BadgeXIcon, ChevronDownIcon, ChevronFirstIcon, ChevronLastIcon, ChevronLeftIcon, ChevronRightIcon, ChevronsUpDownIcon, ChevronUpIcon, Columns3Icon, DownloadIcon, EyeIcon, FileTextIcon, GhostIcon, ImageIcon, MoreHorizontalIcon, PlusIcon, RefreshCcwIcon, Rows3Icon, SearchIcon, SlidersHorizontalIcon, SquarePenIcon, TagsIcon, Trash2Icon, UploadIcon } from "lucide-react";
 import { useActionState, useEffect, useMemo, useState, useTransition } from "react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle } from "./ui/alert-dialog";
 import { Attachment, AttachmentContent, AttachmentDescription, AttachmentMedia, AttachmentTitle } from "./ui/attachment";
@@ -129,9 +129,17 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
     orders?.forEach(order => {
       if (!order.product_id) return;
       if (!stats[order.product_id]) stats[order.product_id] = { success: 0, pending: 0, failed: 0 };
+
+      // Hitung Success
       if (order.status === "success") stats[order.product_id].success += 1;
-      if (order.status === "pending") stats[order.product_id].pending += 1;
-      if (order.status === "failed") stats[order.product_id].failed += 1;
+
+      // Hitung Pending (dan Challenge karena belum lunas)
+      if (order.status === "pending" || order.status === "challenge") stats[order.product_id].pending += 1;
+
+      // Hitung Semua Jenis Kegagalan
+      if (order.status === "expired" || order.status === "failed" || order.status === "canceled") {
+        stats[order.product_id].failed += 1;
+      }
     });
     return stats;
   }, [orders]);
@@ -317,7 +325,14 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                     <DropdownMenuLabel>
                       Pilih Menu
                     </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
+
+                    <DropdownMenuItem
+                      onClick={() => window.open(`/api/download?productId=${product.id}`, '_blank')}
+                      disabled={!product.file_url}
+                    >
+                      <DownloadIcon />
+                      Unduh Berkas
+                    </DropdownMenuItem>
 
                     <DropdownMenuItem onClick={() => {
                       setProductToUpdate(product);
@@ -338,8 +353,10 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                       }
                     }}>
                       <SquarePenIcon />
-                      Edit
+                      Edit Produk
                     </DropdownMenuItem>
+
+                    <DropdownMenuSeparator />
 
                     <DropdownMenuItem
                       variant="destructive"
@@ -347,7 +364,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                       disabled={isPending}
                     >
                       <Trash2Icon />
-                      Hapus
+                      Hapus Produk
                     </DropdownMenuItem>
 
                   </DropdownMenuGroup>
@@ -907,6 +924,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
 
                           <input type="hidden" name="oldImageUrl" value={productToUpdate?.image_url} required />
                           <input
+                            disabled={upsertIsPending || isUploadingFile}
                             required={!productToUpdate}
                             id="imageFile"
                             name="imageFile"
@@ -949,6 +967,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                       placeholder="Nama produk"
                       defaultValue={productToUpdate?.title || ""}
                       minLength={3}
+                      disabled={upsertIsPending || isUploadingFile}
                     />
                   </Field>
 
@@ -963,6 +982,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                         placeholder="Harga Produk"
                         defaultValue={productToUpdate?.price || ""}
                         min={0}
+                        disabled={upsertIsPending || isUploadingFile}
                       />
                     </Field>
                     <Field>
@@ -972,6 +992,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                           id="isActive"
                           name="isActive"
                           defaultChecked={productToUpdate ? productToUpdate.is_active : true}
+                          disabled={upsertIsPending || isUploadingFile}
                         />
                         <Label htmlFor="isActive">Aktifkan di toko</Label>
                       </div>
@@ -985,6 +1006,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                       items={categoryList}
                       name="category"
                       defaultValue={productToUpdate?.category_id || ""}
+                      disabled={upsertIsPending || isUploadingFile}
                     >
                       <SelectTrigger id="category">
                         <SelectValue placeholder="Pilih kategori" />
@@ -1009,6 +1031,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                       placeholder="Tulis ringkasan singkat (maks. 150 karakter)..."
                       defaultValue={productToUpdate?.short_desc || ""}
                       minLength={10}
+                      disabled={upsertIsPending || isUploadingFile}
                     />
                   </Field>
 
@@ -1022,6 +1045,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                       placeholder="Jelaskan detail produk selengkap-lengkapnya di sini..."
                       defaultValue={productToUpdate?.long_desc || ""}
                       minLength={10}
+                      disabled={upsertIsPending || isUploadingFile}
                     />
                   </Field>
 
@@ -1035,6 +1059,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                       // Konversi array fitur dari DB menjadi string multi-baris
                       defaultValue={productToUpdate?.features ? productToUpdate.features.join("\n") : ""}
                       minLength={1}
+                      disabled={upsertIsPending || isUploadingFile}
                     />
                     <FieldDescription className="text-xs">Pisahkan dengan Enter</FieldDescription>
                   </Field>
@@ -1084,7 +1109,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                             className="sr-only"
                             id="fileUrl"
                             type="file"
-                            disabled={isUploadingFile}
+                            disabled={upsertIsPending || isUploadingFile}
                             onChange={async (e) => {
                               const file = e.target.files?.[0];
                               if (!file) return;

@@ -1,5 +1,5 @@
 import { sql } from '@/lib/utils';
-import { Order } from '@/types/global';
+import { Order, Product } from '@/types/global';
 import { currentUser } from '@clerk/nextjs/server';
 import { get } from '@vercel/blob';
 import { NextResponse } from 'next/server';
@@ -9,18 +9,52 @@ export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
+  const user = await currentUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     // 1. Ambil ID Pesanan dari URL
     const { searchParams } = new URL(req.url);
     const orderId = searchParams.get('orderId');
+    const productId = searchParams.get("productId");
+
+    // --- TAMBAHKAN BLOK LOGIKA ADMIN INI ---
+    if (productId) {
+      // Pastikan yang mengakses menggunakan productId murni adalah Admin
+      if (user.publicMetadata.role !== "admin") {
+        return new Response("Akses ditolak!", { status: 403 });
+      }
+
+      // Ambil file_url dari tabel products
+      const rows = await sql`SELECT title, file_url FROM products WHERE id = ${productId}` as Product[];
+      if (rows.length === 0 || !rows[0].file_url) {
+        return new Response("File produk tidak ditemukan", { status: 404 });
+      }
+
+      const originalExtension = rows[0].file_url.substring(rows[0].file_url.lastIndexOf('.'));
+      const rawTitle = rows[0].title || "Produk_Digital_CIVITA";
+      const safeProductName = rawTitle.replace(/[^a-zA-Z0-9]/g, '_');
+      const fileName = `${safeProductName}${originalExtension}`;
+
+      // Fetch ke Vercel Blob menggunakan OIDC Token (Private Access)
+      const blobResponse = await fetch(rows[0].file_url, {
+        headers: {
+          Authorization: `Bearer ${process.env.VERCEL_OIDC_TOKEN}`,
+        },
+      });
+
+      if (!blobResponse.ok) throw new Error("Gagal mengambil file dari Blob");
+
+      return new Response(blobResponse.body, {
+        headers: {
+          "Content-Disposition": `attachment; filename="${fileName}"`, // Sesuaikan format file
+          "Content-Type": blobResponse.headers.get("Content-Type") || "application/octet-stream",
+        },
+      });
+    }
 
     if (!orderId) {
       return NextResponse.json({ error: 'Order ID required' }, { status: 400 });
     }
-
-    // 2. Keamanan: Pastikan user sudah login
-    const user = await currentUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     // 3. Pengecekan Otorisasi di Database
     const rows = await sql`
