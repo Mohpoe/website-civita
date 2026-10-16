@@ -1,8 +1,8 @@
 "use client";
 
 import { AnimatePresence, motion } from 'framer-motion';
-import { AlertCircle, BadgeCheckIcon, CheckCircle2, ChevronRight, Clock, Download, ImageIcon, Search, ShoppingBag } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { AlertCircle, BadgeCheckIcon, CheckCircle2, ChevronRight, Clock, Download, ImageIcon, RefreshCcw, Search, ShoppingBag, XCircle } from 'lucide-react';
+import { useEffect, useState, useMemo, useTransition } from 'react';
 
 // Import Shadcn UI Components
 import { Badge } from '@/components/ui/badge';
@@ -15,24 +15,46 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatRupiah } from '@/lib/utils';
 import { Order } from '@/types/global';
 import { toast } from './ui/toast';
+import { useRouter } from 'next/navigation';
 
 interface DashboardInventoryProps {
   orders: Order[]
 }
 
-export default function DashboardInventory({ orders }: DashboardInventoryProps) {
+export default function DashboardInventory({ orders: initialOrders }: DashboardInventoryProps) {
+  const router = useRouter();
+
   // State
   const [activeTab, setActiveTab] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [isLoadingCheckout, setIsLoadingCheckout] = useState<string | null>(null);
   const itemsPerPage = 5;
+
+  // #region LAZY STATUS CHECKING (ZOMBIE ORDER FALLBACK)
+  // Hitung ulang status pesanan di memori klien. Jika pesanan 'pending' sudah lebih
+  // dari 24 jam (86400000 ms), anggap sebagai 'expired'.
+  const orders = useMemo(() => {
+    const now = new Date().getTime();
+    return initialOrders.map((order) => {
+      if (order.status === 'pending') {
+        const orderTime = new Date(order.created_at).getTime();
+        const diffInMs = now - orderTime;
+        if (diffInMs > 86400000) { // 24 Jam
+          return { ...order, status: 'expired' as const };
+        }
+      }
+      return order;
+    });
+  }, [initialOrders]);
+  // #endregion
 
   // Reset pagination ketika tab atau pencarian berubah
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, activeTab]);
 
-  // Filter Data berdasarkan Pencarian & Tab Status
+  // #region FILTERING LOGIC
   const filteredOrders = orders.filter(order => {
     const productTitle = order.product?.title || "Produk Tidak Tersedia";
 
@@ -40,10 +62,16 @@ export default function DashboardInventory({ orders }: DashboardInventoryProps) 
       productTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.order_id?.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesTab = activeTab === "all" || order.status === activeTab;
+    let matchesTab = false;
+    if (activeTab === "all") matchesTab = true;
+    if (activeTab === "success" && order.status === "success") matchesTab = true;
+    if (activeTab === "pending" && (order.status === "pending" || order.status === "challenge")) matchesTab = true;
+    // Gabungkan semua jenis kegagalan ke dalam satu tab
+    if (activeTab === "failed" && (order.status === "failed" || order.status === "expired" || order.status === "canceled")) matchesTab = true;
 
     return matchesSearch && matchesTab;
   });
+  // #endregion
 
   // Pagination Logic
   const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
@@ -51,7 +79,77 @@ export default function DashboardInventory({ orders }: DashboardInventoryProps) 
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredOrders.slice(indexOfFirstItem, indexOfLastItem);
 
-  // Status Badge Mapper
+  // #region Handle Beli Lagi
+  const [isReorderPending, startReorderTransition] = useTransition();
+  const handleReorder = (productId: string, orderId: string) => {
+    startReorderTransition(async () => {
+      setIsLoadingCheckout(orderId);
+      try {
+        const response = await fetch("/api/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ productId }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Gagal membuat pesanan baru");
+        }
+
+        // Refresh halaman agar pesanan baru muncul di daftar paling atas (Pending)
+        // dan snap token dijalankan secara otomatis jika diarahkan ke rute pembayaran khusus,
+        // atau buka snap popup langsung di sini.
+        if (data.token && window.snap) {
+          window.snap.pay(data.token, {
+            onSuccess: () => window.location.reload(),
+            onPending: () => window.location.reload(),
+            onError: () => window.location.reload(),
+            onClose: () => window.location.reload(),
+          });
+        } else {
+          router.refresh();
+        }
+
+      } catch (error: any) {
+        toast.add({ type: "error", description: error.message, priority: "high" });
+      } finally {
+        setIsLoadingCheckout(null);
+      }
+    })
+  };
+  // #endregion
+
+  // #region Handle Batal Beli
+  const [cancelingId, setCancelingId] = useState<string | null>(null); // Tambahkan state ini
+
+  const handleCancelOrder = async (orderId: string) => {
+    setCancelingId(orderId); // Set ID pesanan yang sedang diproses
+    try {
+      const response = await fetch("/api/order/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Gagal membatalkan pesanan");
+      }
+
+      toast.add({ type: "success", description: "Pesanan berhasil dibatalkan." });
+      router.refresh();
+
+    } catch (error: any) {
+      toast.add({ type: "error", description: error.message, priority: "high" });
+    } finally {
+      setCancelingId(null); // Matikan loading setelah selesai atau gagal
+    }
+  };
+  // #endregion
+
+  // #region Status Badge
   const renderStatusBadge = (status: Order['status']) => {
     switch (status) {
       case 'success':
@@ -61,22 +159,31 @@ export default function DashboardInventory({ orders }: DashboardInventoryProps) 
           </Badge>
         );
       case 'pending':
+      case 'challenge':
         return (
           <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 gap-1.5 hover:bg-amber-50">
             <Clock className="w-3.5 h-3.5" /> Menunggu
           </Badge>
         );
+      case 'expired':
+        return (
+          <Badge variant="outline" className="bg-muted text-muted-foreground border-border gap-1.5 hover:bg-muted">
+            <Clock className="w-3.5 h-3.5" /> Kedaluwarsa
+          </Badge>
+        );
+      case 'canceled':
       case 'failed':
       default:
         return (
           <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20 gap-1.5 hover:bg-destructive/10">
-            <AlertCircle className="w-3.5 h-3.5" /> Gagal
+            <AlertCircle className="w-3.5 h-3.5" /> Dibatalkan
           </Badge>
         );
     }
   };
+  // #endregion
 
-  // Fungsi untuk render daftar item pesanan
+  // #region Order List
   const renderOrderList = () => {
     if (filteredOrders.length === 0) {
       return (
@@ -90,7 +197,7 @@ export default function DashboardInventory({ orders }: DashboardInventoryProps) 
               {searchQuery
                 ? `Tidak ada pesanan yang cocok dengan kata kunci "${searchQuery}".`
                 : activeTab !== "all"
-                  ? `Kamu belum memiliki pesanan dengan status ${activeTab === 'success' ? 'Berhasil' : activeTab === 'pending' ? 'Menunggu' : 'Gagal'}.`
+                  ? `Kamu belum memiliki pesanan dengan status terpilih.`
                   : "Sepertinya kamu belum pernah membeli produk digital apapun dari CIVITA."}
             </p>
           </CardContent>
@@ -106,16 +213,17 @@ export default function DashboardInventory({ orders }: DashboardInventoryProps) 
               day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
             });
 
+            const isFailureStatus = order.status === 'failed' || order.status === 'expired' || order.status === 'canceled';
+
             return (
               <motion.div
-                // [PERBAIKAN FATAL]: Menambahkan activeTab ke dalam key agar Framer Motion tidak kebingungan saat berpindah tab
                 key={`${activeTab}-${order.order_id}`}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.98 }}
                 transition={{ duration: 0.3, delay: idx * 0.05 }}
               >
-                <Card className="overflow-hidden hover:border-foreground/20 transition-colors group">
+                <Card className={`overflow-hidden transition-colors group ${isFailureStatus ? 'opacity-80' : 'hover:border-foreground/20'}`}>
                   <CardContent className="p-0 sm:p-5 flex flex-col sm:flex-row gap-0 sm:gap-5">
 
                     {/* Thumbnail Area */}
@@ -124,7 +232,7 @@ export default function DashboardInventory({ orders }: DashboardInventoryProps) 
                         <img
                           src={order.product.image_url}
                           alt={order.product?.title}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 ${isFailureStatus ? 'grayscale' : ''}`}
                           loading="lazy"
                         />
                       ) : (
@@ -149,7 +257,6 @@ export default function DashboardInventory({ orders }: DashboardInventoryProps) 
                             {order.product?.title || "Produk Tidak Tersedia"}
                           </h3>
 
-                          {/* UI Limited Edition */}
                           {(order.product?.is_active === false) && (
                             <Badge
                               variant="secondary"
@@ -171,6 +278,7 @@ export default function DashboardInventory({ orders }: DashboardInventoryProps) 
                         </span>
 
                         <div className="flex gap-2 w-full sm:w-auto">
+                          {/* JIKA BERHASIL */}
                           {order.status === 'success' && (
                             <Button
                               className="w-full sm:w-auto gap-2"
@@ -180,47 +288,67 @@ export default function DashboardInventory({ orders }: DashboardInventoryProps) 
                             </Button>
                           )}
 
-                          {order.status === 'pending' && (
-                            <Button
-                              className="w-full sm:w-auto gap-2"
-                              onClick={() => {
-                                if (order.snap_token && window.snap) {
-                                  window.snap.pay(order.snap_token, {
-                                    onSuccess: function (result: any) {
-                                      console.log("Pembayaran Berhasil!", result);
-                                      window.location.reload();
-                                    },
-                                    onPending: function (result: any) {
-                                      console.log("Menunggu Pembayaran", result);
-                                    },
-                                    onError: function (result: any) {
-                                      console.error("Pembayaran Gagal", result);
-                                      toast.add({
-                                        type: "error",
-                                        description: "Pembayaran gagal diproses. Silakan coba lagi.",
-                                        priority: "high",
-                                      });
-                                    },
-                                    onClose: function () {
-                                      console.log("Customer menutup popup");
-                                    }
-                                  });
-                                } else {
-                                  toast.add({
-                                    type: "error",
-                                    description: "Sistem pembayaran sedang dimuat atau koneksi lambat, silakan coba beberapa detik lagi.",
-                                    priority: "high",
-                                  });
-                                }
-                              }}
-                            >
-                              Lanjutkan Pembayaran <ChevronRight className="w-4 h-4" />
-                            </Button>
+                          {/* JIKA PENDING */}
+                          {(order.status === 'pending' || order.status === 'challenge') && (
+                            <>
+                              <Button
+                                variant="outline"
+                                className="hidden sm:flex"
+                                onClick={() => handleCancelOrder(order.order_id)}
+                                disabled={cancelingId === order.order_id}
+                              >
+                                {cancelingId === order.order_id ? (
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-4 h-4 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin"></div>
+                                    Memproses...
+                                  </div>
+                                ) : (
+                                  "Batalkan"
+                                )}
+                              </Button>
+                              <Button
+                                className="w-full sm:w-auto gap-2"
+                                onClick={() => {
+                                  if (order.snap_token && window.snap) {
+                                    window.snap.pay(order.snap_token, {
+                                      onSuccess: () => window.location.reload(),
+                                      onPending: () => window.location.reload(),
+                                      onError: () => {
+                                        toast.add({
+                                          type: "error",
+                                          description: "Pembayaran gagal diproses.",
+                                          priority: "high",
+                                        });
+                                      },
+                                    });
+                                  } else {
+                                    toast.add({
+                                      type: "error",
+                                      description: "Sistem pembayaran sedang dimuat, coba lagi.",
+                                      priority: "high",
+                                    });
+                                  }
+                                }}
+                              >
+                                Bayar Sekarang <ChevronRight className="w-4 h-4" />
+                              </Button>
+                            </>
                           )}
 
-                          {order.status === 'failed' && (
-                            <Button variant="secondary" className="w-full sm:w-auto gap-2 cursor-not-allowed">
-                              Transaksi Dibatalkan
+                          {/* JIKA EXPIRED / CANCELED / FAILED */}
+                          {isFailureStatus && order.product_id && (
+                            <Button
+                              variant="outline"
+                              className="w-full sm:w-auto gap-2"
+                              onClick={() => handleReorder(order.product_id, order.order_id)}
+                              disabled={isLoadingCheckout === order.order_id}
+                            >
+                              {isLoadingCheckout === order.order_id ? (
+                                <span className="animate-spin mr-1">⌛</span>
+                              ) : (
+                                <RefreshCcw className="w-4 h-4" />
+                              )}
+                              Beli Lagi
                             </Button>
                           )}
                         </div>
@@ -235,11 +363,10 @@ export default function DashboardInventory({ orders }: DashboardInventoryProps) 
       </div>
     );
   };
+  // #endregion
 
-  // Fungsi untuk render Pagination Shadcn UI
+  // #region Pagination
   const renderPagination = () => {
-    // INFO: Ini adalah alasan kenapa Pagination tidak muncul sebelumnya.
-    // Pagination hanya muncul jika total halaman lebih dari 1 (artinya total pesanan > 5).
     if (totalPages <= 1) return null;
 
     const getPageNumbers = () => {
@@ -268,29 +395,16 @@ export default function DashboardInventory({ orders }: DashboardInventoryProps) 
                 className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
               />
             </PaginationItem>
-
             {getPageNumbers().map((page, index) => {
-              if (page === 'ellipsis') {
-                return (
-                  <PaginationItem key={`ellipsis-${index}`}>
-                    <PaginationEllipsis />
-                  </PaginationItem>
-                );
-              }
-
+              if (page === 'ellipsis') return <PaginationItem key={`ellipsis-${index}`}><PaginationEllipsis /></PaginationItem>;
               return (
                 <PaginationItem key={page}>
-                  <PaginationLink
-                    onClick={() => setCurrentPage(page as number)}
-                    isActive={currentPage === page}
-                    className="cursor-pointer"
-                  >
+                  <PaginationLink onClick={() => setCurrentPage(page as number)} isActive={currentPage === page} className="cursor-pointer">
                     {page}
                   </PaginationLink>
                 </PaginationItem>
               );
             })}
-
             <PaginationItem>
               <PaginationNext
                 onClick={() => currentPage < totalPages && setCurrentPage(currentPage + 1)}
@@ -302,7 +416,9 @@ export default function DashboardInventory({ orders }: DashboardInventoryProps) 
       </div>
     );
   };
+  // #endregion
 
+  // #region Main Page
   return (
     <div className="w-full space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
@@ -315,7 +431,7 @@ export default function DashboardInventory({ orders }: DashboardInventoryProps) 
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Pencarian..."
+            placeholder="Cari nama produk atau ID..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 bg-background"
@@ -323,33 +439,26 @@ export default function DashboardInventory({ orders }: DashboardInventoryProps) 
         </div>
       </div>
 
-      {/* [PERBAIKAN FATAL]: Menjadikan Tabs sepenuhnya terkontrol (controlled component) dengan properti `value` */}
       <Tabs value={activeTab} className="w-full" onValueChange={setActiveTab}>
         <div className="flex justify-between items-center mb-6 overflow-x-auto sm:pb-0 no-scrollbar">
           <TabsList variant="line">
             <TabsTrigger value="all" className="px-4">Semua Pesanan</TabsTrigger>
             <TabsTrigger value="success" className="px-4">Berhasil</TabsTrigger>
             <TabsTrigger value="pending" className="px-4">Menunggu</TabsTrigger>
-            <TabsTrigger value="failed" className="px-4">Gagal</TabsTrigger>
+            <TabsTrigger value="failed" className="px-4">Batal & Kedaluwarsa</TabsTrigger>
           </TabsList>
         </div>
 
-        <TabsContent value="all" className="m-0 focus-visible:outline-none focus-visible:ring-0">
-          {renderOrderList()}
-        </TabsContent>
-        <TabsContent value="success" className="m-0 focus-visible:outline-none focus-visible:ring-0">
-          {renderOrderList()}
-        </TabsContent>
-        <TabsContent value="pending" className="m-0 focus-visible:outline-none focus-visible:ring-0">
-          {renderOrderList()}
-        </TabsContent>
-        <TabsContent value="failed" className="m-0 focus-visible:outline-none focus-visible:ring-0">
-          {renderOrderList()}
-        </TabsContent>
+        {/* Karena isinya sama (renderOrderList yang sudah difilter oleh useMemo di atas),
+            kita bisa langsung menempatkannya di semua tab content */}
+        <TabsContent value="all" className="m-0 focus-visible:outline-none focus-visible:ring-0">{renderOrderList()}</TabsContent>
+        <TabsContent value="success" className="m-0 focus-visible:outline-none focus-visible:ring-0">{renderOrderList()}</TabsContent>
+        <TabsContent value="pending" className="m-0 focus-visible:outline-none focus-visible:ring-0">{renderOrderList()}</TabsContent>
+        <TabsContent value="failed" className="m-0 focus-visible:outline-none focus-visible:ring-0">{renderOrderList()}</TabsContent>
       </Tabs>
 
-      {/* Render Pagination only if there are items */}
       {filteredOrders.length > 0 && renderPagination()}
     </div>
   );
+  // #endregion
 }

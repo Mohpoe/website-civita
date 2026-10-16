@@ -39,11 +39,13 @@ export async function POST(req: Request) {
         newStatus = "success";
       }
     } else if (transaction_status === "settlement") {
-      newStatus = "success";
-    } else if (transaction_status === "cancel" || transaction_status === "deny") {
-      newStatus = "canceled";
+      newStatus = "success"; // Transaksi sukses dan dana masuk
+    } else if (transaction_status === "cancel") {
+      newStatus = "canceled"; // Dibatalkan oleh Midtrans / pengguna
+    } else if (transaction_status === "deny" || transaction_status === "failure") {
+      newStatus = "failed"; // Ditolak oleh provider, fraud, atau terjadi error sistem
     } else if (transaction_status === "expire") {
-      newStatus = "expired";
+      newStatus = "expired"; // Waktu pembayaran habis (zombie order)
     }
 
     // 4. Eksekusi SQL Update ke Database

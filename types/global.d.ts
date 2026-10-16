@@ -41,7 +41,7 @@ export interface Order {
   user_id: string;
   product_id: string;
   amount: number;
-  status: 'pending' | 'success' | 'failed';
+  status: 'pending' | 'success' | 'failed' | 'expired' | 'canceled' | 'challenge';
   snap_token: string | null;
   created_at: string;
   product?: Product;
