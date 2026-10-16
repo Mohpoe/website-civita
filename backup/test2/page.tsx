@@ -4,7 +4,7 @@ import { ModeToggle } from "@/components/theme-toggle-button";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { APP_CONFIG, ROUTES } from "@/lib/constants";
-import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
+import { Show, SignInButton, SignUpButton } from "@clerk/nextjs";
 import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
 import { ArrowLeft, ArrowRight, Briefcase, ChevronLeft, ChevronRight, FileText, Layout, Mail, MessageCircle, QuoteIcon, Sparkles, XIcon } from "lucide-react";
 import Image from "next/image";
@@ -17,9 +17,9 @@ import { TfiLinkedin } from "react-icons/tfi";
 interface DocumentMockupProps { className?: string; }
 
 const DocumentMockupCV = ({ className }: DocumentMockupProps) => (
-  <div className={`bg-background backdrop-blur-xl border-4 border-foreground shadow-[6px_6px_0px_0px_#000] dark:shadow-[6px_6px_0px_0px_#fff] rounded-[2rem] p-5 flex flex-col gap-4 ${className}`}>
+  <div className={`bg-background backdrop-blur-xl border-4 border-foreground shadow-[6px_6px_0px_0px] shadow-foreground rounded-[2rem] p-5 flex flex-col gap-4 ${className}`}>
     <div className="flex items-center gap-3 border-b-4 border-foreground/10 pb-4">
-      <div className="w-12 h-12 rounded-full bg-[#f68e51] dark:bg-[#d97941] border-2 border-foreground shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] animate-pulse" />
+      <div className="w-12 h-12 rounded-full bg-[#f68e51] dark:bg-[#d97941] border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground animate-pulse" />
       <div className="flex flex-col gap-2">
         <div className="w-24 h-3 bg-foreground rounded-full" />
         <div className="w-16 h-2 bg-foreground/50 rounded-full" />
@@ -43,20 +43,20 @@ const DocumentMockupCV = ({ className }: DocumentMockupProps) => (
 );
 
 const DocumentMockupPortfolio = ({ className }: DocumentMockupProps) => (
-  <div className={`bg-[#f68e51] dark:bg-[#d97941] backdrop-blur-xl border-4 border-foreground shadow-[6px_6px_0px_0px_#000] dark:shadow-[6px_6px_0px_0px_#fff] rounded-[2rem] p-5 flex flex-col gap-4 ${className}`}>
+  <div className={`bg-[#f68e51] dark:bg-[#d97941] backdrop-blur-xl border-4 border-foreground shadow-[6px_6px_0px_0px] shadow-foreground rounded-[2rem] p-5 flex flex-col gap-4 ${className}`}>
     <div className="w-32 h-4 bg-background rounded-full mb-2 border-2 border-foreground" />
     <div className="grid grid-cols-2 gap-3">
-      <div className="aspect-square bg-background border-2 border-foreground shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] rounded-xl" />
-      <div className="aspect-square bg-background border-2 border-foreground shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] rounded-xl" />
-      <div className="aspect-square bg-background border-2 border-foreground shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] rounded-xl" />
-      <div className="aspect-square bg-background border-2 border-foreground shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] rounded-xl" />
+      <div className="aspect-square bg-background border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground rounded-xl" />
+      <div className="aspect-square bg-background border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground rounded-xl" />
+      <div className="aspect-square bg-background border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground rounded-xl" />
+      <div className="aspect-square bg-background border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground rounded-xl" />
     </div>
   </div>
 );
 
 const DocumentMockupCoverLetter = ({ className }: DocumentMockupProps) => (
-  <div className={`bg-background backdrop-blur-xl border-4 border-foreground shadow-[6px_6px_0px_0px_#000] dark:shadow-[6px_6px_0px_0px_#fff] rounded-[2rem] p-6 flex flex-col gap-3 ${className}`}>
-    <div className="w-14 h-14 bg-[#ef3936] dark:bg-[#d9302d] rounded-2xl mb-4 flex items-center justify-center border-2 border-foreground shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#fff]">
+  <div className={`bg-background backdrop-blur-xl border-4 border-foreground shadow-[6px_6px_0px_0px] shadow-foreground rounded-[2rem] p-6 flex flex-col gap-3 ${className}`}>
+    <div className="w-14 h-14 bg-[#ef3936] dark:bg-[#d9302d] rounded-2xl mb-4 flex items-center justify-center border-2 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground">
       <Sparkles className="text-white w-7 h-7" />
     </div>
     <div className="w-1/2 h-3 bg-foreground rounded-full mb-5" />
@@ -91,7 +91,7 @@ const Navigation = () => {
       transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
     >
       <div className={`
-        pointer-events-auto flex items-center justify-between px-5 md:px-6 py-3 md:py-3.5 rounded-full transition-all duration-500 border-4 border-transparent shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#fff]
+        pointer-events-auto flex items-center justify-between px-5 md:px-6 py-3 md:py-3.5 rounded-full transition-all duration-500 border-4 border-transparent shadow-[4px_4px_0px_0px] shadow-foreground
         ${scrolled ? "bg-background/80 backdrop-blur-md w-full max-w-3xl !border-2 !border-foreground" : "bg-background md:bg-background border-foreground w-full max-w-6xl"}
       `}>
 
@@ -113,28 +113,28 @@ const Navigation = () => {
           <div className="hidden md:flex items-center gap-3">
             <Show when="signed-out">
               <SignInButton mode="modal" fallbackRedirectUrl={ROUTES.DASHBOARD.HOME}>
-                <Button variant="outline" className="h-10 px-5 font-bold rounded-full border-2 border-foreground shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] dark:hover:shadow-[1px_1px_0px_0px_#fff] transition-all">
+                <Button variant="outline" className="h-10 px-5 font-bold rounded-full border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px] transition-all">
                   Masuk
                 </Button>
               </SignInButton>
               <SignUpButton mode="modal" fallbackRedirectUrl={ROUTES.DASHBOARD.HOME}>
-                <Button className="h-10 px-5 font-bold rounded-full bg-[#f68e51] dark:bg-[#d97941] text-black border-2 border-foreground shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] dark:hover:shadow-[1px_1px_0px_0px_#fff] transition-all">
+                <Button className="h-10 px-5 font-bold rounded-full bg-[#f68e51] dark:bg-[#d97941] text-black border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px] transition-all">
                   Daftar
                 </Button>
               </SignUpButton>
             </Show>
             <Show when="signed-in">
-              <Link href={ROUTES.DASHBOARD.HOME} className={buttonVariants({ className: "h-10 px-5 font-bold !rounded-full !border-2 !border-foreground shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] dark:hover:shadow-[1px_1px_0px_0px_#fff] transition-all mr-2 !bg-[#f68e51] dark:!bg-[#d97941] !text-black" })}>
+              <Link href={ROUTES.DASHBOARD.HOME} className={buttonVariants({ className: "h-10 px-5 font-bold !rounded-full !border-2 !border-foreground shadow-[2px_2px_0px_0px] shadow-foreground hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px] transition-all mr-2 !bg-[#f68e51] dark:!bg-[#d97941] !text-black" })}>
                 Dashboard
               </Link>
-              <UserButton />
+              {/* <UserButton /> */}
             </Show>
           </div>
 
           <div className="hidden md:block w-1.5 h-1.5 rounded-full bg-foreground mx-1" />
 
           {/* CTA Utama Desktop */}
-          <Button onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP, "_blank")} className="hidden md:flex h-10 px-5 rounded-full font-bold bg-[#ef3936] dark:bg-[#d9302d] text-white border-2 border-foreground shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] dark:hover:shadow-[1px_1px_0px_0px_#fff] transition-all">
+          <Button onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP, "_blank")} className="hidden md:flex h-10 px-5 rounded-full font-bold bg-[#ef3936] dark:bg-[#d9302d] text-white border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px] transition-all">
             Konsultasi <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
 
@@ -150,30 +150,31 @@ const Navigation = () => {
 
 // #region MOBILE BOTTOM BAR (Khusus Smartphone)
 const MobileBottomBar = () => (
-  <div className="md:hidden fixed bottom-0 left-0 right-0 z-[60] bg-background border-t-4 border-foreground p-3 flex items-center justify-between gap-3 shadow-[0px_-4px_0px_0px_#000] dark:shadow-[0px_-4px_0px_0px_#fff]">
+  <div className="md:hidden fixed bottom-0 left-0 right-0 z-[60] bg-background border-t border-foreground p-3 flex items-center justify-between gap-3 shadow-[0px_-4px_0px_0px] shadow-foreground">
     <Show when="signed-out">
       <SignInButton mode="modal" fallbackRedirectUrl={ROUTES.DASHBOARD.HOME}>
-        <Button variant="outline" className="flex-1 h-12 rounded-full border-2 border-foreground font-bold shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] active:translate-y-1 active:shadow-none transition-all">
+        <Button variant="outline" className="flex-1 h-12 rounded-full border-2 border-foreground font-bold shadow-[2px_2px_0px_0px] shadow-foreground active:translate-y-1 active:shadow-none transition-all">
           Masuk
         </Button>
       </SignInButton>
       <SignUpButton mode="modal" fallbackRedirectUrl={ROUTES.DASHBOARD.HOME}>
-        <Button className="flex-1 h-12 rounded-full border-2 border-foreground bg-[#f68e51] dark:bg-[#d97941] text-black font-bold shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] active:translate-y-1 active:shadow-none transition-all">
+        <Button className="flex-1 h-12 rounded-full border-2 border-foreground bg-[#f68e51] dark:bg-[#d97941] text-black font-bold shadow-[2px_2px_0px_0px] shadow-foreground active:translate-y-1 active:shadow-none transition-all">
           Daftar
         </Button>
       </SignUpButton>
     </Show>
 
     <Show when="signed-in">
-      <Link href={ROUTES.DASHBOARD.HOME} className={buttonVariants({ variant: "outline", className: "flex-1 h-12 rounded-full border-2 border-foreground font-bold shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] active:translate-y-1 active:shadow-none transition-all" })}>
-        Dashboard Utama
+      {/* <Link href={ROUTES.DASHBOARD.HOME} className={buttonVariants({ className: "flex-1 h-12 rounded-full border-2 font-bold border-foreground shadow-[2px_2px_0px_0px] shadow-foreground active:translate-y-1 active:shadow-none transition-all" })}> */}
+      <Link href={ROUTES.DASHBOARD.HOME} className={buttonVariants({ className: "flex-1 h-12 !rounded-full !border-2 font-bold !border-foreground shadow-[2px_2px_0px_0px] shadow-foreground active:translate-y-1 active:shadow-none transition-all !bg-[#f68e51] dark:!bg-[#d97941] !text-black" })}>
+        Dashboard
       </Link>
-      <div className="flex items-center justify-center px-1">
+      {/* <div className="flex items-center justify-center px-1">
         <UserButton />
-      </div>
+      </div> */}
     </Show>
 
-    <Button onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP, "_blank")} className="flex-none aspect-square p-0 w-12 h-12 rounded-full bg-[#ef3936] dark:bg-[#d9302d] text-white border-2 border-foreground shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] active:translate-y-1 active:shadow-none transition-all">
+    <Button onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP, "_blank")} className="flex-none aspect-square p-0 w-12 h-12 rounded-full bg-[#ef3936] dark:bg-[#d9302d] text-white border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground active:translate-y-1 active:shadow-none transition-all">
       <SiWhatsapp className="w-6 h-6" />
     </Button>
   </div>
@@ -195,7 +196,7 @@ const Hero = () => {
   const rotate2 = useTransform(scrollYProgress, [0, 1], [0, 5]);
 
   return (
-    <section ref={containerRef} className="relative min-h-[95vh] flex items-center justify-center overflow-hidden pt-32 pb-20 px-6 border-b-4 border-foreground">
+    <section ref={containerRef} className="relative min-h-[95vh] flex items-center justify-center overflow-hidden pt-32 pb-20 px-6 border-b-4 border-foreground bg-[radial-gradient(color-mix(in_srgb,currentColor_30%,transparent)_1px,transparent_1px)] [background-size:20px_20px]">
       {/* Neo-Pop Background Blobs */}
       <div className="absolute inset-0 bg-background -z-20" />
       <div className="absolute top-1/4 left-1/4 w-[40vw] h-[40vw] bg-[#ef3936]/20 dark:bg-[#d9302d]/20 rounded-full blur-[100px] -z-10 mix-blend-multiply dark:mix-blend-screen" />
@@ -212,7 +213,7 @@ const Hero = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#f68e51] dark:bg-[#d97941] border-2 border-foreground text-sm font-black shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff]">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#f68e51] dark:bg-[#d97941] border-2 border-foreground text-sm font-black shadow-[2px_2px_0px_0px] shadow-foreground">
             <span className="relative flex h-2.5 w-2.5 mr-1">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-foreground opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-foreground"></span>
@@ -222,7 +223,7 @@ const Hero = () => {
 
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tighter leading-[1.05] text-foreground">
             Bantu kamu <br />
-            <span className="text-[#ef3936] dark:text-[#d9302d] drop-shadow-[4px_4px_0px_#000] dark:drop-shadow-[4px_4px_0px_#fff]">lolos kerja!</span>
+            <span className="text-[#ef3936] dark:text-[#d9302d] drop-shadow-[4px_4px_0px] drop-shadow-foreground">lolos kerja!</span>
           </h1>
 
           <p className="text-lg text-foreground/80 font-medium max-w-md leading-relaxed border-l-4 border-[#f68e51] dark:border-[#d97941] pl-4">
@@ -230,11 +231,11 @@ const Hero = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row flex-wrap items-center gap-4 w-full mt-4">
-            <Button className="rounded-full h-14 px-8 w-full sm:w-auto font-bold text-base bg-[#ef3936] dark:bg-[#d9302d] text-white border-2 border-foreground shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#fff] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#000] dark:hover:shadow-[2px_2px_0px_0px_#fff] transition-all" size="lg" onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP, "_blank")}>
+            <Button className="rounded-full h-14 px-8 w-full sm:w-auto font-bold text-base bg-[#ef3936] dark:bg-[#d9302d] text-white border-2 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px] transition-all" size="lg" onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP, "_blank")}>
               <SiWhatsapp className="w-5 h-5 ml-0 mr-2" />
               Chat via WhatsApp
             </Button>
-            <Button className="rounded-full h-14 px-8 w-full sm:w-auto font-bold text-base bg-background text-foreground border-2 border-foreground shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#fff] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#000] dark:hover:shadow-[2px_2px_0px_0px_#fff] hover:text-background transition-all" size="lg" onClick={() => window.open(APP_CONFIG.LINKS.INSTAGRAM, "_blank")}>
+            <Button className="rounded-full h-14 px-8 w-full sm:w-auto font-bold text-base bg-background text-foreground border-2 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px] hover:text-background transition-all" size="lg" onClick={() => window.open(APP_CONFIG.LINKS.INSTAGRAM, "_blank")}>
               <Instagram className="w-5 h-5 ml-0 mr-2" />
               Lihat Portofolio
             </Button>
@@ -243,12 +244,12 @@ const Hero = () => {
           <div className="mt-8 flex items-center gap-4 text-sm font-bold text-foreground">
             <div className="flex -space-x-3">
               {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="w-10 h-10 rounded-full border-2 border-foreground bg-muted flex items-center justify-center overflow-hidden shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff]">
+                <div key={i} className="w-10 h-10 rounded-full border-2 border-foreground bg-muted flex items-center justify-center overflow-hidden shadow-[2px_2px_0px_0px] shadow-foreground">
                   <img src={`/assets/people/people${i}.jpg`} alt="client" className="w-full h-full object-cover" />
                 </div>
               ))}
             </div>
-            <p className="bg-background border-2 border-foreground px-4 py-2 rounded-full shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff]">
+            <p className="bg-background border-2 border-foreground px-4 py-2 rounded-full shadow-[2px_2px_0px_0px] shadow-foreground">
               Dipercaya oleh 1000+ orang.
             </p>
           </div>
@@ -278,19 +279,19 @@ const Services = () => {
     <section className="py-32 px-6 bg-muted/40 border-b-4 border-foreground">
       <div className="max-w-6xl mx-auto space-y-16">
         <div className="text-center max-w-2xl mx-auto space-y-4">
-          <div className="inline-block px-4 py-1.5 mb-4 rounded-full bg-[#ef3936] dark:bg-[#d9302d] text-white border-2 border-foreground font-black text-sm shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff]">LAYANAN KAMI</div>
+          <div className="inline-block px-4 py-1.5 mb-4 rounded-full bg-[#ef3936] dark:bg-[#d9302d] text-white border-2 border-foreground font-black text-sm shadow-[2px_2px_0px_0px] shadow-foreground">LAYANAN KAMI</div>
           <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground">90%+ Desain CV Disukai HRD</h2>
           <p className="text-foreground/70 font-medium text-lg">Telah terbukti disukai dan sangat mudah di-<em>screening</em> oleh para Recruiter.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           {/* Card 1 - Red */}
-          <div className="md:col-span-2 group relative overflow-hidden rounded-[2rem] bg-[#ef3936] dark:bg-[#d9302d] text-white border-4 border-foreground p-8 transition-all hover:-translate-y-2 shadow-[6px_6px_0px_0px_#000] dark:shadow-[6px_6px_0px_0px_#fff] hover:shadow-[10px_10px_0px_0px_#000] dark:hover:shadow-[10px_10px_0px_0px_#fff]">
+          <div className="md:col-span-2 group relative overflow-hidden rounded-[2rem] bg-[#ef3936] dark:bg-[#d9302d] text-white border-4 border-foreground p-8 transition-all hover:-translate-y-2 shadow-[6px_6px_0px_0px] shadow-foreground hover:shadow-[10px_10px_0px_0px]">
             <div className="absolute top-0 right-0 p-8 opacity-20 transition-transform group-hover:scale-110 duration-500 group-hover:rotate-12">
               <FileText className="w-40 h-40" />
             </div>
             <div className="relative z-10 h-full flex flex-col justify-between min-h-[220px]">
-              <div className="w-14 h-14 rounded-2xl bg-white dark:bg-background text-[#ef3936] dark:text-[#d9302d] border-2 border-foreground shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] flex items-center justify-center mb-6">
+              <div className="w-14 h-14 rounded-2xl bg-white dark:bg-background text-[#ef3936] dark:text-[#d9302d] border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground flex items-center justify-center mb-6">
                 <FileText className="w-7 h-7" />
               </div>
               <div>
@@ -301,12 +302,12 @@ const Services = () => {
           </div>
 
           {/* Card 2 - Orange */}
-          <div className="md:col-span-1 group relative overflow-hidden rounded-[2rem] bg-[#f68e51] dark:bg-[#d97941] text-black border-4 border-foreground p-8 transition-all hover:-translate-y-2 shadow-[6px_6px_0px_0px_#000] dark:shadow-[6px_6px_0px_0px_#fff] hover:shadow-[10px_10px_0px_0px_#000] dark:hover:shadow-[10px_10px_0px_0px_#fff]">
+          <div className="md:col-span-1 group relative overflow-hidden rounded-[2rem] bg-[#f68e51] dark:bg-[#d97941] text-black border-4 border-foreground p-8 transition-all hover:-translate-y-2 shadow-[6px_6px_0px_0px] shadow-foreground hover:shadow-[10px_10px_0px_0px]">
             <div className="absolute top-0 right-0 p-8 opacity-10 transition-transform group-hover:scale-110 duration-500 group-hover:-rotate-12">
               <MessageCircle className="w-32 h-32" />
             </div>
             <div className="relative z-10 h-full flex flex-col justify-between min-h-[220px]">
-              <div className="w-14 h-14 rounded-2xl bg-background text-foreground border-2 border-foreground shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] flex items-center justify-center mb-6">
+              <div className="w-14 h-14 rounded-2xl bg-background text-foreground border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground flex items-center justify-center mb-6">
                 <MessageCircle className="w-7 h-7" />
               </div>
               <div>
@@ -317,9 +318,9 @@ const Services = () => {
           </div>
 
           {/* Card 3 - White/Bg */}
-          <div className="md:col-span-1 group relative overflow-hidden rounded-[2rem] bg-background border-4 border-foreground p-8 transition-all hover:-translate-y-2 shadow-[6px_6px_0px_0px_#000] dark:shadow-[6px_6px_0px_0px_#fff] hover:shadow-[10px_10px_0px_0px_#000] dark:hover:shadow-[10px_10px_0px_0px_#fff]">
+          <div className="md:col-span-1 group relative overflow-hidden rounded-[2rem] bg-background border-4 border-foreground p-8 transition-all hover:-translate-y-2 shadow-[6px_6px_0px_0px] shadow-foreground hover:shadow-[10px_10px_0px_0px]">
             <div className="relative z-10 h-full flex flex-col justify-between min-h-[220px]">
-              <div className="w-14 h-14 rounded-2xl bg-[#ef3936] dark:bg-[#d9302d] text-white border-2 border-foreground shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] flex items-center justify-center mb-6">
+              <div className="w-14 h-14 rounded-2xl bg-[#ef3936] dark:bg-[#d9302d] text-white border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground flex items-center justify-center mb-6">
                 <Layout className="w-7 h-7" />
               </div>
               <div>
@@ -330,12 +331,12 @@ const Services = () => {
           </div>
 
           {/* Card 4 - White/Bg */}
-          <div className="md:col-span-2 group relative overflow-hidden rounded-[2rem] bg-background border-4 border-foreground p-8 transition-all hover:-translate-y-2 shadow-[6px_6px_0px_0px_#000] dark:shadow-[6px_6px_0px_0px_#fff] hover:shadow-[10px_10px_0px_0px_#000] dark:hover:shadow-[10px_10px_0px_0px_#fff] flex flex-col justify-between">
+          <div className="md:col-span-2 group relative overflow-hidden rounded-[2rem] bg-background border-4 border-foreground p-8 transition-all hover:-translate-y-2 shadow-[6px_6px_0px_0px] shadow-foreground hover:shadow-[10px_10px_0px_0px] flex flex-col justify-between">
             <div className="absolute bottom-0 right-0 w-72 translate-x-12 translate-y-12 opacity-30 transition-transform group-hover:scale-105 duration-500">
               <DocumentMockupPortfolio />
             </div>
             <div className="relative z-10">
-              <div className="w-14 h-14 rounded-2xl bg-[#f68e51] dark:bg-[#d97941] text-black border-2 border-foreground shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] flex items-center justify-center mb-6">
+              <div className="w-14 h-14 rounded-2xl bg-[#f68e51] dark:bg-[#d97941] text-black border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground flex items-center justify-center mb-6">
                 <Briefcase className="w-7 h-7" />
               </div>
               <div>
@@ -368,11 +369,11 @@ const Process = () => {
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row gap-16 lg:gap-24">
           <div className="md:w-5/12">
-            <div className="sticky top-32 bg-background p-8 rounded-[2rem] border-4 border-foreground shadow-[6px_6px_0px_0px_#000] dark:shadow-[6px_6px_0px_0px_#fff]">
-              <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-[#f68e51] dark:bg-[#d97941] text-black border-2 border-foreground font-black text-sm shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff]">PROSES CEPAT</div>
+            <div className="sticky top-32 bg-background p-8 rounded-[2rem] border-4 border-foreground shadow-[6px_6px_0px_0px] shadow-foreground">
+              <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-[#f68e51] dark:bg-[#d97941] text-black border-2 border-foreground font-black text-sm shadow-[2px_2px_0px_0px] shadow-foreground">PROSES CEPAT</div>
               <h2 className="text-4xl md:text-5xl font-black tracking-tighter mb-6">Murah, Cepat & Profesional.</h2>
               <p className="text-foreground/80 font-medium mb-10 text-lg leading-relaxed">Dirancang oleh profesional untuk kamu yang pusing cari pekerjaan <em>in this economy</em>. Kami tangani dengan cepat!</p>
-              <Button className="h-14 px-8 w-full rounded-full font-bold text-lg bg-[#ef3936] dark:bg-[#d9302d] text-white border-2 border-foreground shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#fff] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#000] dark:hover:shadow-[2px_2px_0px_0px_#fff] transition-all" onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP, "_blank")}>
+              <Button className="h-14 px-8 w-full rounded-full font-bold text-lg bg-[#ef3936] dark:bg-[#d9302d] text-white border-2 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px] shadow-foreground transition-all" onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP, "_blank")}>
                 Mulai Sekarang!
               </Button>
             </div>
@@ -381,13 +382,13 @@ const Process = () => {
           <div className="md:w-7/12 py-8">
             <div className="space-y-12">
               {steps.map((step, i) => (
-                <div key={i} className="group relative flex gap-6 md:gap-8 bg-card/50 p-6 rounded-3xl border-2 border-transparent hover:border-foreground hover:bg-background hover:shadow-[4px_4px_0px_0px_#000] dark:hover:shadow-[4px_4px_0px_0px_#fff] transition-all duration-300">
+                <div key={i} className="group relative flex gap-6 md:gap-8 bg-card/50 p-6 rounded-3xl border-2 border-transparent hover:border-foreground hover:bg-background hover:shadow-[4px_4px_0px_0px] shadow-foreground transition-all duration-300">
                   {/* Line connector */}
                   {i !== steps.length - 1 && (
                     <div className="absolute left-[3rem] md:left-[3rem] top-20 bottom-[-8rem] w-1.5 bg-foreground/10 group-hover:bg-[#f68e51] dark:group-hover:bg-[#d97941] transition-colors rounded-full z-5" />
                   )}
 
-                  <div className="relative z-10 flex-shrink-0 w-14 h-14 rounded-2xl bg-[#f68e51] dark:bg-[#d97941] border-4 border-foreground flex items-center justify-center text-xl font-black text-black shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#fff] group-hover:scale-110 transition-transform duration-300 group-hover:bg-[#ef3936] dark:group-hover:bg-[#d9302d] group-hover:text-white">
+                  <div className="relative z-10 flex-shrink-0 w-14 h-14 rounded-2xl bg-[#f68e51] dark:bg-[#d97941] border-4 border-foreground flex items-center justify-center text-xl font-black text-black shadow-[4px_4px_0px_0px] shadow-foreground group-hover:scale-110 transition-transform duration-300 group-hover:bg-[#ef3936] dark:group-hover:bg-[#d9302d] group-hover:text-white">
                     {step.num}
                   </div>
 
@@ -435,7 +436,7 @@ const PortfolioShowcase = () => {
         </div>
 
         <div className="flex justify-center mb-14">
-          <div className="bg-background border-4 border-foreground shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#fff] p-1.5 rounded-full flex gap-2 overflow-x-auto max-w-full [&::-webkit-scrollbar]:hidden">
+          <div className="bg-background border-4 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground p-1.5 rounded-full flex gap-2 overflow-x-auto max-w-full [&::-webkit-scrollbar]:hidden">
             {tabs.map((tab) => (
               <button
                 key={tab}
@@ -443,7 +444,7 @@ const PortfolioShowcase = () => {
                 className={`relative px-6 py-2.5 rounded-full text-sm font-black transition-all duration-300 whitespace-nowrap ${activeTab === tab ? "text-background bg-foreground" : "text-foreground hover:bg-muted-foreground/50"}`}
               >
                 {activeTab === tab && (
-                  <motion.div layoutId="portfolioTab" className="absolute inset-0 bg-[#ef3936] dark:bg-[#d9302d] border-2 border-foreground rounded-full -z-10 shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff]" />
+                  <motion.div layoutId="portfolioTab" className="absolute inset-0 bg-[#ef3936] dark:bg-[#d9302d] border-2 border-foreground rounded-full -z-10 shadow-[2px_2px_0px_0px] shadow-foreground" />
                 )}
                 <span className="relative z-10">{tab}</span>
               </button>
@@ -463,8 +464,8 @@ const PortfolioShowcase = () => {
                 transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                 className="group flex flex-col gap-5"
               >
-                <div className="relative bg-background rounded-[2rem] p-4 border-4 border-foreground shadow-[6px_6px_0px_0px_#000] dark:shadow-[6px_6px_0px_0px_#fff] hover:shadow-[10px_10px_0px_0px_#000] dark:hover:shadow-[10px_10px_0px_0px_#fff] transition-all duration-500 hover:-translate-y-2">
-                  <div className="absolute top-6 right-6 bg-[#f68e51] dark:bg-[#d97941] text-black text-xs font-black px-4 py-2 rounded-full uppercase tracking-wider z-10 border-2 border-foreground shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff]">
+                <div className="relative bg-background rounded-[2rem] p-4 border-4 border-foreground shadow-[6px_6px_0px_0px] shadow-foreground hover:shadow-[10px_10px_0px_0px] transition-all duration-500 hover:-translate-y-2">
+                  <div className="absolute top-6 right-6 bg-[#f68e51] dark:bg-[#d97941] text-black text-xs font-black px-4 py-2 rounded-full uppercase tracking-wider z-10 border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground">
                     {item.type}
                   </div>
                   <div className="relative w-full aspect-[1/1.4] rounded-xl overflow-hidden bg-muted group-hover:scale-[1.02] transition-transform duration-500 ease-out border-2 border-foreground">
@@ -481,7 +482,7 @@ const PortfolioShowcase = () => {
         </motion.div>
 
         <div className="mt-20 flex justify-center">
-          <Button className="rounded-full h-14 px-8 font-bold bg-background text-foreground border-2 border-foreground shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#fff] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#000] dark:hover:shadow-[2px_2px_0px_0px_#fff] hover:text-background transition-all" onClick={() => window.open(APP_CONFIG.LINKS.INSTAGRAM, "_blank")}>
+          <Button className="rounded-full h-14 px-8 font-bold bg-background text-foreground border-2 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px] hover:text-background transition-all" onClick={() => window.open(APP_CONFIG.LINKS.INSTAGRAM, "_blank")}>
             Lihat Lebih Banyak di Instagram <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </div>
@@ -508,11 +509,11 @@ const TestimonialTextVariant = () => {
       className="grid grid-cols-1 md:grid-cols-3 gap-8"
     >
       {reviews.map((review, i) => (
-        <div key={i} className="bg-background border-4 border-foreground rounded-[2rem] p-8 shadow-[6px_6px_0px_0px_#000] dark:shadow-[6px_6px_0px_0px_#fff] hover:shadow-[10px_10px_0px_0px_#000] dark:hover:shadow-[10px_10px_0px_0px_#fff] hover:-translate-y-2 transition-all duration-300">
+        <div key={i} className="bg-background border-4 border-foreground rounded-[2rem] p-8 shadow-[6px_6px_0px_0px] shadow-foreground hover:shadow-[10px_10px_0px_0px] hover:-translate-y-2 transition-all duration-300">
           <QuoteIcon className="w-10 h-10 text-[#ef3936] dark:text-[#d9302d] mb-6 fill-current" />
           <p className="text-foreground font-medium mb-8 text-lg leading-relaxed">"{review.text}"</p>
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-[#f68e51] dark:bg-[#d97941] border-2 border-foreground shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] flex items-center justify-center font-black text-black text-xl">
+            <div className="w-12 h-12 rounded-2xl bg-[#f68e51] dark:bg-[#d97941] border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground flex items-center justify-center font-black text-black text-xl">
               {review.name.charAt(0)}
             </div>
             <div>
@@ -545,24 +546,24 @@ const TestimonialChatVariant = () => {
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4 }} className="relative w-full max-w-5xl mx-auto">
-      <button onClick={() => scroll("left")} className="hidden md:flex absolute -left-16 top-1/2 -translate-y-1/2 w-14 h-14 bg-[#f68e51] dark:bg-[#d97941] text-black border-4 border-foreground rounded-full items-center justify-center shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#fff] hover:translate-y-[calc(-50%+2px)] hover:shadow-[2px_2px_0px_0px_#000] dark:hover:shadow-[2px_2px_0px_0px_#fff] transition-all z-10">
+      <button onClick={() => scroll("left")} className="hidden md:flex absolute -left-16 top-1/2 -translate-y-1/2 w-14 h-14 bg-[#f68e51] dark:bg-[#d97941] text-black border-4 border-foreground rounded-full items-center justify-center shadow-[4px_4px_0px_0px] shadow-foreground hover:translate-y-[calc(-50%+2px)] hover:shadow-[2px_2px_0px_0px] transition-all z-10">
         <ChevronLeft className="w-7 h-7" />
       </button>
-      <button onClick={() => scroll("right")} className="hidden md:flex absolute -right-16 top-1/2 -translate-y-1/2 w-14 h-14 bg-[#f68e51] dark:bg-[#d97941] text-black border-4 border-foreground rounded-full items-center justify-center shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#fff] hover:translate-y-[calc(-50%+2px)] hover:shadow-[2px_2px_0px_0px_#000] dark:hover:shadow-[2px_2px_0px_0px_#fff] transition-all z-10">
+      <button onClick={() => scroll("right")} className="hidden md:flex absolute -right-16 top-1/2 -translate-y-1/2 w-14 h-14 bg-[#f68e51] dark:bg-[#d97941] text-black border-4 border-foreground rounded-full items-center justify-center shadow-[4px_4px_0px_0px] shadow-foreground hover:translate-y-[calc(-50%+2px)] hover:shadow-[2px_2px_0px_0px] transition-all z-10">
         <ChevronRight className="w-7 h-7" />
       </button>
 
       <div ref={scrollContainerRef} className="flex overflow-x-auto snap-x snap-mandatory gap-6 md:gap-8 pb-8 px-4 md:px-0 -mx-4 md:mx-0 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
         <div className="snap-center shrink-0 w-2 md:hidden"></div>
         {screenshots.map((src, idx) => (
-          <div key={idx} className="snap-center shrink-0 w-[260px] md:w-[320px] aspect-[9/16] relative rounded-[2rem] overflow-hidden border-4 border-foreground bg-muted shadow-[6px_6px_0px_0px_#000] dark:shadow-[6px_6px_0px_0px_#fff] group">
+          <div key={idx} className="snap-center shrink-0 w-[260px] md:w-[320px] aspect-[9/16] relative rounded-[2rem] overflow-hidden border-4 border-foreground bg-muted shadow-[6px_6px_0px_0px] shadow-foreground group">
             <img src={src} alt={`WhatsApp Testimonial ${idx + 1}`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" />
           </div>
         ))}
         <div className="snap-center shrink-0 w-2 md:hidden"></div>
       </div>
 
-      <div className="flex md:hidden justify-center items-center gap-2 -mt-2 text-sm font-bold bg-background border-2 border-foreground w-max mx-auto px-4 py-2 rounded-full shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff]">
+      <div className="flex md:hidden justify-center items-center gap-2 -mt-2 text-sm font-bold bg-background border-2 border-foreground w-max mx-auto px-4 py-2 rounded-full shadow-[2px_2px_0px_0px] shadow-foreground">
         <ArrowLeft className="w-4 h-4" /> Geser <ArrowRight className="w-4 h-4" />
       </div>
     </motion.div>
@@ -583,13 +584,13 @@ const Testimonials = () => {
         </div>
 
         <div className="flex justify-center mb-14">
-          <div className="bg-background border-4 border-foreground shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#fff] p-1.5 rounded-full flex gap-2">
+          <div className="bg-background border-4 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground p-1.5 rounded-full flex gap-2">
             <button onClick={() => setActiveVariant("text")} className={`relative px-8 py-3 rounded-full text-sm font-black transition-all duration-300 ${activeVariant === "text" ? "text-background bg-foreground" : "text-foreground hover:bg-muted-foreground/50"}`}>
-              {activeVariant === "text" && <motion.div layoutId="testiPill" className="absolute inset-0 bg-[#ef3936] dark:bg-[#d9302d] border-2 border-foreground rounded-full -z-10 shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff]" />}
+              {activeVariant === "text" && <motion.div layoutId="testiPill" className="absolute inset-0 bg-[#ef3936] dark:bg-[#d9302d] border-2 border-foreground rounded-full -z-10 shadow-[2px_2px_0px_0px] shadow-foreground" />}
               <span className="relative z-10">Review Teks</span>
             </button>
             <button onClick={() => setActiveVariant("chat")} className={`relative px-8 py-3 rounded-full text-sm font-black transition-all duration-300 ${activeVariant === "chat" ? "text-background bg-foreground" : "text-foreground hover:bg-muted-foreground/50"}`}>
-              {activeVariant === "chat" && <motion.div layoutId="testiPill" className="absolute inset-0 bg-[#ef3936] dark:bg-[#d9302d] border-2 border-foreground rounded-full -z-10 shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff]" />}
+              {activeVariant === "chat" && <motion.div layoutId="testiPill" className="absolute inset-0 bg-[#ef3936] dark:bg-[#d9302d] border-2 border-foreground rounded-full -z-10 shadow-[2px_2px_0px_0px] shadow-foreground" />}
               <span className="relative z-10">Testimoni WA</span>
             </button>
           </div>
@@ -611,9 +612,10 @@ const CTA = () => {
   return (
     <section className="relative py-32 px-6 overflow-hidden bg-[#ef3936] dark:bg-[#d9302d]">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] bg-white/10 rounded-full blur-[80px] pointer-events-none" />
+      <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_20px,rgba(0,0,0,0.05)_20px,rgba(0,0,0,0.05)_40px)] dark:bg-[repeating-linear-gradient(45deg,transparent,transparent_20px,rgba(255,255,255,0.02)_20px,rgba(255,255,255,0.02)_40px)] pointer-events-none" />
 
       <div className="relative z-10 max-w-4xl mx-auto text-center space-y-8">
-        <h2 className="text-5xl md:text-7xl font-black tracking-tighter text-white drop-shadow-[4px_4px_0px_#000]">
+        <h2 className="text-5xl md:text-7xl font-black tracking-tighter text-white drop-shadow-[4px_4px_0px] drop-shadow-foreground">
           Butuh CV & Resume Secepatnya!?
         </h2>
         <p className="text-xl md:text-2xl font-bold text-white max-w-3xl mx-auto leading-relaxed border-b-4 border-transparent hover:border-white transition-all cursor-default">
@@ -624,7 +626,7 @@ const CTA = () => {
           <div className="flex flex-col w-full sm:w-auto gap-6">
             <button
               onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP, "_blank")}
-              className="group relative inline-flex items-center justify-center gap-3 h-16 px-10 bg-[#f68e51] dark:bg-[#d97941] text-black border-4 border-foreground rounded-full font-black text-xl shadow-[6px_6px_0px_0px_#000] dark:shadow-[6px_6px_0px_0px_#fff] hover:shadow-[2px_2px_0px_0px_#000] dark:hover:shadow-[2px_2px_0px_0px_#fff] hover:translate-y-1 transition-all"
+              className="group relative inline-flex items-center justify-center gap-3 h-16 px-10 bg-[#f68e51] dark:bg-[#d97941] text-black border-4 border-foreground rounded-full font-black text-xl shadow-[6px_6px_0px_0px] shadow-foreground hover:shadow-[2px_2px_0px_0px] shadow-foreground hover:translate-y-1 transition-all"
             >
               Chat Admin CIVITA
               <ChevronRight className="w-6 h-6 group-hover:translate-x-1.5 transition-transform stroke-[3px]" />
@@ -656,27 +658,27 @@ const Footer = () => {
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-10 md:gap-6">
         <div className="flex flex-col gap-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#ef3936] dark:bg-[#d9302d] border-2 border-foreground shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-[#ef3936] dark:bg-[#d9302d] border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground rounded-xl flex items-center justify-center">
               <Image alt="Logo" src="/assets/Icon.svg" className="size-5 [filter:brightness(0)_invert(1)]" width={1} height={1} />
             </div>
             <span className="font-black tracking-tight text-2xl uppercase">CIVITA.ID</span>
           </div>
 
           <div className="flex flex-col gap-4 text-base font-bold">
-            <a href={APP_CONFIG.LINKS.WHATSAPP} target="_blank" rel="noreferrer" className="flex items-center gap-3 hover:text-[#ef3936] dark:hover:text-[#d9302d] transition-colors bg-muted w-max px-4 py-2 rounded-full border-2 border-foreground shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff]">
+            <a href={APP_CONFIG.LINKS.WHATSAPP} target="_blank" rel="noreferrer" className="flex items-center gap-3 hover:text-[#ef3936] dark:hover:text-[#d9302d] transition-colors bg-muted w-max px-4 py-2 rounded-full border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground">
               <SiWhatsapp className="w-5 h-5" /> +62 823-1294-5365
             </a>
-            <a href={APP_CONFIG.LINKS.EMAIL} className="flex items-center gap-3 hover:text-[#f68e51] dark:hover:text-[#d97941] transition-colors bg-muted w-max px-4 py-2 rounded-full border-2 border-foreground shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff]">
+            <a href={APP_CONFIG.LINKS.EMAIL} className="flex items-center gap-3 hover:text-[#f68e51] dark:hover:text-[#d97941] transition-colors bg-muted w-max px-4 py-2 rounded-full border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground">
               <Mail className="w-5 h-5" /> civitakerja@gmail.com
             </a>
           </div>
         </div>
 
         <div className="flex items-center gap-4 text-base font-black">
-          <a href={APP_CONFIG.LINKS.INSTAGRAM} target="_blank" rel="noreferrer" className="hover:bg-[#ef3936] dark:hover:bg-[#d9302d] hover:text-white bg-background border-2 border-foreground shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] px-5 py-3 rounded-full transition-all flex items-center gap-2">
+          <a href={APP_CONFIG.LINKS.INSTAGRAM} target="_blank" rel="noreferrer" className="hover:bg-[#ef3936] dark:hover:bg-[#d9302d] hover:text-white bg-background border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground px-5 py-3 rounded-full transition-all flex items-center gap-2">
             <Instagram className="w-5 h-5" /> Instagram
           </a>
-          <a href={APP_CONFIG.LINKS.LINKEDIN} target="_blank" rel="noreferrer" className="hover:bg-[#f68e51] dark:hover:bg-[#d97941] hover:text-black bg-background border-2 border-foreground shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] px-5 py-3 rounded-full transition-all flex items-center gap-2">
+          <a href={APP_CONFIG.LINKS.LINKEDIN} target="_blank" rel="noreferrer" className="hover:bg-[#f68e51] dark:hover:bg-[#d97941] hover:text-black bg-background border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground px-5 py-3 rounded-full transition-all flex items-center gap-2">
             <TfiLinkedin className="w-5 h-5" /> LinkedIn
           </a>
         </div>
