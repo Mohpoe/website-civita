@@ -2,11 +2,12 @@
 
 import { ModeToggle } from "@/components/theme-toggle-button";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Separator } from "@/components/ui/separator";
 import { APP_CONFIG, ROUTES } from "@/lib/constants";
 import { Show, SignInButton, SignUpButton } from "@clerk/nextjs";
 import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
-import { ArrowLeft, ArrowRight, Briefcase, ChevronLeft, ChevronRight, FileText, Layout, Mail, MessageCircle, QuoteIcon, Sparkles, XIcon } from "lucide-react";
+import { ArrowLeft, ArrowRight, Briefcase, FileText, Layout, Mail, MessageCircle, QuoteIcon, Sparkles, XIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -528,7 +529,6 @@ const TestimonialTextVariant = () => {
 };
 
 const TestimonialChatVariant = () => {
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const screenshots = [
     "/assets/testimoni/testimoni1.webp",
     "/assets/testimoni/testimoni2.webp",
@@ -537,35 +537,38 @@ const TestimonialChatVariant = () => {
     "/assets/testimoni/testimoni5.webp",
   ];
 
-  const scroll = (direction: "left" | "right") => {
-    if (scrollContainerRef.current) {
-      const scrollAmount = window.innerWidth < 768 ? 280 : 344;
-      scrollContainerRef.current.scrollBy({ left: direction === "left" ? -scrollAmount : scrollAmount, behavior: "smooth" });
-    }
-  };
-
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4 }} className="relative w-full max-w-5xl mx-auto">
-      <button onClick={() => scroll("left")} className="hidden md:flex absolute -left-16 top-1/2 -translate-y-1/2 w-14 h-14 bg-[#f68e51] dark:bg-[#d97941] text-black border-4 border-foreground rounded-full items-center justify-center shadow-[4px_4px_0px_0px] shadow-foreground hover:translate-y-[calc(-50%+2px)] hover:shadow-[2px_2px_0px_0px] transition-all z-10">
-        <ChevronLeft className="w-7 h-7" />
-      </button>
-      <button onClick={() => scroll("right")} className="hidden md:flex absolute -right-16 top-1/2 -translate-y-1/2 w-14 h-14 bg-[#f68e51] dark:bg-[#d97941] text-black border-4 border-foreground rounded-full items-center justify-center shadow-[4px_4px_0px_0px] shadow-foreground hover:translate-y-[calc(-50%+2px)] hover:shadow-[2px_2px_0px_0px] transition-all z-10">
-        <ChevronRight className="w-7 h-7" />
-      </button>
-
-      <div ref={scrollContainerRef} className="flex overflow-x-auto snap-x snap-mandatory gap-6 md:gap-8 pb-8 px-4 md:px-0 -mx-4 md:mx-0 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
-        <div className="snap-center shrink-0 w-2 md:hidden"></div>
-        {screenshots.map((src, idx) => (
-          <div key={idx} className="snap-center shrink-0 w-[260px] md:w-[320px] aspect-[9/16] relative rounded-[2rem] overflow-hidden border-4 border-foreground bg-muted shadow-[6px_6px_0px_0px] shadow-foreground group">
-            <img src={src} alt={`WhatsApp Testimonial ${idx + 1}`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" />
-          </div>
-        ))}
-        <div className="snap-center shrink-0 w-2 md:hidden"></div>
-      </div>
-
-      <div className="flex md:hidden justify-center items-center gap-2 -mt-2 text-sm font-bold bg-background border-2 border-foreground w-max mx-auto px-4 py-2 rounded-full shadow-[2px_2px_0px_0px] shadow-foreground">
-        <ArrowLeft className="w-4 h-4" /> Geser <ArrowRight className="w-4 h-4" />
-      </div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.4 }}
+      className="relative w-full max-w-5xl mx-auto px-4 md:px-12"
+    >
+      <Carousel
+        opts={{
+          align: "start",
+          loop: true,
+        }}
+        className="w-full"
+      >
+        <CarouselContent>
+          {screenshots.map((src, idx) => (
+            <CarouselItem key={idx} className="pl-4 md:pl-6 basis-full sm:basis-1/2 lg:basis-1/3">
+              <div className="aspect-[9/16] relative rounded-[2rem] overflow-hidden border-4 border-foreground bg-muted group">
+                <img
+                  src={src}
+                  alt={`WhatsApp Testimonial ${idx + 1}`}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  loading="lazy"
+                />
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious className="hidden md:flex -left-16 w-14 h-14 bg-[#f68e51] dark:bg-[#d97941] text-black border-4 !border-foreground rounded-full shadow-[4px_4px_0px_0px] shadow-foreground hover:bg-[#f68e51] dark:hover:bg-[#d97941] hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px] transition-all" />
+        <CarouselNext className="hidden md:flex -right-16 w-14 h-14 bg-[#f68e51] dark:bg-[#d97941] text-black border-4 !border-foreground rounded-full shadow-[4px_4px_0px_0px] shadow-foreground hover:bg-[#f68e51] dark:hover:bg-[#d97941] hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px] transition-all" />
+      </Carousel>
     </motion.div>
   );
 };
@@ -615,7 +618,7 @@ const CTA = () => {
       <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_20px,rgba(0,0,0,0.05)_20px,rgba(0,0,0,0.05)_40px)] dark:bg-[repeating-linear-gradient(45deg,transparent,transparent_20px,rgba(255,255,255,0.02)_20px,rgba(255,255,255,0.02)_40px)] pointer-events-none" />
 
       <div className="relative z-10 max-w-4xl mx-auto text-center space-y-8">
-        <h2 className="text-5xl md:text-7xl font-black tracking-tighter text-white drop-shadow-[4px_4px_0px] drop-shadow-foreground">
+        <h2 className="text-5xl md:text-7xl font-black tracking-tighter text-white drop-shadow-[4px_4px_0px] drop-shadow-black">
           Butuh CV & Resume Secepatnya!?
         </h2>
         <p className="text-xl md:text-2xl font-bold text-white max-w-3xl mx-auto leading-relaxed border-b-4 border-transparent hover:border-white transition-all cursor-default">
@@ -629,7 +632,7 @@ const CTA = () => {
               className="group relative inline-flex items-center justify-center gap-3 h-16 px-10 bg-[#f68e51] dark:bg-[#d97941] text-black border-4 border-foreground rounded-full font-black text-xl shadow-[6px_6px_0px_0px] shadow-foreground hover:shadow-[2px_2px_0px_0px] shadow-foreground hover:translate-y-1 transition-all"
             >
               Chat Admin CIVITA
-              <ChevronRight className="w-6 h-6 group-hover:translate-x-1.5 transition-transform stroke-[3px]" />
+              <ArrowRight className="w-6 h-6 group-hover:translate-x-1.5 transition-transform stroke-[3px]" />
             </button>
 
             <Show when="signed-out">

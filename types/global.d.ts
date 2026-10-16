@@ -43,7 +43,6 @@ export interface Order {
   amount: number;
   status: 'pending' | 'success' | 'failed';
   snap_token: string | null;
-  download_url: string;
   created_at: string;
   product?: Product;
 }
