@@ -495,7 +495,7 @@ export default function DashboardProducts({ products, categories }: DashboardPro
               {/* Area Top Banner Warna-warni */}
               <div className="w-full px-6 py-8 bg-[var(--bg-light)] dark:bg-[var(--bg-dark)] border-b-4 border-foreground flex items-center justify-center">
                 {/* Gambar Miring di Dalam Modal */}
-                <div className="w-[85%] relative rotate-2 hover:rotate-0 transition-transform duration-500 rounded-2xl overflow-hidden border-4 border-white dark:border-foreground shadow-[8px_8px_0_0_rgba(0,0,0,1)] dark:shadow-[8px_8px_0_0_rgba(255,255,255,0.2)] bg-card aspect-video flex items-center justify-center">
+                <div className="w-[75%] relative rotate-2 hover:rotate-0 transition-transform duration-500 rounded-2xl overflow-hidden border-4 border-white dark:border-foreground shadow-[8px_8px_0_0_rgba(0,0,0,1)] dark:shadow-[8px_8px_0_0_rgba(255,255,255,0.2)] bg-card aspect-[5/4] flex items-center justify-center">
                   {selectedProduct?.image_url ? (
                     <img
                       src={selectedProduct?.image_url}
