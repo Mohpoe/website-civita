@@ -27,6 +27,7 @@ const NEO_COLORS = [
   { light: '#B3A2FF', dark: '#32275C', textLight: '#151722', textDark: '#F5F3FF' }, // Purple / Violet
   { light: '#98F5E1', dark: '#154D40', textLight: '#151722', textDark: '#F0FDFA' }, // Mint / Deep Teal
   { light: '#FFB5E8', dark: '#4D1B3E', textLight: '#151722', textDark: '#FDF2F8' }, // Pink / Plum
+  { light: '#B2F0B2', dark: '#1E3E26', textLight: '#151722', textDark: '#F0FDF4' }, // Sage / Forest Green
 ];
 
 export default function DashboardProducts({ products, categories }: DashboardProductsProps) {
@@ -214,7 +215,7 @@ export default function DashboardProducts({ products, categories }: DashboardPro
 
           {/* Search Input Neo-Pop menggantikan teks Badge statis */}
           <div className="w-full lg:w-80 shrink-0">
-            <InputGroup className="w-full h-10 px-2 rounded-full border-2 border-foreground font-bold bg-card shadow-[4px_4px_0_0] shadow-foreground focus:outline-none focus:translate-y-[2px] focus:shadow-[4px_4px_0_0] shadow-foreground transition-all">
+            <InputGroup className="w-full h-10 px-2 rounded-none border-2 !border-foreground font-bold bg-card shadow-[4px_4px_0_0] shadow-foreground has-[:focus]:outline-none has-[:focus]:translate-y-[2px] has-[:focus]:shadow-[2px_2px_0_0] shadow-foreground transition-all !ring-offset-0 !ring-0">
               <InputGroupInput
                 type="text"
                 placeholder="Cari nama produk..."
@@ -225,22 +226,13 @@ export default function DashboardProducts({ products, categories }: DashboardPro
                 <SearchIcon />
               </InputGroupAddon>
             </InputGroup>
-
-            {/* <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Cari nama produk..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-12 pl-12 pr-4 rounded-full border-2 border-foreground font-bold bg-card shadow-[4px_4px_0_0] shadow-foreground focus:outline-none focus:translate-y-[2px] focus:shadow-[4px_4px_0_0] shadow-foreground transition-all"
-            /> */}
           </div>
         </div>
 
         <Separator className="border-border" />
 
         {(products?.length ?? 0) > 0 && (
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-card p-3.5 rounded-[2rem] border-4 border-foreground shadow-[4px_4px_0_0] shadow-foreground transition-all">
+          <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-card p-3.5 rounded-none border-4 border-foreground shadow-[4px_4px_0_0] shadow-foreground transition-all">
 
             {
               // #region Filter Category
@@ -249,7 +241,7 @@ export default function DashboardProducts({ products, categories }: DashboardPro
                   <Button
                     onClick={() => setSelectedCategory("all")}
                     variant={selectedCategory === "all" ? "default" : "outline"}
-                    className={`rounded-full border-2 font-bold px-5 shrink-0 transition-all ${selectedCategory === "all"
+                    className={`rounded-none border-2 font-bold px-5 shrink-0 transition-all ${selectedCategory === "all"
                       ? "border-foreground"
                       : "border-transparent bg-muted/40 text-muted-foreground hover:bg-muted"
                       }`}
@@ -262,7 +254,7 @@ export default function DashboardProducts({ products, categories }: DashboardPro
                       key={cat.id}
                       onClick={() => setSelectedCategory(cat.name)}
                       variant={selectedCategory === cat.name ? "default" : "outline"}
-                      className={`rounded-full border-2 font-bold px-5 shrink-0 transition-all ${selectedCategory === cat.name
+                      className={`rounded-none border-2 font-bold px-5 shrink-0 transition-all ${selectedCategory === cat.name
                         ? "border-foreground"
                         : "border-transparent bg-muted/40 text-muted-foreground hover:bg-muted"
                         }`}
@@ -279,7 +271,7 @@ export default function DashboardProducts({ products, categories }: DashboardPro
                     onValueChange={(val) => setSelectedCategory(val || "all")}
                     items={categoryItems}
                   >
-                    <SelectTrigger className="w-full rounded-full border-2 border-foreground font-bold bg-background h-10">
+                    <SelectTrigger className="w-full rounded-none border-2 border-foreground font-bold bg-background h-10">
                       <div className="flex items-center gap-2 truncate">
                         <TagsIcon className="w-4 h-4 text-muted-foreground shrink-0" />
                         <SelectValue placeholder="Pilih Kategori" />
@@ -311,7 +303,7 @@ export default function DashboardProducts({ products, categories }: DashboardPro
                     { value: "price_desc", label: "Harga Tertinggi" },
                   ]}
                 >
-                  <SelectTrigger className="w-full rounded-full border-2 border-foreground font-bold bg-background h-10">
+                  <SelectTrigger className="w-full rounded-none border-2 border-foreground font-bold bg-background h-10">
                     <div className="flex items-center gap-2">
                       <ArrowDownUpIcon className="w-4 h-4 text-muted-foreground" />
                       <SelectValue placeholder="Urutkan" />
