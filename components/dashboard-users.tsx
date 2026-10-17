@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   columnFilteringFeature,
+  ColumnFiltersState,
   columnVisibilityFeature,
   ColumnVisibilityState,
   createColumnHelper,
@@ -74,35 +75,34 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
         cell: ({ row }) => <div className="text-center font-mono text-sm text-muted-foreground">{row.index + 1}</div>,
         enableHiding: false,
       }),
-      // 2. Kolom Profil
-      columnHelper.accessor("imageUrl", {
-        id: "profil",
-        header: () => <div className="text-center">Profil</div>,
-        cell: (info) => (
-          <div className="flex justify-center">
-            <Image
-              src={info.getValue() || "/default-avatar.png"}
-              alt="Profil"
-              width={32}
-              height={32}
-              className="rounded-full object-cover"
-            />
-          </div>
-        ),
-        enableSorting: false,
-      }),
-      // 3. Kolom Nama
+
+      // 2. Kolom Profil + Nama + Email (Digabung)
       columnHelper.accessor("name", {
-        header: "Nama Lengkap",
-        cell: (info) => <span className="font-medium">{info.getValue()}</span>,
+        id: "informasi_pengguna",
+        header: "Informasi Pengguna",
+        cell: ({ row }) => {
+          const user = row.original;
+          return (
+            <div className="flex items-center gap-3">
+              <Image
+                src={user.imageUrl || "/default-avatar.png"}
+                alt={user.name}
+                width={40}
+                height={40}
+                className="rounded-full object-cover border bg-muted shrink-0"
+              />
+              <div className="flex flex-col">
+                <span className="font-semibold text-foreground">{user.name}</span>
+                <span className="text-xs text-muted-foreground">{user.email}</span>
+              </div>
+            </div>
+          );
+        },
       }),
-      // 4. Kolom Email
-      columnHelper.accessor("email", {
-        header: "Alamat Email",
-        cell: (info) => <span className="text-muted-foreground">{info.getValue()}</span>,
-      }),
-      // 5. Kolom Role
+
+      // 3. Kolom Role (Ditambah fungsi filter)
       columnHelper.accessor("role", {
+        id: "role",
         header: "Hak Akses",
         cell: (info) => {
           const role = info.getValue();
@@ -115,8 +115,13 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
             </Badge>
           );
         },
+        filterFn: (row, id, value) => {
+          if (!value || value.length === 0) return true;
+          return value.includes(row.getValue(id));
+        },
       }),
-      // 6. Kolom Aksi
+
+      // 4. Kolom Aksi
       columnHelper.display({
         id: "actions",
         header: () => <div className="text-right w-full">Aksi</div>,
@@ -145,6 +150,7 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<ColumnVisibilityState>({});
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]); // <-- Tambahkan ini
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
 
   const table = useTable({
@@ -156,14 +162,20 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
       sorting,
       pagination,
       globalFilter,
-      columnVisibility
+      columnVisibility,
+      columnFilters
     },
     onSortingChange: setSorting,
     onPaginationChange: setPagination,
     onGlobalFilterChange: setGlobalFilter,
     onColumnVisibilityChange: setColumnVisibility,
+    onColumnFiltersChange: setColumnFilters,
     autoResetPageIndex: true,
   }, (state) => state);
+
+  // Ambil nilai filter role saat ini untuk digunakan di menu dropdown UI
+  const filteredRoleValue = table.getColumn("role")?.getFilterValue() as string[] | undefined;
+  const filteredRole = filteredRoleValue !== undefined ? String(filteredRoleValue[0]) : "all";
   // #endregion
 
   return (
@@ -186,6 +198,30 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="min-w-50" align="start">
                   <DropdownMenuGroup>
+
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger>
+                        <ShieldIcon />
+                        Hak Akses
+                      </DropdownMenuSubTrigger>
+                      <DropdownMenuPortal>
+                        <DropdownMenuSubContent>
+                          <DropdownMenuLabel>Filter Role</DropdownMenuLabel>
+                          <DropdownMenuRadioGroup
+                            value={filteredRole}
+                            onValueChange={(val) => {
+                              table.getColumn("role")?.setFilterValue(val === "all" ? undefined : [val]);
+                            }}
+                          >
+                            <DropdownMenuRadioItem value="all">Semua Role</DropdownMenuRadioItem>
+                            <DropdownMenuRadioItem value="superadmin">Superadmin</DropdownMenuRadioItem>
+                            <DropdownMenuRadioItem value="admin">Admin</DropdownMenuRadioItem>
+                            <DropdownMenuRadioItem value="user">User</DropdownMenuRadioItem>
+                          </DropdownMenuRadioGroup>
+                        </DropdownMenuSubContent>
+                      </DropdownMenuPortal>
+                    </DropdownMenuSub>
+
                     <DropdownMenuSub>
                       <DropdownMenuSubTrigger>
                         <Rows3Icon />
@@ -225,6 +261,7 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
                       <RefreshCcwIcon />
                       Reset
                     </DropdownMenuItem>
+
                   </DropdownMenuGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
