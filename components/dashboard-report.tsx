@@ -191,13 +191,43 @@ export default function DashboardReport({ kpi, chartData, topProducts }: Dashboa
                     cursor={{ stroke: 'var(--muted-foreground)', strokeWidth: 1, strokeDasharray: '4 4' }}
                     content={
                       <ChartTooltipContent
-                        // className="w-[260px] gap-3 p-3 shadow-xl"
+                        className="shadow-xl"
                         labelFormatter={(label) => new Date(label).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
-                        formatter={(value, name) => {
+                        formatter={(value, name, item, index) => {
+                          // Tentukan Label
+                          let labelText = "";
                           if (activeMetric === "revenue") {
-                            return [formatRupiah(value as number), name === "success_revenue" ? "Pendapatan Bersih" : "Potensi (Gagal/Tunda)"];
+                            labelText = name === "success_revenue" ? "Pendapatan" : "Potensi (Gagal)";
+                          } else {
+                            labelText = name === "success_orders" ? "Pesanan Sukses" : "Pesanan Gagal";
                           }
-                          return [value, name === "success_orders" ? "Pesanan Sukses" : "Pesanan Gagal/Tunda"];
+
+                          // Tentukan Value
+                          const valueText = activeMetric === "revenue" ? formatRupiah(value as number) : value;
+
+                          // Ambil warna indikator dari payload Recharts
+                          const indicatorColor = item.color || item.payload?.fill;
+
+                          // Return struktur JSX yang menyerupai bawaan Shadcn, tapi dengan layout kita
+                          return (
+                            <div key={index} className="flex w-full items-center gap-4">
+                              {/* Kotak Indikator Warna */}
+                              <div className="flex items-center gap-2">
+                                <div
+                                  className="h-2.5 w-2.5 shrink-0 rounded-[2px]"
+                                  style={{ backgroundColor: indicatorColor }}
+                                />
+                                {/* Teks Label (Rata Kiri) */}
+                                <span className="text-muted-foreground flex-1">
+                                  {labelText}
+                                </span>
+                              </div>
+                              {/* Teks Nilai (Rata Kanan, Font Mono) */}
+                              <span className="font-mono font-medium text-foreground tabular-nums">
+                                {valueText}
+                              </span>
+                            </div>
+                          );
                         }}
                       />
                     }
