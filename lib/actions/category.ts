@@ -7,6 +7,8 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 
+const allowedRoles = ["admin", "superadmin"];
+
 // #region 1. GET CATEGORIES
 export async function getCategories(): Promise<Category[]> {
   try {
@@ -31,7 +33,7 @@ export async function getCategories(): Promise<Category[]> {
 export async function upsertCategoryAction(state: any, formData: FormData) {
   await auth.protect();
   const user = await currentUser();
-  if (!user || user.publicMetadata.role !== "admin") return { success: false, message: "Akses tidak valid!" };
+  if (!user || !allowedRoles.includes(user.publicMetadata.role as string)) return { success: false, message: "Akses tidak valid!" };
 
   const id = formData.get("id") as string | null;
   const name = formData.get("name") as string;
@@ -82,7 +84,7 @@ export async function upsertCategoryAction(state: any, formData: FormData) {
 export async function deleteCategoryAction(formData: FormData) {
   await auth.protect();
   const user = await currentUser();
-  if (!user || user.publicMetadata.role !== "admin") return { success: false, message: "Akses tidak valid!" };
+  if (!user || !allowedRoles.includes(user.publicMetadata.role as string)) return { success: false, message: "Akses tidak valid!" };
 
   const id = formData.get("id") as string | null;
   if (!id) return { success: false, message: "ID Kategori tidak ditemukan!" };

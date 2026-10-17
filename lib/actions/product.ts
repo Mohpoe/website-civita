@@ -9,6 +9,8 @@ import { del, putImage } from "@vercel/blob";
 import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 
+const allowedRoles = ["admin", "superadmin"];
+
 // #region 1. GET PRODUCTS
 export async function getProducts(isActive = false): Promise<Product[]> {
   try {
@@ -51,7 +53,7 @@ export async function getProducts(isActive = false): Promise<Product[]> {
 export async function upsertProductAction(state: any, formData: FormData) {
   await auth.protect();
   const user = await currentUser();
-  if (!user || user.publicMetadata.role !== "admin") return { success: false, message: "Akses tidak valid!" };
+  if (!user || !allowedRoles.includes(user.publicMetadata.role as string)) return { success: false, message: "Akses tidak valid!" };
 
   const id = formData.get("id") as string | null;
 
@@ -194,7 +196,7 @@ export async function upsertProductAction(state: any, formData: FormData) {
 export async function deleteProductAction(formData: FormData) {
   await auth.protect();
   const user = await currentUser();
-  if (!user || user.publicMetadata.role !== "admin") return { success: false, message: "Akses tidak valid, silakan login!" };
+  if (!user || !allowedRoles.includes(user.publicMetadata.role as string)) return { success: false, message: "Akses tidak valid, silakan login!" };
 
   const id = formData.get("id") as string | null;
   if (!id) return { success: false, message: "ID Produk tidak ditemukan!" };
@@ -245,7 +247,7 @@ export async function deleteProductAction(formData: FormData) {
 export async function deleteBlobFileAction(url: string) {
   await auth.protect();
   const user = await currentUser();
-  if (!user || user.publicMetadata.role !== "admin") return { success: false };
+  if (!user || !allowedRoles.includes(user.publicMetadata.role as string)) return { success: false };
 
   try {
     await del(url, {

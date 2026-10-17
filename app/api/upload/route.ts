@@ -5,17 +5,18 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request: Request): Promise<NextResponse> {
   const body = (await request.json()) as HandleUploadPresignedBody;
+  const allowedRoles = ["superadmin", "admin"];
 
   try {
     const user = await currentUser();
-    if (!user || user.publicMetadata.role !== "admin") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!user || !allowedRoles.includes(user.publicMetadata.role as string)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const jsonResponse = await handleUploadPresigned({
       body,
       request,
       webhookPublicKey: process.env.PRIVATE_BLOB_WEBHOOK_PUBLIC_KEY,
       getSignedToken: async (pathname) => {
-        if (!user || user.publicMetadata.role !== "admin") throw new Error("Not authorized!");
+        if (!user || !allowedRoles.includes(user.publicMetadata.role as string)) throw new Error("Not authorized!");
         if (!pathname.startsWith("products/")) throw new Error("Folder tujuan tidak valid!");
 
         const token = await issueSignedToken({

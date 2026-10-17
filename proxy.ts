@@ -5,15 +5,30 @@ import { NextResponse } from 'next/server';
 export default clerkMiddleware(async (auth, req) => {
   const { pathname } = req.nextUrl;
   const locale = pathname.split("/")[1];
-  const isDashboardRoute = pathname.startsWith(`/${locale}${ROUTES.DASHBOARD.HOME}`);
-  const isAdminRoute = pathname.startsWith(`/${locale}${ROUTES.DASHBOARD.ADMIN}`);
+
+  const isDashboardRoute = pathname.startsWith(ROUTES.DASHBOARD.HOME);
+  const isAdminRoute = pathname.startsWith(ROUTES.DASHBOARD.ADMIN);
+  // Tambahkan variabel pendeteksi rute spesifik untuk kelola user
+  const isSuperadminUsersRoute = pathname.startsWith(ROUTES.DASHBOARD.USERS);
 
   if (isAdminRoute) {
     await auth.protect();
     const { sessionClaims } = await auth();
-    const role = (sessionClaims?.metadata as any)?.role;
+    const role = (
+      sessionClaims as { metadata?: { role?: string } } | null
+    )?.metadata?.role;
 
-    if (role !== "admin") return NextResponse.redirect(new URL(`/${locale}${ROUTES.DASHBOARD.HOME}`, req.url));
+    // 1. Blokir akses jika sama sekali bukan admin atau superadmin (lempar ke dashboard utama)
+    if (role !== "admin" && role !== "superadmin") {
+      return NextResponse.redirect(new URL(ROUTES.DASHBOARD.HOME, req.url));
+    }
+
+    // 2. Aturan khusus: Jika mengakses halaman /users tapi role BUKAN superadmin
+    if (isSuperadminUsersRoute && role !== "superadmin") {
+      // Lempar kembali ke halaman dashboard admin (bukan ke halaman users)
+      return NextResponse.redirect(new URL(ROUTES.DASHBOARD.ADMIN, req.url));
+    }
+
   } else if (isDashboardRoute) {
     await auth.protect();
   }

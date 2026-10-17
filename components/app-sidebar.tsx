@@ -38,7 +38,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         ),
       },
     ],
-    navSecondary: role === "admin"
+    navSecondary: role === "admin" || role === "superadmin"
       ? [
         {
           title: "Kelola Produk",
@@ -61,13 +61,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SquareTextIcon />
           ),
         },
-        {
-          title: "[TBA] Kelola Pengguna",
+        ...(role === "superadmin" ? [{
+          title: "Kelola Pengguna",
           url: ROUTES.DASHBOARD.USERS,
-          icon: (
-            <UsersIcon />
-          ),
-        },
+          icon: <UsersIcon />
+        }] : [])
       ]
       : [],
   }

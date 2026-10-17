@@ -20,7 +20,7 @@ export async function GET(req: Request) {
     // --- TAMBAHKAN BLOK LOGIKA ADMIN INI ---
     if (productId) {
       // Pastikan yang mengakses menggunakan productId murni adalah Admin
-      if (user.publicMetadata.role !== "admin") {
+      if (user.publicMetadata.role !== "admin" && user.publicMetadata.role !== "superadmin") {
         return new Response("Akses ditolak!", { status: 403 });
       }
 
