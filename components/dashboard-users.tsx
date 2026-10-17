@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Field } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Separator } from "@/components/ui/separator";
@@ -180,8 +180,8 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
   }, (state) => state);
 
   // Ambil nilai filter role saat ini untuk digunakan di menu dropdown UI
-  const filteredRoleValue = table.getColumn("role")?.getFilterValue() as string[] | undefined;
-  const filteredRole = filteredRoleValue !== undefined ? String(filteredRoleValue[0]) : "all";
+  // Defaultkan menjadi array kosong jika belum ada filter
+  const filteredRoles = (table.getColumn("role")?.getFilterValue() as string[]) ?? [];
   // #endregion
 
   return (
@@ -212,23 +212,40 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
                       </DropdownMenuSubTrigger>
                       <DropdownMenuPortal>
                         <DropdownMenuSubContent>
-                          <DropdownMenuLabel>Filter Role</DropdownMenuLabel>
-                          <DropdownMenuRadioGroup
-                            value={filteredRole}
-                            onValueChange={(val) => {
-                              table.getColumn("role")?.setFilterValue(val === "all" ? undefined : [val]);
-                            }}
-                          >
-                            <DropdownMenuRadioItem value="all">Semua Role</DropdownMenuRadioItem>
+                          <DropdownMenuGroup>
+                            <DropdownMenuLabel>Filter Role</DropdownMenuLabel>
 
+                            {/* Opsi "Semua Role" */}
+                            <DropdownMenuCheckboxItem
+                              checked={filteredRoles.length === uniqueRoles.length || filteredRoles.length === 0}
+                              onCheckedChange={() => table.getColumn("role")?.setFilterValue(undefined)}
+                            >
+                              Semua Role
+                            </DropdownMenuCheckboxItem>
+
+                            {/* Looping Checkbox untuk setiap Role Unik */}
                             {uniqueRoles.map((role) => (
-                              <DropdownMenuRadioItem key={role} value={role}>
-                                {/* Huruf kapital di awal kata (contoh: superadmin -> Superadmin) */}
-                                {role.charAt(0).toUpperCase() + role.slice(1)}
-                              </DropdownMenuRadioItem>
-                            ))}
+                              <DropdownMenuCheckboxItem
+                                key={role}
+                                checked={filteredRoles.includes(role)}
+                                onCheckedChange={(checked) => {
+                                  // Logika untuk menambah atau menghapus role dari array filter
+                                  const newFilters = checked
+                                    ? [...filteredRoles, role]
+                                    : filteredRoles.filter((r) => r !== role);
 
-                          </DropdownMenuRadioGroup>
+                                  // Jika array kosong (tidak ada yang diceklis) ATAU semua role diceklis, hapus filter agar kembali ke default (Semua)
+                                  table.getColumn("role")?.setFilterValue(
+                                    newFilters.length === 0 || newFilters.length === uniqueRoles.length
+                                      ? undefined
+                                      : newFilters
+                                  );
+                                }}
+                              >
+                                {role.charAt(0).toUpperCase() + role.slice(1)}
+                              </DropdownMenuCheckboxItem>
+                            ))}
+                          </DropdownMenuGroup>
                         </DropdownMenuSubContent>
                       </DropdownMenuPortal>
                     </DropdownMenuSub>
