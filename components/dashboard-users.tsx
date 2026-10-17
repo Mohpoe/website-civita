@@ -8,7 +8,7 @@ import { Field } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { promoteToAdmin } from "@/lib/actions/users";
+import { demoteToUser, promoteToAdmin } from "@/lib/actions/users";
 import {
   columnFilteringFeature,
   ColumnFiltersState,
@@ -73,6 +73,23 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
           if (res.success) {
             toast.add({ type: "success", description: res.message });
             router.refresh(); // Segarkan halaman agar data baru termuat
+          }
+        } catch (error: any) {
+          toast.add({ type: "error", description: error.message || "Gagal memperbarui role", priority: "high" });
+        }
+      });
+    }
+  };
+
+  // 3. Fungsi Handler untuk menurunkan role
+  const handleDemote = (userId: string, userName: string) => {
+    if (confirm(`Apakah Anda yakin ingin MENCABUT hak akses admin dari ${userName}?`)) {
+      startTransition(async () => {
+        try {
+          const res = await demoteToUser(userId);
+          if (res.success) {
+            toast.add({ type: "success", description: res.message });
+            router.refresh();
           }
         } catch (error: any) {
           toast.add({ type: "error", description: error.message || "Gagal memperbarui role", priority: "high" });
@@ -159,17 +176,33 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
         cell: ({ row }) => {
           const user = row.original;
           return (
-            <div className="flex justify-end">
-              {user.role === "user" ? (
+            <div className="flex justify-end gap-2">
+              {/* Jika perannya user, tampilkan tombol Jadikan Admin */}
+              {user.role === "user" && (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handlePromote(user.id, user.name)}
-                  disabled={isPending} // Matikan tombol saat proses berlangsung
+                  disabled={isPending}
                 >
                   {isPending ? "Memproses..." : "Jadikan Admin"}
                 </Button>
-              ) : (
+              )}
+
+              {/* Jika perannya admin, tampilkan tombol Cabut Akses dengan warna merah (destructive) */}
+              {user.role === "admin" && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleDemote(user.id, user.name)}
+                  disabled={isPending}
+                >
+                  {isPending ? "Memproses..." : "Cabut Akses"}
+                </Button>
+              )}
+
+              {/* Jika perannya superadmin, jangan tampilkan aksi apa-apa */}
+              {user.role === "superadmin" && (
                 <span className="text-xs text-muted-foreground italic">-</span>
               )}
             </div>
@@ -178,7 +211,7 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
         enableHiding: false,
       }),
     ]),
-    [columnHelper, isPending, handlePromote]
+    [columnHelper, isPending, handlePromote, handleDemote]
   );
   // #endregion
 
