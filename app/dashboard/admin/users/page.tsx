@@ -16,7 +16,7 @@ export default async function UsersPage() {
     return (
       <>
         <PageTitle title={mainTitle} />
-        <DashboardUsers />
+        <DashboardUsers users={users} />
       </>
     )
   } catch (error) {
