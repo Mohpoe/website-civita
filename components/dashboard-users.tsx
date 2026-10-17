@@ -38,6 +38,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "./ui/toast";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle } from "./ui/alert-dialog";
 
 // Definisikan tipe user (sesuaikan jika Anda sudah punya di types/global)
 interface UserData {
@@ -57,45 +58,45 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [alertAction, setAlertAction] = useState<"promote" | "demote" | null>(null);
+  const [selectedUser, setSelectedUser] = useState<{ id: string; name: string } | null>(null);
+
   const uniqueRoles = useMemo(() => {
     // Gunakan Set untuk menyaring nilai yang duplikat, lalu ubah kembali menjadi array
     const roles = new Set(users.map((user) => user.role));
     return Array.from(roles);
   }, [users]);
 
-  // 2. Fungsi Handler untuk menaikkan role
-  const handlePromote = (userId: string, userName: string) => {
-    // Tampilkan konfirmasi sederhana sebelum eksekusi (atau Anda bisa gunakan AlertDialog seperti saat hapus produk)
-    if (confirm(`Apakah Anda yakin ingin menjadikan ${userName} sebagai Admin?`)) {
-      startTransition(async () => {
-        try {
-          const res = await promoteToAdmin(userId);
-          if (res.success) {
-            toast.add({ type: "success", description: res.message });
-            router.refresh(); // Segarkan halaman agar data baru termuat
-          }
-        } catch (error: any) {
-          toast.add({ type: "error", description: error.message || "Gagal memperbarui role", priority: "high" });
-        }
-      });
-    }
+  // 2. Fungsi untuk memicu dialog dari tabel
+  const triggerAlert = (action: "promote" | "demote", userId: string, userName: string) => {
+    setSelectedUser({ id: userId, name: userName });
+    setAlertAction(action);
+    setIsAlertOpen(true);
   };
 
-  // 3. Fungsi Handler untuk menurunkan role
-  const handleDemote = (userId: string, userName: string) => {
-    if (confirm(`Apakah Anda yakin ingin MENCABUT hak akses admin dari ${userName}?`)) {
-      startTransition(async () => {
-        try {
-          const res = await demoteToUser(userId);
-          if (res.success) {
-            toast.add({ type: "success", description: res.message });
-            router.refresh();
-          }
-        } catch (error: any) {
-          toast.add({ type: "error", description: error.message || "Gagal memperbarui role", priority: "high" });
+  // Fungsi eksekusi yang akan dijalankan ketika tombol konfirmasi di dialog diklik
+  const confirmAction = () => {
+    if (!selectedUser || !alertAction) return;
+
+    startTransition(async () => {
+      try {
+        // Tentukan fungsi mana yang dipanggil berdasarkan aksi
+        const res = alertAction === "promote"
+          ? await promoteToAdmin(selectedUser.id)
+          : await demoteToUser(selectedUser.id);
+
+        if (res.success) {
+          toast.add({ type: "success", description: res.message });
+          setIsAlertOpen(false);
+          setSelectedUser(null);
+          setAlertAction(null);
+          router.refresh();
         }
-      });
-    }
+      } catch (error: any) {
+        toast.add({ type: "error", description: error.message || "Gagal memperbarui role", priority: "high" });
+      }
+    });
   };
 
   // #region Column
@@ -177,31 +178,30 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
           const user = row.original;
           return (
             <div className="flex justify-end gap-2">
-              {/* Jika perannya user, tampilkan tombol Jadikan Admin */}
+              {/* Tombol Jadikan Admin */}
               {user.role === "user" && (
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handlePromote(user.id, user.name)}
+                  onClick={() => triggerAlert("promote", user.id, user.name)}
                   disabled={isPending}
                 >
-                  {isPending ? "Memproses..." : "Jadikan Admin"}
+                  {isPending && alertAction === "promote" && selectedUser?.id === user.id ? "Memproses..." : "Jadikan Admin"}
                 </Button>
               )}
 
-              {/* Jika perannya admin, tampilkan tombol Cabut Akses dengan warna merah (destructive) */}
+              {/* Tombol Cabut Akses */}
               {user.role === "admin" && (
                 <Button
                   variant="destructive"
                   size="sm"
-                  onClick={() => handleDemote(user.id, user.name)}
+                  onClick={() => triggerAlert("demote", user.id, user.name)}
                   disabled={isPending}
                 >
-                  {isPending ? "Memproses..." : "Cabut Akses"}
+                  {isPending && alertAction === "demote" && selectedUser?.id === user.id ? "Memproses..." : "Cabut Akses"}
                 </Button>
               )}
 
-              {/* Jika perannya superadmin, jangan tampilkan aksi apa-apa */}
               {user.role === "superadmin" && (
                 <span className="text-xs text-muted-foreground italic">-</span>
               )}
@@ -211,7 +211,7 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
         enableHiding: false,
       }),
     ]),
-    [columnHelper, isPending, handlePromote, handleDemote]
+    [columnHelper, isPending, triggerAlert, alertAction, selectedUser]
   );
   // #endregion
 
@@ -248,320 +248,377 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
   // #endregion
 
   return (
-    <Card className="shadow-md">
-      <CardHeader className="border-b">
-        <CardTitle>Kelola Pengguna</CardTitle>
-        <CardDescription>Daftar semua pengguna yang terdaftar di sistem melalui Clerk.</CardDescription>
-      </CardHeader>
+    <>
+      <Card className="shadow-md">
+        <CardHeader className="border-b">
+          <CardTitle>Kelola Pengguna</CardTitle>
+          <CardDescription>Daftar semua pengguna yang terdaftar di sistem melalui Clerk.</CardDescription>
+        </CardHeader>
 
-      <CardContent className="flex flex-col gap-4 py-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between w-full">
-          {
-            // #region Datatable Menu
-            <div className="flex flex-row items-center gap-2 w-full lg:w-auto">
-              <DropdownMenu>
-                <DropdownMenuTrigger render={<Button variant="outline" className="min-h-8 text-sm w-full" />}>
-                  <SlidersHorizontalIcon />
-                  Atur Tabel
-                  <ChevronDownIcon className="size-4 ml-2 opacity-50" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="min-w-50" align="start">
-                  <DropdownMenuGroup>
+        <CardContent className="flex flex-col gap-4 py-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between w-full">
+            {
+              // #region Datatable Menu
+              <div className="flex flex-row items-center gap-2 w-full lg:w-auto">
+                <DropdownMenu>
+                  <DropdownMenuTrigger render={<Button variant="outline" className="min-h-8 text-sm w-full" />}>
+                    <SlidersHorizontalIcon />
+                    Atur Tabel
+                    <ChevronDownIcon className="size-4 ml-2 opacity-50" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="min-w-50" align="start">
+                    <DropdownMenuGroup>
 
-                    <DropdownMenuSub>
-                      <DropdownMenuSubTrigger>
-                        <ShieldIcon />
-                        Hak Akses
-                      </DropdownMenuSubTrigger>
-                      <DropdownMenuPortal>
-                        <DropdownMenuSubContent>
-                          <DropdownMenuGroup>
-                            <DropdownMenuLabel>Filter Role</DropdownMenuLabel>
+                      <DropdownMenuSub>
+                        <DropdownMenuSubTrigger>
+                          <ShieldIcon />
+                          Hak Akses
+                        </DropdownMenuSubTrigger>
+                        <DropdownMenuPortal>
+                          <DropdownMenuSubContent>
+                            <DropdownMenuGroup>
+                              <DropdownMenuLabel>Filter Role</DropdownMenuLabel>
 
-                            {/* Opsi "Semua Role" */}
-                            <DropdownMenuCheckboxItem
-                              checked={filteredRoles.length === uniqueRoles.length || filteredRoles.length === 0}
-                              onCheckedChange={() => table.getColumn("role")?.setFilterValue(undefined)}
-                            >
-                              Semua Role
-                            </DropdownMenuCheckboxItem>
-
-                            {/* Looping Checkbox untuk setiap Role Unik */}
-                            {uniqueRoles.map((role) => (
+                              {/* Opsi "Semua Role" */}
                               <DropdownMenuCheckboxItem
-                                key={role}
-                                checked={filteredRoles.includes(role)}
-                                onCheckedChange={(checked) => {
-                                  // Logika untuk menambah atau menghapus role dari array filter
-                                  const newFilters = checked
-                                    ? [...filteredRoles, role]
-                                    : filteredRoles.filter((r) => r !== role);
-
-                                  // Jika array kosong (tidak ada yang diceklis) ATAU semua role diceklis, hapus filter agar kembali ke default (Semua)
-                                  table.getColumn("role")?.setFilterValue(
-                                    newFilters.length === 0 || newFilters.length === uniqueRoles.length
-                                      ? undefined
-                                      : newFilters
-                                  );
-                                }}
+                                checked={filteredRoles.length === uniqueRoles.length || filteredRoles.length === 0}
+                                onCheckedChange={() => table.getColumn("role")?.setFilterValue(undefined)}
                               >
-                                {role.charAt(0).toUpperCase() + role.slice(1)}
+                                Semua Role
                               </DropdownMenuCheckboxItem>
-                            ))}
-                          </DropdownMenuGroup>
-                        </DropdownMenuSubContent>
-                      </DropdownMenuPortal>
-                    </DropdownMenuSub>
 
-                    <DropdownMenuSub>
-                      <DropdownMenuSubTrigger>
-                        <Rows3Icon />
-                        Atur Baris
-                      </DropdownMenuSubTrigger>
-                      <DropdownMenuPortal>
-                        <DropdownMenuSubContent>
-                          <DropdownMenuLabel>Tampilkan baris</DropdownMenuLabel>
-                          <DropdownMenuRadioGroup
-                            value={
-                              table.state.pagination.pageSize === table.getCoreRowModel().rows.length
-                                ? "all"
-                                : String(table.state.pagination.pageSize)
-                            }
-                            onValueChange={(val) => {
-                              if (val === "all") {
-                                table.setPageSize(table.getCoreRowModel().rows.length);
-                              } else {
-                                table.setPageSize(Number(val));
+                              {/* Looping Checkbox untuk setiap Role Unik */}
+                              {uniqueRoles.map((role) => (
+                                <DropdownMenuCheckboxItem
+                                  key={role}
+                                  checked={filteredRoles.includes(role)}
+                                  onCheckedChange={(checked) => {
+                                    // Logika untuk menambah atau menghapus role dari array filter
+                                    const newFilters = checked
+                                      ? [...filteredRoles, role]
+                                      : filteredRoles.filter((r) => r !== role);
+
+                                    // Jika array kosong (tidak ada yang diceklis) ATAU semua role diceklis, hapus filter agar kembali ke default (Semua)
+                                    table.getColumn("role")?.setFilterValue(
+                                      newFilters.length === 0 || newFilters.length === uniqueRoles.length
+                                        ? undefined
+                                        : newFilters
+                                    );
+                                  }}
+                                >
+                                  {role.charAt(0).toUpperCase() + role.slice(1)}
+                                </DropdownMenuCheckboxItem>
+                              ))}
+                            </DropdownMenuGroup>
+                          </DropdownMenuSubContent>
+                        </DropdownMenuPortal>
+                      </DropdownMenuSub>
+
+                      <DropdownMenuSub>
+                        <DropdownMenuSubTrigger>
+                          <Rows3Icon />
+                          Atur Baris
+                        </DropdownMenuSubTrigger>
+                        <DropdownMenuPortal>
+                          <DropdownMenuSubContent>
+                            <DropdownMenuLabel>Tampilkan baris</DropdownMenuLabel>
+                            <DropdownMenuRadioGroup
+                              value={
+                                table.state.pagination.pageSize === table.getCoreRowModel().rows.length
+                                  ? "all"
+                                  : String(table.state.pagination.pageSize)
                               }
-                            }}
-                          >
-                            {[10, 20, 50].map((pageSize) => (
-                              <DropdownMenuRadioItem key={pageSize} value={String(pageSize)}>
-                                {pageSize}
+                              onValueChange={(val) => {
+                                if (val === "all") {
+                                  table.setPageSize(table.getCoreRowModel().rows.length);
+                                } else {
+                                  table.setPageSize(Number(val));
+                                }
+                              }}
+                            >
+                              {[10, 20, 50].map((pageSize) => (
+                                <DropdownMenuRadioItem key={pageSize} value={String(pageSize)}>
+                                  {pageSize}
+                                </DropdownMenuRadioItem>
+                              ))}
+                              <DropdownMenuRadioItem value="all">
+                                Semua ({table.getCoreRowModel().rows.length})
                               </DropdownMenuRadioItem>
-                            ))}
-                            <DropdownMenuRadioItem value="all">
-                              Semua ({table.getCoreRowModel().rows.length})
-                            </DropdownMenuRadioItem>
-                          </DropdownMenuRadioGroup>
-                        </DropdownMenuSubContent>
-                      </DropdownMenuPortal>
-                    </DropdownMenuSub>
+                            </DropdownMenuRadioGroup>
+                          </DropdownMenuSubContent>
+                        </DropdownMenuPortal>
+                      </DropdownMenuSub>
 
-                    <DropdownMenuItem onClick={() => { setGlobalFilter(""); setSorting([]); setPagination({ pageIndex: 0, pageSize: 10 }); }}>
-                      <RefreshCcwIcon />
-                      Reset
-                    </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => { setGlobalFilter(""); setSorting([]); setPagination({ pageIndex: 0, pageSize: 10 }); }}>
+                        <RefreshCcwIcon />
+                        Reset
+                      </DropdownMenuItem>
 
-                  </DropdownMenuGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-            // #endregion
-          }
+                    </DropdownMenuGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+              // #endregion
+            }
+            {
+              // #region Datatable Search
+              <div className="flex items-center justify-between sm:justify-end gap-2 w-full lg:w-auto border-t pt-4 lg:border-none lg:pt-0">
+                <Field className="flex-1 lg:w-64">
+                  <InputGroup className="w-full min-h-8">
+                    <InputGroupInput
+                      className="text-sm!"
+                      type="search"
+                      placeholder="Cari nama atau email..."
+                      autoComplete="off"
+                      value={globalFilter ?? ""}
+                      onChange={(e) => setGlobalFilter(e.target.value)}
+                    />
+                    <InputGroupAddon>
+                      <SearchIcon className="size-4" />
+                    </InputGroupAddon>
+                  </InputGroup>
+                </Field>
+              </div>
+              // #endregion
+            }
+          </div>
+
           {
-            // #region Datatable Search
-            <div className="flex items-center justify-between sm:justify-end gap-2 w-full lg:w-auto border-t pt-4 lg:border-none lg:pt-0">
-              <Field className="flex-1 lg:w-64">
-                <InputGroup className="w-full min-h-8">
-                  <InputGroupInput
-                    className="text-sm!"
-                    type="search"
-                    placeholder="Cari nama atau email..."
-                    autoComplete="off"
-                    value={globalFilter ?? ""}
-                    onChange={(e) => setGlobalFilter(e.target.value)}
-                  />
-                  <InputGroupAddon>
-                    <SearchIcon className="size-4" />
-                  </InputGroupAddon>
-                </InputGroup>
-              </Field>
+            // #region Upper Pagination
+            table.getRowModel().rows?.length > 0 && (
+              <>
+                <Separator />
+                <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+                  <div className="text-xs font-medium text-muted-foreground order-2 sm:order-1 text-center sm:text-left">
+                    Baris{" "}
+                    <span className="font-bold text-foreground">
+                      {table.getFilteredRowModel().rows.length > 0
+                        ? table.state.pagination.pageIndex * table.state.pagination.pageSize + 1
+                        : 0}
+                    </span>
+                    {" "}s/d{" "}
+                    <span className="font-bold text-foreground">
+                      {Math.min(
+                        (table.state.pagination.pageIndex + 1) * table.state.pagination.pageSize,
+                        table.getFilteredRowModel().rows.length
+                      )}
+                    </span>
+                    {" "}dari{" "}
+                    <span className="font-bold text-foreground">{table.getFilteredRowModel().rows.length}</span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 order-1 sm:order-2">
+                    <Button variant="outline" className="size-8 p-0" onClick={() => table.setPageIndex(0)} disabled={!table.getCanPreviousPage()}>
+                      <ChevronFirstIcon className="size-4" />
+                    </Button>
+                    <Button variant="outline" className="size-8 p-0" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
+                      <ChevronLeftIcon className="size-4" />
+                    </Button>
+                    <div className="flex h-8 items-center justify-center rounded-md border bg-muted/40 px-3 text-xs font-bold tabular-nums">
+                      {table.state.pagination.pageIndex + 1} / {table.getPageCount() || 1}
+                    </div>
+                    <Button variant="outline" className="size-8 p-0" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
+                      <ChevronRightIcon className="size-4" />
+                    </Button>
+                    <Button variant="outline" className="size-8 p-0" onClick={() => table.setPageIndex(table.getPageCount() - 1)} disabled={!table.getCanNextPage()}>
+                      <ChevronLastIcon className="size-4" />
+                    </Button>
+                  </div>
+                </div>
+              </>
+            )
+            // #endregion
+          }
+
+          {
+            // #region Datatable Core
+            <div className="overflow-x-auto rounded-lg border">
+              <Table>
+                <TableHeader className="bg-muted">
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id} className="*:border-border [&>:not(:last-child)]:border-r">
+                      {headerGroup.headers.map((header) => (
+                        <TableHead key={header.id} onClick={header.column.getToggleSortingHandler()}>
+                          {header.column.getCanSort() ? (
+                            <Button variant="ghost" className="p-0 m-0 flex justify-between w-full h-full">
+                              <div className="flex">
+                                {header.isPlaceholder ? null : <table.FlexRender header={header} />}
+                              </div>
+                              <div className="flex items-center ml-2">
+                                {header.column.getCanSort() && (
+                                  <span className="opacity-40">
+                                    {(() => {
+                                      const sortState = header.column.getIsSorted();
+                                      if (sortState === 'asc') return <ChevronUpIcon className="size-4" />;
+                                      if (sortState === 'desc') return <ChevronDownIcon className="size-4" />;
+                                      return <ChevronsUpDownIcon className="size-4" />;
+                                    })()}
+                                  </span>
+                                )}
+                              </div>
+                            </Button>
+                          ) : header.isPlaceholder ? null : (
+                            <table.FlexRender header={header} />
+                          )}
+                        </TableHead>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableHeader>
+                <TableBody>
+                  {table.getRowModel().rows.length ? (
+                    table.getRowModel().rows.map((row) => (
+                      <TableRow key={row.id} className="*:border-border [&>:not(:last-child)]:border-r hover:bg-muted/30">
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id} className="py-2 px-4">
+                            <table.FlexRender cell={cell} />
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={columns.length} className="h-48 text-center">
+                        <div className="flex flex-col items-center gap-2 opacity-50 justify-center h-full">
+                          <GhostIcon className="size-16" />
+                          <p className="font-medium italic">Pengguna tidak ditemukan!</p>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
             </div>
             // #endregion
           }
-        </div>
-
+        </CardContent>
         {
-          // #region Upper Pagination
+          // #region Lower Pagination
           table.getRowModel().rows?.length > 0 && (
-            <>
-              <Separator />
-              <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
-                <div className="text-xs font-medium text-muted-foreground order-2 sm:order-1 text-center sm:text-left">
-                  Baris{" "}
-                  <span className="font-bold text-foreground">
-                    {table.getFilteredRowModel().rows.length > 0
-                      ? table.state.pagination.pageIndex * table.state.pagination.pageSize + 1
-                      : 0}
-                  </span>
-                  {" "}s/d{" "}
-                  <span className="font-bold text-foreground">
-                    {Math.min(
-                      (table.state.pagination.pageIndex + 1) * table.state.pagination.pageSize,
-                      table.getFilteredRowModel().rows.length
-                    )}
-                  </span>
-                  {" "}dari{" "}
-                  <span className="font-bold text-foreground">{table.getFilteredRowModel().rows.length}</span>
+            <CardFooter>
+              <div className="flex w-full flex-col items-center justify-between gap-4 py-1 lg:flex-row lg:gap-8">
+                <div className="order-2 text-xs font-medium lg:order-1 lg:flex-1">
+                  <span className="opacity-50">Baris</span>{" "}
+                  {table.getFilteredRowModel().rows.length > 0
+                    ? table.state.pagination.pageIndex * table.state.pagination.pageSize + 1
+                    : 0}
+                  {" "}<span className="opacity-50">s/d</span>{" "}
+                  {table.state.pagination.pageIndex * table.state.pagination.pageSize + table.getRowModel().rows.length}
+                  {" "}<span className="opacity-50">dari</span>{" "}
+                  <span className="font-bold">{table.getFilteredRowModel().rows.length}</span>{" "}
                 </div>
 
-                <div className="flex items-center gap-1.5 order-1 sm:order-2">
-                  <Button variant="outline" className="size-8 p-0" onClick={() => table.setPageIndex(0)} disabled={!table.getCanPreviousPage()}>
+                <div className="order-1 flex items-center gap-1.5 lg:order-2">
+                  <Button
+                    variant="outline"
+                    className="size-8 p-0"
+                    onClick={() => table.setPageIndex(0)}
+                    disabled={!table.getCanPreviousPage()}
+                    title="Halaman Pertama"
+                  >
                     <ChevronFirstIcon className="size-4" />
                   </Button>
-                  <Button variant="outline" className="size-8 p-0" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
+                  <Button
+                    variant="outline"
+                    className="size-8 p-0"
+                    onClick={() => table.previousPage()}
+                    disabled={!table.getCanPreviousPage()}
+                    title="Halaman Sebelumnya"
+                  >
                     <ChevronLeftIcon className="size-4" />
                   </Button>
-                  <div className="flex h-8 items-center justify-center rounded-md border bg-muted/40 px-3 text-xs font-bold tabular-nums">
-                    {table.state.pagination.pageIndex + 1} / {table.getPageCount() || 1}
+
+                  <div className="flex h-8 items-center justify-center rounded-md border bg-muted/50 px-3 text-xs font-bold sm:hidden">
+                    {table.state.pagination.pageIndex + 1} / {table.getPageCount()}
                   </div>
-                  <Button variant="outline" className="size-8 p-0" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
+
+                  <Button
+                    variant="outline"
+                    className="size-8 p-0"
+                    onClick={() => table.nextPage()}
+                    disabled={!table.getCanNextPage()}
+                    title="Halaman Selanjutnya"
+                  >
                     <ChevronRightIcon className="size-4" />
                   </Button>
-                  <Button variant="outline" className="size-8 p-0" onClick={() => table.setPageIndex(table.getPageCount() - 1)} disabled={!table.getCanNextPage()}>
+                  <Button
+                    variant="outline"
+                    className="size-8 p-0"
+                    onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                    disabled={!table.getCanNextPage()}
+                    title="Halaman Terakhir"
+                  >
                     <ChevronLastIcon className="size-4" />
                   </Button>
                 </div>
-              </div>
-            </>
-          )
-          // #endregion
-        }
 
-        {
-          // #region Datatable Core
-          <div className="overflow-x-auto rounded-lg border">
-            <Table>
-              <TableHeader className="bg-muted">
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id} className="*:border-border [&>:not(:last-child)]:border-r">
-                    {headerGroup.headers.map((header) => (
-                      <TableHead key={header.id} onClick={header.column.getToggleSortingHandler()}>
-                        {header.column.getCanSort() ? (
-                          <Button variant="ghost" className="p-0 m-0 flex justify-between w-full h-full">
-                            <div className="flex">
-                              {header.isPlaceholder ? null : <table.FlexRender header={header} />}
-                            </div>
-                            <div className="flex items-center ml-2">
-                              {header.column.getCanSort() && (
-                                <span className="opacity-40">
-                                  {(() => {
-                                    const sortState = header.column.getIsSorted();
-                                    if (sortState === 'asc') return <ChevronUpIcon className="size-4" />;
-                                    if (sortState === 'desc') return <ChevronDownIcon className="size-4" />;
-                                    return <ChevronsUpDownIcon className="size-4" />;
-                                  })()}
-                                </span>
-                              )}
-                            </div>
-                          </Button>
-                        ) : header.isPlaceholder ? null : (
-                          <table.FlexRender header={header} />
-                        )}
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody>
-                {table.getRowModel().rows.length ? (
-                  table.getRowModel().rows.map((row) => (
-                    <TableRow key={row.id} className="*:border-border [&>:not(:last-child)]:border-r hover:bg-muted/30">
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id} className="py-2 px-4">
-                          <table.FlexRender cell={cell} />
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={columns.length} className="h-48 text-center">
-                      <div className="flex flex-col items-center gap-2 opacity-50 justify-center h-full">
-                        <GhostIcon className="size-16" />
-                        <p className="font-medium italic">Pengguna tidak ditemukan!</p>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-          // #endregion
-        }
-      </CardContent>
-      {
-        // #region Lower Pagination
-        table.getRowModel().rows?.length > 0 && (
-          <CardFooter>
-            <div className="flex w-full flex-col items-center justify-between gap-4 py-1 lg:flex-row lg:gap-8">
-              <div className="order-2 text-xs font-medium lg:order-1 lg:flex-1">
-                <span className="opacity-50">Baris</span>{" "}
-                {table.getFilteredRowModel().rows.length > 0
-                  ? table.state.pagination.pageIndex * table.state.pagination.pageSize + 1
-                  : 0}
-                {" "}<span className="opacity-50">s/d</span>{" "}
-                {table.state.pagination.pageIndex * table.state.pagination.pageSize + table.getRowModel().rows.length}
-                {" "}<span className="opacity-50">dari</span>{" "}
-                <span className="font-bold">{table.getFilteredRowModel().rows.length}</span>{" "}
-              </div>
-
-              <div className="order-1 flex items-center gap-1.5 lg:order-2">
-                <Button
-                  variant="outline"
-                  className="size-8 p-0"
-                  onClick={() => table.setPageIndex(0)}
-                  disabled={!table.getCanPreviousPage()}
-                  title="Halaman Pertama"
-                >
-                  <ChevronFirstIcon className="size-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="size-8 p-0"
-                  onClick={() => table.previousPage()}
-                  disabled={!table.getCanPreviousPage()}
-                  title="Halaman Sebelumnya"
-                >
-                  <ChevronLeftIcon className="size-4" />
-                </Button>
-
-                <div className="flex h-8 items-center justify-center rounded-md border bg-muted/50 px-3 text-xs font-bold sm:hidden">
-                  {table.state.pagination.pageIndex + 1} / {table.getPageCount()}
+                <div className="order-3 hidden text-right text-xs font-medium lg:block lg:flex-1">
+                  <span className="opacity-50">Halaman</span>{" "}
+                  <span className="font-bold">{table.state.pagination.pageIndex + 1}</span>{" "}
+                  <span className="opacity-50">dari</span>{" "}
+                  <span className="font-bold">{table.getPageCount()}</span>
                 </div>
-
-                <Button
-                  variant="outline"
-                  className="size-8 p-0"
-                  onClick={() => table.nextPage()}
-                  disabled={!table.getCanNextPage()}
-                  title="Halaman Selanjutnya"
-                >
-                  <ChevronRightIcon className="size-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="size-8 p-0"
-                  onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                  disabled={!table.getCanNextPage()}
-                  title="Halaman Terakhir"
-                >
-                  <ChevronLastIcon className="size-4" />
-                </Button>
               </div>
+            </CardFooter>
+          )
+          // #endregion LOWER PAGINATION
+        }
+      </Card>
 
-              <div className="order-3 hidden text-right text-xs font-medium lg:block lg:flex-1">
-                <span className="opacity-50">Halaman</span>{" "}
-                <span className="font-bold">{table.state.pagination.pageIndex + 1}</span>{" "}
-                <span className="opacity-50">dari</span>{" "}
-                <span className="font-bold">{table.getPageCount()}</span>
-              </div>
-            </div>
-          </CardFooter>
-        )
-        // #endregion LOWER PAGINATION
+      {
+        // #region Alert Dialog
+        <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+          <AlertDialogContent size="sm">
+            <AlertDialogHeader>
+              {/* Optional: Icon berdasarkan aksi */}
+              <AlertDialogMedia className={alertAction === "demote" ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary"}>
+                {alertAction === "promote" ? <ShieldCheckIcon /> : <ShieldAlertIcon />}
+              </AlertDialogMedia>
+
+              <AlertDialogTitle>
+                {alertAction === "promote" ? "Jadikan Admin?" : "Cabut Hak Akses?"}
+              </AlertDialogTitle>
+
+              <AlertDialogDescription>
+                {alertAction === "promote"
+                  ? (
+                    <>
+                      Anda akan memberikan hak akses <strong>Admin</strong> kepada <strong className="text-foreground">{selectedUser?.name}</strong>. Mereka akan dapat mengelola produk dan kategori. Lanjutkan?
+                    </>
+                  )
+                  : (
+                    <>
+                      Hak akses Admin akan dicabut dari <strong className="text-foreground">{selectedUser?.name}</strong>. Akun ini akan kembali menjadi <strong>User</strong> biasa dan kehilangan akses ke Dashboard ini. Lanjutkan?
+                    </>
+                  )
+                }
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+
+            <AlertDialogFooter>
+              <AlertDialogCancel
+                variant="outline"
+                disabled={isPending}
+                onClick={() => {
+                  setAlertAction(null);
+                  setSelectedUser(null);
+                }}
+              >
+                Batal
+              </AlertDialogCancel>
+
+              <AlertDialogAction
+                variant={alertAction === "demote" ? "destructive" : "default"}
+                disabled={isPending}
+                onClick={confirmAction}
+              >
+                {isPending ? "Memproses..." : alertAction === "promote" ? "Jadikan Admin" : "Cabut Akses"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+        // #endregion
       }
-    </Card>
+    </>
   );
 }
