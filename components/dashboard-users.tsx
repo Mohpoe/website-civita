@@ -75,7 +75,7 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
     setIsAlertOpen(true);
   };
 
-  // Fungsi eksekusi yang akan dijalankan ketika tombol konfirmasi di dialog diklik
+  // 3. Fungsi eksekusi yang akan dijalankan ketika tombol konfirmasi di dialog diklik
   const confirmAction = () => {
     if (!selectedUser || !alertAction) return;
 
@@ -255,7 +255,7 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
           <CardDescription>Daftar semua pengguna yang terdaftar di sistem melalui Clerk.</CardDescription>
         </CardHeader>
 
-        <CardContent className="flex flex-col gap-4 py-6">
+        <CardContent className="flex flex-col gap-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between w-full">
             {
               // #region Datatable Menu

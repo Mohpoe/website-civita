@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { formatRupiah } from "@/lib/utils";
 import { Category, Product } from "@/types/global";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowDownUpIcon, AwardIcon, CheckCircle2Icon, ChevronLeftIcon, ChevronRightIcon, FileTextIcon, PackageSearchIcon, SearchIcon, ShoppingBagIcon, TagIcon, TagsIcon } from "lucide-react";
+import { ArrowDownUpIcon, ArrowRightIcon, AwardIcon, CheckCircle2Icon, ChevronLeftIcon, ChevronRightIcon, FileTextIcon, MoveRightIcon, PackageSearchIcon, SearchIcon, ShoppingBagIcon, TagIcon, TagsIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Separator } from "./ui/separator";
@@ -411,11 +411,9 @@ export default function DashboardProducts({ products, categories }: DashboardPro
 
                         {/* Tombol Magnetik */}
                         <div className="mt-8">
-                          <div className="inline-flex items-center gap-2 rounded-full bg-slate-950 dark:bg-slate-50 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white dark:text-black transition-all duration-300 group-hover:bg-white group-hover:text-black dark:group-hover:bg-slate-900 dark:group-hover:text-white border-2 border-transparent group-hover:border-slate-950 dark:group-hover:border-slate-50">
+                          <div className="inline-flex items-center gap-2 rounded-full bg-slate-950 dark:bg-slate-50 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white dark:text-black transition-all duration-300 group-hover:bg-white group-hover:text-black dark:group-hover:bg-slate-900 dark:group-hover:text-white border-2 border-transparent group-hover:border-slate-950 dark:group-hover:border-slate-50 hover:scale-105">
                             Lihat Detail
-                            <svg className="h-3.5 w-3.5 transition group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                            </svg>
+                            <MoveRightIcon className="h-5 w-5" />
                           </div>
                         </div>
                       </motion.article>
