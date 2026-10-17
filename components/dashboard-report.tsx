@@ -19,8 +19,10 @@ interface DashboardReportProps {
 }
 
 const chartConfig = {
-  revenue: { label: "Pendapatan", color: "var(--success)" },
-  orders: { label: "Pesanan", color: "var(--warning)" },
+  revenue: { label: "Pendapatan", color: "var(--success)" }, // Tetap hijau
+  ordersSuccess: { label: "Pesanan Sukses", color: "var(--success)" }, // Hijau
+  ordersPending: { label: "Pesanan Pending", color: "var(--warning)" }, // Kuning
+  ordersFailed: { label: "Pesanan Gagal", color: "var(--destructive)" }, // Merah
 } satisfies ChartConfig;
 
 export default function DashboardReport({ kpi, chartData, topProducts }: DashboardReportProps) {
@@ -43,6 +45,8 @@ export default function DashboardReport({ kpi, chartData, topProducts }: Dashboa
   const conversionRate = kpi.total_orders > 0
     ? ((kpi.total_success / kpi.total_orders) * 100).toFixed(1)
     : "0.0";
+
+  console.log("chartData:", chartData);
 
   return (
     <div className="w-full space-y-6">
@@ -163,10 +167,61 @@ export default function DashboardReport({ kpi, chartData, topProducts }: Dashboa
             ) : (
               <ChartContainer config={chartConfig} className="aspect-auto h-[300px] w-full">
                 <AreaChart data={chartData} margin={{ top: 10, left: 10, right: 10, bottom: 0 }}>
+                  {/* {activeMetric === "revenue" ? (
+                    <Area
+                      dataKey="success_revenue"
+                      type="monotone"
+                      fill="var(--color-revenue)"
+                      fillOpacity={0.2}
+                      stroke="var(--color-revenue)"
+                      strokeWidth={2}
+                      activeDot={{ r: 6 }}
+                    />
+                  ) : (
+                    <>
+                      <Area
+                        dataKey="failed_orders"
+                        type="monotone"
+                        fill="var(--color-ordersFailed)"
+                        fillOpacity={0.2}
+                        stroke="var(--color-ordersFailed)"
+                        strokeWidth={2}
+                      />
+                      <Area
+                        dataKey="pending_orders"
+                        type="monotone"
+                        fill="var(--color-ordersPending)"
+                        fillOpacity={0.2}
+                        stroke="var(--color-ordersPending)"
+                        strokeWidth={2}
+                      />
+                      <Area
+                        dataKey="success_orders"
+                        type="monotone"
+                        fill="var(--color-orders)"
+                        fillOpacity={0.2}
+                        stroke="var(--color-orders)"
+                        strokeWidth={2}
+                        activeDot={{ r: 6 }}
+                      />
+                    </>
+                  )} */}
                   <defs>
-                    <linearGradient id="fillGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={activeMetric === "revenue" ? "var(--color-revenue)" : "var(--color-orders)"} stopOpacity={0.4} />
-                      <stop offset="95%" stopColor={activeMetric === "revenue" ? "var(--color-revenue)" : "var(--color-orders)"} stopOpacity={0.0} />
+                    <linearGradient id="fillRevenue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--color-revenue)" stopOpacity={0.4} />
+                      <stop offset="95%" stopColor="var(--color-revenue)" stopOpacity={0.0} />
+                    </linearGradient>
+                    <linearGradient id="fillOrdersSuccess" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--color-ordersSuccess)" stopOpacity={0.4} />
+                      <stop offset="95%" stopColor="var(--color-ordersSuccess)" stopOpacity={0.0} />
+                    </linearGradient>
+                    <linearGradient id="fillOrdersPending" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--color-ordersPending)" stopOpacity={0.4} />
+                      <stop offset="95%" stopColor="var(--color-ordersPending)" stopOpacity={0.0} />
+                    </linearGradient>
+                    <linearGradient id="fillOrdersFailed" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--color-ordersFailed)" stopOpacity={0.4} />
+                      <stop offset="95%" stopColor="var(--color-ordersFailed)" stopOpacity={0.0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.5} />
@@ -194,52 +249,71 @@ export default function DashboardReport({ kpi, chartData, topProducts }: Dashboa
                         className="shadow-xl"
                         labelFormatter={(label) => new Date(label).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
                         formatter={(value, name, item, index) => {
-                          // Tentukan Label
                           let labelText = "";
                           if (activeMetric === "revenue") {
-                            labelText = name === "success_revenue" ? "Pendapatan" : "Potensi (Gagal)";
+                            labelText = name === "success_revenue" ? "Pendapatan Bersih" : "Potensi (Gagal/Tunda)";
                           } else {
-                            labelText = name === "success_orders" ? "Pesanan Sukses" : "Pesanan Gagal";
+                            if (name === "success_orders") labelText = "Selesai";
+                            else if (name === "pending_orders") labelText = "Tertunda";
+                            else if (name === "failed_orders") labelText = "Gagal/Batal";
                           }
 
-                          // Tentukan Value
                           const valueText = activeMetric === "revenue" ? formatRupiah(value as number) : value;
-
-                          // Ambil warna indikator dari payload Recharts
                           const indicatorColor = item.color || item.payload?.fill;
 
-                          // Return struktur JSX yang menyerupai bawaan Shadcn, tapi dengan layout kita
                           return (
                             <div key={index} className="flex w-full items-center gap-4">
-                              {/* Kotak Indikator Warna */}
                               <div className="flex items-center gap-2">
-                                <div
-                                  className="h-2.5 w-2.5 shrink-0 rounded-[2px]"
-                                  style={{ backgroundColor: indicatorColor }}
-                                />
-                                {/* Teks Label (Rata Kiri) */}
-                                <span className="text-muted-foreground flex-1">
-                                  {labelText}
-                                </span>
+                                <div className="h-2.5 w-2.5 shrink-0 rounded-[2px]" style={{ backgroundColor: indicatorColor }} />
+                                <span className="text-muted-foreground flex-1">{labelText}</span>
                               </div>
-                              {/* Teks Nilai (Rata Kanan, Font Mono) */}
-                              <span className="font-mono font-medium text-foreground tabular-nums">
-                                {valueText}
-                              </span>
+                              <span className="font-mono font-medium text-foreground tabular-nums">{valueText}</span>
                             </div>
                           );
                         }}
                       />
                     }
                   />
-                  <Area
-                    dataKey={activeMetric === "revenue" ? "success_revenue" : "success_orders"}
-                    type="monotone"
-                    fill="url(#fillGradient)"
-                    stroke={activeMetric === "revenue" ? "var(--color-revenue)" : "var(--color-orders)"}
-                    strokeWidth={2}
-                    activeDot={{ r: 6 }}
-                  />
+
+                  {activeMetric === "revenue" ? (
+                    <Area
+                      dataKey="success_revenue"
+                      type="monotone"
+                      fill="url(#fillRevenue)"
+                      stroke="var(--color-revenue)"
+                      strokeWidth={2}
+                      activeDot={{ r: 6 }}
+                    />
+                  ) : (
+                    <>
+                      {/* Urutan penting: Dari yang paling bawah (gagal) ditumpuk ke atas (sukses) */}
+                      <Area
+                        dataKey="failed_orders"
+                        type="monotone"
+                        fill="url(#fillOrdersFailed)"
+                        stroke="var(--color-ordersFailed)"
+                        strokeWidth={2}
+                      // stackId="orders"
+                      />
+                      <Area
+                        dataKey="pending_orders"
+                        type="monotone"
+                        fill="url(#fillOrdersPending)"
+                        stroke="var(--color-ordersPending)"
+                        strokeWidth={2}
+                      // stackId="orders"
+                      />
+                      <Area
+                        dataKey="success_orders"
+                        type="monotone"
+                        fill="url(#fillOrdersSuccess)"
+                        stroke="var(--color-ordersSuccess)"
+                        strokeWidth={2}
+                        // stackId="orders"
+                        activeDot={{ r: 6 }}
+                      />
+                    </>
+                  )}
                 </AreaChart>
               </ChartContainer>
             )}
@@ -251,7 +325,7 @@ export default function DashboardReport({ kpi, chartData, topProducts }: Dashboa
       {
         // #region Top Products
         <Card className="shadow-sm">
-          <CardHeader>
+          <CardHeader className="border-b">
             <CardTitle>Produk Terlaris</CardTitle>
             <CardDescription>Berdasarkan pendapatan bersih dalam rentang waktu terpilih.</CardDescription>
           </CardHeader>

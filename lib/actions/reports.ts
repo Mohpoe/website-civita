@@ -34,10 +34,15 @@ export async function getReportData(range: string) {
     const chartData = await sql`
       SELECT
         TO_CHAR(created_at AT TIME ZONE 'Asia/Makassar', 'YYYY-MM-DD') AS date,
-        COALESCE(SUM(CASE WHEN status = 'success' THEN amount ELSE 0 END), 0)::numeric AS success_revenue,
-        COALESCE(SUM(CASE WHEN status != 'success' THEN amount ELSE 0 END), 0)::numeric AS failed_revenue,
-        COUNT(CASE WHEN status = 'success' THEN 1 END)::int AS success_orders,
-        COUNT(CASE WHEN status != 'success' THEN 1 END)::int AS failed_orders
+        -- Metrik Pendapatan (tetap 2 grup: sukses vs gagal/pending keseluruhan)
+        COALESCE(SUM(CASE WHEN status IN ('success', 'challenge') THEN amount ELSE 0 END), 0)::numeric AS success_revenue,
+        COALESCE(SUM(CASE WHEN status NOT IN ('success', 'challenge') THEN amount ELSE 0 END), 0)::numeric AS failed_revenue,
+
+        -- Metrik Pesanan (dibagi 3 grup)
+        COUNT(CASE WHEN status IN ('success', 'challenge') THEN 1 END)::int AS success_orders,
+        COUNT(CASE WHEN status = 'pending' THEN 1 END)::int AS pending_orders,
+        -- Asumsi status gagal Midtrans selain sukses dan pending
+        COUNT(CASE WHEN status NOT IN ('success', 'challenge', 'pending') THEN 1 END)::int AS failed_orders
       FROM orders
       WHERE ${startDate}::timestamptz IS NULL OR created_at >= ${startDate}::timestamptz
       GROUP BY TO_CHAR(created_at AT TIME ZONE 'Asia/Makassar', 'YYYY-MM-DD')
