@@ -8,7 +8,7 @@ import { Field } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { demoteToUser, promoteToAdmin } from "@/lib/actions/users";
+import { deleteUserAction, demoteToUser, promoteToAdmin } from "@/lib/actions/users";
 import {
   columnFilteringFeature,
   ColumnFiltersState,
@@ -31,8 +31,9 @@ import {
 import {
   ChevronDownIcon, ChevronFirstIcon, ChevronLastIcon, ChevronLeftIcon,
   ChevronRightIcon, ChevronsUpDownIcon, ChevronUpIcon,
-  GhostIcon, RefreshCcwIcon, Rows3Icon, SearchIcon,
-  ShieldAlertIcon, ShieldCheckIcon, ShieldIcon, SlidersHorizontalIcon
+  GhostIcon, MoreHorizontalIcon, RefreshCcwIcon, Rows3Icon, SearchIcon,
+  ShieldAlertIcon, ShieldCheckIcon, ShieldCogCornerIcon, ShieldIcon, ShieldLockIcon, SlidersHorizontalIcon,
+  Trash2Icon
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -59,7 +60,7 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
   const [isPending, startTransition] = useTransition();
 
   const [isAlertOpen, setIsAlertOpen] = useState(false);
-  const [alertAction, setAlertAction] = useState<"promote" | "demote" | null>(null);
+  const [alertAction, setAlertAction] = useState<"promote" | "demote" | "delete" | null>(null);
   const [selectedUser, setSelectedUser] = useState<{ id: string; name: string } | null>(null);
 
   const uniqueRoles = useMemo(() => {
@@ -69,7 +70,7 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
   }, [users]);
 
   // 2. Fungsi untuk memicu dialog dari tabel
-  const triggerAlert = (action: "promote" | "demote", userId: string, userName: string) => {
+  const triggerAlert = (action: "promote" | "demote" | "delete", userId: string, userName: string) => {
     setSelectedUser({ id: userId, name: userName });
     setAlertAction(action);
     setIsAlertOpen(true);
@@ -81,12 +82,17 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
 
     startTransition(async () => {
       try {
+        let res;
         // Tentukan fungsi mana yang dipanggil berdasarkan aksi
-        const res = alertAction === "promote"
-          ? await promoteToAdmin(selectedUser.id)
-          : await demoteToUser(selectedUser.id);
+        if (alertAction === "promote") {
+          res = await promoteToAdmin(selectedUser.id);
+        } else if (alertAction === "demote") {
+          res = await demoteToUser(selectedUser.id);
+        } else if (alertAction === "delete") {
+          res = await deleteUserAction(selectedUser.id);
+        }
 
-        if (res.success) {
+        if (res?.success) {
           toast.add({ type: "success", description: res.message });
           setIsAlertOpen(false);
           setSelectedUser(null);
@@ -94,7 +100,7 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
           router.refresh();
         }
       } catch (error: any) {
-        toast.add({ type: "error", description: error.message || "Gagal memperbarui role", priority: "high" });
+        toast.add({ type: "error", description: error.message || "Gagal memproses aksi", priority: "high" });
       }
     });
   };
@@ -117,7 +123,7 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
 
   const columns = useMemo(() =>
     columnHelper.columns([
-      // 1. Kolom #
+      // 1. Kolom Nomor
       columnHelper.display({
         id: "nomor",
         header: () => <div className="text-center text-muted-foreground w-full">#</div>,
@@ -173,37 +179,40 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
       // 4. Kolom Aksi
       columnHelper.display({
         id: "actions",
-        header: () => <div className="text-right w-full">Aksi</div>,
         cell: ({ row }) => {
           const user = row.original;
           return (
-            <div className="flex justify-end gap-2">
-              {/* Tombol Jadikan Admin */}
-              {user.role === "user" && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => triggerAlert("promote", user.id, user.name)}
-                  disabled={isPending}
-                >
-                  {isPending && alertAction === "promote" && selectedUser?.id === user.id ? "Memproses..." : "Jadikan Admin"}
-                </Button>
-              )}
+            <div className="flex justify-end">
+              {user.role === "superadmin" ? (
+                <ShieldLockIcon className="w-5 h-5 text-muted-foreground cursor-not-allowed" />
+              ) : (
+                <DropdownMenu>
+                  <DropdownMenuTrigger render={<Button variant="ghost" className="h-8 w-8 p-0" />}>
+                    <MoreHorizontalIcon className="h-4 w-4 text-muted-foreground" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-[160px] rounded-xl shadow-lg">
 
-              {/* Tombol Cabut Akses */}
-              {user.role === "admin" && (
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => triggerAlert("demote", user.id, user.name)}
-                  disabled={isPending}
-                >
-                  {isPending && alertAction === "demote" && selectedUser?.id === user.id ? "Memproses..." : "Cabut Akses"}
-                </Button>
-              )}
+                    {user.role === "user" && (
+                      <DropdownMenuItem onClick={() => triggerAlert("promote", user.id, user.name)} disabled={isPending}>
+                        <ShieldCogCornerIcon />
+                        {isPending && alertAction === "promote" && selectedUser?.id === user.id ? "Memproses..." : "Jadikan Admin"}
+                      </DropdownMenuItem>
+                    )}
+                    {user.role === "admin" && (
+                      <DropdownMenuItem onClick={() => triggerAlert("demote", user.id, user.name)} disabled={isPending}>
+                        <ShieldCogCornerIcon />
+                        {isPending && alertAction === "demote" && selectedUser?.id === user.id ? "Memproses..." : "Cabut Akses"}
+                      </DropdownMenuItem>
+                    )}
+                    {user.role !== "superadmin" && (
+                      <DropdownMenuItem onClick={() => triggerAlert("delete", user.id, user.name)} disabled={isPending} variant="destructive">
+                        <Trash2Icon />
+                        {isPending && alertAction === "delete" && selectedUser?.id === user.id ? "Memproses..." : "Hapus Pengguna"}
+                      </DropdownMenuItem>
+                    )}
 
-              {user.role === "superadmin" && (
-                <span className="text-xs text-muted-foreground italic">-</span>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
             </div>
           );
@@ -570,28 +579,31 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
         <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
           <AlertDialogContent size="sm">
             <AlertDialogHeader>
-              {/* Optional: Icon berdasarkan aksi */}
-              <AlertDialogMedia className={alertAction === "demote" ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary"}>
-                {alertAction === "promote" ? <ShieldCheckIcon /> : <ShieldAlertIcon />}
+              {/* Icon berdasarkan aksi */}
+              <AlertDialogMedia className={alertAction === "demote" || alertAction === "delete" ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary"}>
+                {alertAction === "promote" ? <ShieldCheckIcon /> : alertAction === "delete" ? <Trash2Icon /> : <ShieldAlertIcon />}
               </AlertDialogMedia>
 
               <AlertDialogTitle>
-                {alertAction === "promote" ? "Jadikan Admin?" : "Cabut Hak Akses?"}
+                {alertAction === "promote" ? "Jadikan Admin?" : alertAction === "demote" ? "Cabut Hak Akses?" : "Hapus Pengguna?"}
               </AlertDialogTitle>
 
               <AlertDialogDescription>
-                {alertAction === "promote"
-                  ? (
-                    <>
-                      Anda akan memberikan hak akses <strong>Admin</strong> kepada <strong className="text-foreground">{selectedUser?.name}</strong>. Mereka akan dapat mengelola produk dan kategori. Lanjutkan?
-                    </>
-                  )
-                  : (
-                    <>
-                      Hak akses Admin akan dicabut dari <strong className="text-foreground">{selectedUser?.name}</strong>. Akun ini akan kembali menjadi <strong>User</strong> biasa dan kehilangan akses ke Dashboard ini. Lanjutkan?
-                    </>
-                  )
-                }
+                {alertAction === "promote" && (
+                  <>
+                    Anda akan memberikan hak akses <strong>Admin</strong> kepada <strong className="text-foreground">{selectedUser?.name}</strong>. Mereka akan dapat mengelola produk dan kategori. Lanjutkan?
+                  </>
+                )}
+                {alertAction === "demote" && (
+                  <>
+                    Hak akses Admin akan dicabut dari <strong className="text-foreground">{selectedUser?.name}</strong>. Akun ini akan kembali menjadi <strong>User</strong> biasa dan kehilangan akses ke Dashboard ini. Lanjutkan?
+                  </>
+                )}
+                {alertAction === "delete" && (
+                  <>
+                    Anda akan menghapus akun <strong className="text-foreground">{selectedUser?.name}</strong> secara permanen. Tindakan ini tidak dapat dibatalkan. Lanjutkan?
+                  </>
+                )}
               </AlertDialogDescription>
             </AlertDialogHeader>
 
@@ -608,11 +620,11 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
               </AlertDialogCancel>
 
               <AlertDialogAction
-                variant={alertAction === "demote" ? "destructive" : "default"}
+                variant={alertAction === "demote" || alertAction === "delete" ? "destructive" : "default"}
                 disabled={isPending}
                 onClick={confirmAction}
               >
-                {isPending ? "Memproses..." : alertAction === "promote" ? "Jadikan Admin" : "Cabut Akses"}
+                {isPending ? "Memproses..." : alertAction === "promote" ? "Jadikan Admin" : alertAction === "delete" ? "Hapus Akun" : "Cabut Akses"}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

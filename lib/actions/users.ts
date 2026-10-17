@@ -81,7 +81,7 @@ export async function demoteToUser(targetUserId: string) {
 
     // 2. Proteksi tambahan: Superadmin tidak boleh di-demote melalui fungsi ini
     if (targetRole === "superadmin") {
-       throw new Error("Tidak dapat mencabut hak akses dari sesama Superadmin.");
+      throw new Error("Tidak dapat mencabut hak akses dari sesama Superadmin.");
     }
 
     // 3. Update publicMetadata menjadi "user"
@@ -95,6 +95,37 @@ export async function demoteToUser(targetUserId: string) {
   } catch (error: any) {
     console.error("Gagal update role (demote):", error);
     throw new Error(error.message || "Gagal memperbarui role pengguna.");
+  }
+}
+// #endregion
+
+// #region Delete User
+export async function deleteUserAction(targetUserId: string) {
+  const user = await currentUser();
+  // Hanya superadmin yang boleh menghapus akun
+  if (!user || user.publicMetadata.role !== "superadmin") {
+    throw new Error("Akses ditolak. Hanya superadmin yang dapat melakukan ini.");
+  }
+
+  try {
+    const client = await clerkClient();
+
+    // 1. Dapatkan metadata pengguna yang ada saat ini untuk proteksi
+    const targetUser = await client.users.getUser(targetUserId);
+    const targetRole = targetUser.publicMetadata.role as string;
+
+    // 2. Proteksi tambahan: Superadmin tidak boleh menghapus akun sesama Superadmin
+    if (targetRole === "superadmin") {
+      throw new Error("Tidak dapat menghapus akun sesama Superadmin.");
+    }
+
+    // 3. Hapus pengguna menggunakan Clerk API
+    await client.users.deleteUser(targetUserId);
+
+    return { success: true, message: "Pengguna berhasil dihapus." };
+  } catch (error: any) {
+    console.error("Gagal menghapus pengguna:", error);
+    throw new Error(error.message || "Gagal menghapus pengguna.");
   }
 }
 // #endregion
