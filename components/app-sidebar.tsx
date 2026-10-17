@@ -23,13 +23,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const data = {
     navMain: [
       {
-        title: "Beranda",
-        url: ROUTES.ROOT,
-        icon: (
-          <HomeIcon />
-        ),
-      },
-      {
         title: "Daftar Produk",
         url: ROUTES.DASHBOARD.HOME,
         special: true,
@@ -62,17 +55,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           ),
         },
         {
+          title: "Laporan Penjualan",
+          url: ROUTES.DASHBOARD.REPORT,
+          icon: (
+            <SquareTextIcon />
+          ),
+        },
+        {
           title: "[TBA] Kelola Pengguna",
           url: ROUTES.DASHBOARD.USERS,
           icon: (
             <UsersIcon />
-          ),
-        },
-        {
-          title: "[TBA] Laporan Penjualan",
-          url: ROUTES.DASHBOARD.REPORT,
-          icon: (
-            <SquareTextIcon />
           ),
         },
       ]
@@ -86,7 +79,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton
               className="data-[slot=sidebar-menu-button]:p-1.5!"
-              render={<Link href={ROUTES.DASHBOARD.HOME} />}
+              render={<Link href={ROUTES.ROOT} />}
               onClick={() => setOpenMobile(!isMobile)}
             >
               <Image alt="Logo" src="/assets/Icon.svg" className="size-5" width={100} height={100} />

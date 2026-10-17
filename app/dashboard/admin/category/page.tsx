@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   title: mainTitle,
 }
 
-export default async function AdminPage() {
+export default async function CategoryPage() {
   try {
     const [categories] = await Promise.all([
       getCategories() as Promise<Category[]>,

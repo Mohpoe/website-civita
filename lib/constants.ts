@@ -16,7 +16,6 @@ export const APP_CONFIG = {
 
 export const ROUTES = {
   ROOT: "/",
-  HOME: "/home",
   TERMS: "/terms-of-service",
   POLICY: "/privacy-policy",
   DASHBOARD: {
