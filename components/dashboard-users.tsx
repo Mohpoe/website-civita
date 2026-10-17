@@ -8,6 +8,7 @@ import { Field } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { promoteToAdmin } from "@/lib/actions/users";
 import {
   columnFilteringFeature,
   ColumnFiltersState,
@@ -34,7 +35,9 @@ import {
   ShieldAlertIcon, ShieldCheckIcon, ShieldIcon, SlidersHorizontalIcon
 } from "lucide-react";
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useMemo, useState, useTransition } from "react";
+import { toast } from "./ui/toast";
 
 // Definisikan tipe user (sesuaikan jika Anda sudah punya di types/global)
 interface UserData {
@@ -50,11 +53,33 @@ interface DashboardUsersProps {
 }
 
 export default function DashboardUsers({ users }: DashboardUsersProps) {
+  // 1. Inisialisasi Hook
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
   const uniqueRoles = useMemo(() => {
     // Gunakan Set untuk menyaring nilai yang duplikat, lalu ubah kembali menjadi array
     const roles = new Set(users.map((user) => user.role));
     return Array.from(roles);
   }, [users]);
+
+  // 2. Fungsi Handler untuk menaikkan role
+  const handlePromote = (userId: string, userName: string) => {
+    // Tampilkan konfirmasi sederhana sebelum eksekusi (atau Anda bisa gunakan AlertDialog seperti saat hapus produk)
+    if (confirm(`Apakah Anda yakin ingin menjadikan ${userName} sebagai Admin?`)) {
+      startTransition(async () => {
+        try {
+          const res = await promoteToAdmin(userId);
+          if (res.success) {
+            toast.add({ type: "success", description: res.message });
+            router.refresh(); // Segarkan halaman agar data baru termuat
+          }
+        } catch (error: any) {
+          toast.add({ type: "error", description: error.message || "Gagal memperbarui role", priority: "high" });
+        }
+      });
+    }
+  };
 
   // #region Column
   const features = tableFeatures({
@@ -136,8 +161,13 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
           return (
             <div className="flex justify-end">
               {user.role === "user" ? (
-                <Button variant="outline" size="sm" onClick={() => alert(`Jadikan ${user.name} sebagai admin?`)}>
-                  Jadikan Admin
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePromote(user.id, user.name)}
+                  disabled={isPending} // Matikan tombol saat proses berlangsung
+                >
+                  {isPending ? "Memproses..." : "Jadikan Admin"}
                 </Button>
               ) : (
                 <span className="text-xs text-muted-foreground italic">-</span>
@@ -148,7 +178,7 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
         enableHiding: false,
       }),
     ]),
-    [columnHelper]
+    [columnHelper, isPending, handlePromote]
   );
   // #endregion
 

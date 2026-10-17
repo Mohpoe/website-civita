@@ -23,7 +23,7 @@ export async function getAllUsers() {
     // 4. Petakan (mapping) data agar lebih bersih saat dikirim ke Frontend
     const users = usersResponse.data.map((u) => ({
       id: u.id,
-      name: `${u.firstName || ""} ${u.lastName || ""}`.trim() || "Tanpa Nama",
+      name: `${u.firstName || ""} ${u.lastName || ""}`.trim() || "[Tanpa_Nama]",
       email: u.emailAddresses[0]?.emailAddress || "Tidak ada email",
       role: (u.publicMetadata.role as string) || "user", // Default ke 'user' jika kosong
       imageUrl: u.imageUrl,
