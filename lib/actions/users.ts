@@ -8,7 +8,7 @@ export async function getAllUsers() {
   // 1. Cek apakah yang mengakses adalah superadmin
   const user = await currentUser();
   if (!user || user.publicMetadata.role !== "superadmin") {
-    throw new Error("Akses ditolak. Hanya superadmin yang diizinkan.");
+    throw new Error("Akses ditolak.");
   }
 
   try {
@@ -69,7 +69,7 @@ export async function demoteToUser(targetUserId: string) {
   const user = await currentUser();
   // Hanya superadmin yang boleh menurunkan hak akses admin
   if (!user || user.publicMetadata.role !== "superadmin") {
-    throw new Error("Akses ditolak. Hanya superadmin yang dapat melakukan ini.");
+    throw new Error("Akses ditolak.");
   }
 
   try {
@@ -104,7 +104,7 @@ export async function deleteUserAction(targetUserId: string) {
   const user = await currentUser();
   // Hanya superadmin yang boleh menghapus akun
   if (!user || user.publicMetadata.role !== "superadmin") {
-    throw new Error("Akses ditolak. Hanya superadmin yang dapat melakukan ini.");
+    throw new Error("Akses ditolak.");
   }
 
   try {
