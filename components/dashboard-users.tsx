@@ -50,6 +50,12 @@ interface DashboardUsersProps {
 }
 
 export default function DashboardUsers({ users }: DashboardUsersProps) {
+  const uniqueRoles = useMemo(() => {
+    // Gunakan Set untuk menyaring nilai yang duplikat, lalu ubah kembali menjadi array
+    const roles = new Set(users.map((user) => user.role));
+    return Array.from(roles);
+  }, [users]);
+
   // #region Column
   const features = tableFeatures({
     rowSortingFeature,
@@ -214,9 +220,14 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
                             }}
                           >
                             <DropdownMenuRadioItem value="all">Semua Role</DropdownMenuRadioItem>
-                            <DropdownMenuRadioItem value="superadmin">Superadmin</DropdownMenuRadioItem>
-                            <DropdownMenuRadioItem value="admin">Admin</DropdownMenuRadioItem>
-                            <DropdownMenuRadioItem value="user">User</DropdownMenuRadioItem>
+
+                            {uniqueRoles.map((role) => (
+                              <DropdownMenuRadioItem key={role} value={role}>
+                                {/* Huruf kapital di awal kata (contoh: superadmin -> Superadmin) */}
+                                {role.charAt(0).toUpperCase() + role.slice(1)}
+                              </DropdownMenuRadioItem>
+                            ))}
+
                           </DropdownMenuRadioGroup>
                         </DropdownMenuSubContent>
                       </DropdownMenuPortal>
