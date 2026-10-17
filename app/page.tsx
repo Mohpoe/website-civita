@@ -197,7 +197,7 @@ const Hero = () => {
   const rotate2 = useTransform(scrollYProgress, [0, 1], [0, 5]);
 
   return (
-    <section ref={containerRef} className="relative min-h-[95vh] flex items-center justify-center overflow-hidden pt-32 pb-20 px-6 border-b-4 border-foreground bg-[radial-gradient(color-mix(in_srgb,currentColor_30%,transparent)_1px,transparent_1px)] [background-size:20px_20px]">
+    <section ref={containerRef} className="relative min-h-[95vh] flex items-center justify-center overflow-hidden pt-32 pb-20 px-6 border-b-4 border-foreground bg-[radial-gradient(color-mix(in_srgb,currentColor_30%,transparent)_1px,transparent_1px)] dark:bg-[radial-gradient(color-mix(in_srgb,currentColor_13%,transparent)_1px,transparent_1px)] [background-size:20px_20px]">
       {/* Neo-Pop Background Blobs */}
       <div className="absolute inset-0 bg-background -z-20" />
       <div className="absolute top-1/4 left-1/4 w-[40vw] h-[40vw] bg-[#ef3936]/20 dark:bg-[#d9302d]/20 rounded-full blur-[100px] -z-10 mix-blend-multiply dark:mix-blend-screen" />
