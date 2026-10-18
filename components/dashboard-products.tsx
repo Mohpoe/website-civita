@@ -14,6 +14,7 @@ import { Separator } from "./ui/separator";
 import { Spinner } from "./ui/spinner";
 import { toast } from "./ui/toast";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "./ui/input-group";
+import { ROUTES } from "@/lib/constants";
 
 interface DashboardProductsProps {
   products: Product[],
@@ -142,8 +143,9 @@ export default function DashboardProducts({ products, categories }: DashboardPro
             description: "Silakan cek tab 'Pesanan Saya' untuk mengunduh produk.",
             type: "success",
           });
-          router.refresh();
           setIsProcessing(false);
+          router.push(ROUTES.DASHBOARD.INVENTORY);
+          router.refresh();
         },
         onPending: function (result: any) {
           console.log("Menunggu Pembayaran", result);
@@ -152,8 +154,9 @@ export default function DashboardProducts({ products, categories }: DashboardPro
             description: "Silakan selesaikan pembayaran di tab 'Pesanan Saya'.",
             type: "info",
           });
-          router.refresh();
           setIsProcessing(false);
+          router.push(ROUTES.DASHBOARD.INVENTORY);
+          router.refresh();
         },
         onError: function (result: any) {
           console.error("Pembayaran Gagal", result);
