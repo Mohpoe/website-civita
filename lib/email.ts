@@ -1,4 +1,5 @@
-// lib/email.ts
+"use server";
+
 import { Resend } from 'resend';
 import { APP_CONFIG } from './constants';
 
@@ -25,9 +26,9 @@ export async function sendOrderSuccessEmail({
 
   try {
     const { data, error } = await resend.emails.send({
-      from: `Civita <${APP_CONFIG.EMAIL}>`,
+      from: `CIVITA <${APP_CONFIG.EMAIL_SENDER}>`,
       to: [userEmail],
-      subject: `[Civita] Pesanan Berhasil: ${productName}`,
+      subject: `[CIVITA] Pesanan Berhasil: ${productName}`,
       // Di bawah ini adalah HTML murni. Anda juga bisa menggunakan pustaka 'react-email' jika ingin desain yang lebih kompleks.
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaec; border-radius: 8px; overflow: hidden;">
@@ -56,7 +57,7 @@ export async function sendOrderSuccessEmail({
             </p>
           </div>
           <div style="background-color: #f8fafc; padding: 16px; text-align: center; color: #64748b; font-size: 14px;">
-             &copy; ${new Date().getFullYear()} Civita.id - Semua Hak Dilindungi.
+             &copy; ${new Date().getFullYear()} CIVITA.id - Semua Hak Dilindungi.
           </div>
         </div>
       `,
