@@ -140,7 +140,7 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
           return (
             <div className="flex items-center gap-3">
               <Image
-                src={user.imageUrl || "/default-avatar.png"}
+                src={user.imageUrl || "https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/no-profile.svg"}
                 alt={user.name}
                 width={40}
                 height={40}
