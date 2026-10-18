@@ -53,7 +53,7 @@ const Navigation = () => {
       `}>
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-[var(--brand-color)] border-2 border-foreground shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] rounded-xl flex items-center justify-center" style={{ '--brand-color': NEO_PALETTE[0].light } as React.CSSProperties}>
-            <Image alt="Logo" src="/assets/Icon.svg" className="size-5 [filter:brightness(0)]" width={1} height={1} />
+            <Image alt="Logo" src="https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/Icon.svg" className="size-5 [filter:brightness(0)]" width={1} height={1} />
           </div>
           <span className="font-black tracking-tight text-xl md:text-2xl">CIVITA</span>
         </div>
@@ -260,7 +260,7 @@ const Footer = () => {
         <div className="flex flex-col gap-8">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 bg-[#FFE66D] dark:bg-[#4A4310] border-4 border-foreground shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#fff] rounded-2xl flex items-center justify-center">
-              <Image alt="Logo" src="/assets/Icon.svg" className="size-8 [filter:brightness(0)] dark:[filter:brightness(0)_invert(1)]" width={1} height={1} />
+              <Image alt="Logo" src="https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/Icon.svg" className="size-8 [filter:brightness(0)] dark:[filter:brightness(0)_invert(1)]" width={1} height={1} />
             </div>
             <span className="font-black tracking-tight text-4xl uppercase">CIVITA.ID</span>
           </div>

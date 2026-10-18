@@ -187,7 +187,7 @@ export default function NeobrutalismLandingPage() {
             <div className="bg-[#FFE66D] text-[#4A4310] text-xl px-2 py-1.5 border-3 border-black shadow-[3px_3px_0px_0px_#000] rounded-lg group-hover:translate-x-0.5 group-hover:translate-y-0.5 transition-transform">
               <Image
                 alt="Logo"
-                src="/assets/Icon.svg"
+                src="https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/Icon.svg"
                 className="size-4 [filter:brightness(0)]"
                 width={1}
                 height={1}
@@ -675,7 +675,7 @@ export default function NeobrutalismLandingPage() {
               <div className="bg-[#FFE66D] text-[#4A4310] font-black text-xl px-2 py-1.5 border-3 border-black shadow-[3px_3px_0px_0px_#000] rounded-lg">
                 <Image
                   alt="Logo"
-                  src="/assets/Icon.svg"
+                  src="https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/Icon.svg"
                   className="size-4 [filter:brightness(0)]"
                   width={1}
                   height={1}

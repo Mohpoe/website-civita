@@ -99,7 +99,7 @@ const Navigation = () => {
           <div className="w-8 h-8 bg-foreground rounded-xl flex items-center justify-center shadow-inner">
             <Image
               alt="Logo"
-              src="/assets/Icon.svg"
+              src="https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/Icon.svg"
               className="size-4 [filter:brightness(0)_invert(1)] dark:[filter:brightness(0)]"
               width={1}
               height={1}
@@ -245,7 +245,7 @@ const Hero = () => {
             <div className="flex -space-x-3">
               {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="w-10 h-10 rounded-full border-2 border-foreground bg-muted flex items-center justify-center overflow-hidden shadow-[2px_2px_0px_0px] shadow-foreground">
-                  <img src={`/assets/people/people${i}.jpg`} alt="client" className="w-full h-full object-cover" />
+                  <img src={`https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/people/people${i}.jpg`} alt="client" className="w-full h-full object-cover" />
                 </div>
               ))}
             </div>
@@ -413,12 +413,12 @@ const PortfolioShowcase = () => {
   const tabs = ["Semua", "ATS", "Resume", "Surat Lamaran"];
 
   const portfolioItems = [
-    { id: 1, type: "ATS", title: "Jasa Pembuatan CV ATS Friendly Corporate", desc: "CV ATS friendly standar HRD untuk melamar lowongan kerja di BUMN, Corporate, dan Tech Company.", imageSrc: "/assets/portofolio/cv-ats-1.webp" },
-    { id: 2, type: "Resume", title: "Desain CV Kreatif Estetik Gen-Z", desc: "Contoh CV kreatif dengan desain visual menonjol, sangat cocok untuk apply ke Agensi Kreatif dan Startup.", imageSrc: "/assets/portofolio/resume-1.webp" },
-    { id: 3, type: "Surat Lamaran", title: "Jasa Surat Lamaran Kerja Profesional", desc: "Format Cover Letter formal yang sopan, terstruktur, dan ditulis custom (bukan template pasaran).", imageSrc: "/assets/portofolio/surat-lamaran-1.webp" },
-    { id: 4, type: "ATS", title: "Template CV ATS Friendly Minimalis", desc: "Desain CV lamaran kerja yang fokus penuh pada bobot pengalaman kerja, pencapaian, dan skill profesional Anda.", imageSrc: "/assets/portofolio/cv-ats-2.webp" },
-    { id: 5, type: "Resume", title: "Pembuatan CV Modern Layout 2 Kolom", desc: "Rekomendasi CV modern dengan perpaduan warna subtle dan layout efisien untuk merangkum riwayat hidup.", imageSrc: "/assets/portofolio/resume-2.webp" },
-    { id: 6, type: "Surat Lamaran", title: "Jasa Pembuatan Cover Letter", desc: "Surat lamaran kerja profesional yang rapi dan tone profesional.", imageSrc: "/assets/portofolio/surat-lamaran-2.webp" },
+    { id: 1, type: "ATS", title: "Jasa Pembuatan CV ATS Friendly Corporate", desc: "CV ATS friendly standar HRD untuk melamar lowongan kerja di BUMN, Corporate, dan Tech Company.", imageSrc: "https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/portofolio/cv-ats-1.webp" },
+    { id: 2, type: "Resume", title: "Desain CV Kreatif Estetik Gen-Z", desc: "Contoh CV kreatif dengan desain visual menonjol, sangat cocok untuk apply ke Agensi Kreatif dan Startup.", imageSrc: "https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/portofolio/resume-1.webp" },
+    { id: 3, type: "Surat Lamaran", title: "Jasa Surat Lamaran Kerja Profesional", desc: "Format Cover Letter formal yang sopan, terstruktur, dan ditulis custom (bukan template pasaran).", imageSrc: "https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/portofolio/surat-lamaran-1.webp" },
+    { id: 4, type: "ATS", title: "Template CV ATS Friendly Minimalis", desc: "Desain CV lamaran kerja yang fokus penuh pada bobot pengalaman kerja, pencapaian, dan skill profesional Anda.", imageSrc: "https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/portofolio/cv-ats-2.webp" },
+    { id: 5, type: "Resume", title: "Pembuatan CV Modern Layout 2 Kolom", desc: "Rekomendasi CV modern dengan perpaduan warna subtle dan layout efisien untuk merangkum riwayat hidup.", imageSrc: "https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/portofolio/resume-2.webp" },
+    { id: 6, type: "Surat Lamaran", title: "Jasa Pembuatan Cover Letter", desc: "Surat lamaran kerja profesional yang rapi dan tone profesional.", imageSrc: "https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/portofolio/surat-lamaran-2.webp" },
   ];
 
   const filteredItems = portfolioItems.filter(
@@ -530,11 +530,11 @@ const TestimonialTextVariant = () => {
 const TestimonialChatVariant = () => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const screenshots = [
-    "/assets/testimoni/testimoni1.webp",
-    "/assets/testimoni/testimoni2.webp",
-    "/assets/testimoni/testimoni3.webp",
-    "/assets/testimoni/testimoni4.webp",
-    "/assets/testimoni/testimoni5.webp",
+    "https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/testimoni/testimoni1.webp",
+    "https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/testimoni/testimoni2.webp",
+    "https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/testimoni/testimoni3.webp",
+    "https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/testimoni/testimoni4.webp",
+    "https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/testimoni/testimoni5.webp",
   ];
 
   const scroll = (direction: "left" | "right") => {
@@ -659,7 +659,7 @@ const Footer = () => {
         <div className="flex flex-col gap-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-[#ef3936] dark:bg-[#d9302d] border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground rounded-xl flex items-center justify-center">
-              <Image alt="Logo" src="/assets/Icon.svg" className="size-5 [filter:brightness(0)_invert(1)]" width={1} height={1} />
+              <Image alt="Logo" src="https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/Icon.svg" className="size-5 [filter:brightness(0)_invert(1)]" width={1} height={1} />
             </div>
             <span className="font-black tracking-tight text-2xl uppercase">CIVITA.ID</span>
           </div>
