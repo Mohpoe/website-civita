@@ -45,6 +45,7 @@ export interface Order {
   snap_token: string | null;
   created_at: string;
   product?: Product;
+  email?: string;
 }
 
 export interface ReportKPI {
@@ -67,4 +68,13 @@ export interface TopProduct {
   category: string;
   sold_count: number;
   revenue: number;
+}
+
+export interface ReportOrderHistory {
+  order_id: string;
+  email: string | null;
+  amount: number;
+  status: string;
+  created_at: string;
+  product_title: string | null;
 }
