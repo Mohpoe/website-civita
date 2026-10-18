@@ -97,12 +97,18 @@ export async function POST(req: Request) {
         // c. Kirim email
         if (userEmail) {
           console.log("Email ditemukan! Bersiap mengirim email!");
-          sendOrderSuccessEmail({
+          const sendEmail = await sendOrderSuccessEmail({
             userEmail,
             userName,
             orderId: order_id,
             productName
           });
+
+          if (!sendEmail.success) {
+            console.error("Gagal mengirim email!");
+          } else {
+            console.log("✅ Berhasil mengirim email!")
+          }
         } else {
           console.warn(`User dengan ID ${orderData.user_id} tidak memiliki email.`);
         }
