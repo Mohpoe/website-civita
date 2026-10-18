@@ -2,15 +2,19 @@ export const APP_CONFIG = {
   NAME: "CIVITA",
   TAGLINE: "Bantu kamu lolos kerja!",
   VERSION: "1.2",
-  SUPPORT_EMAIL: "civitakerja@gmail.com",
+  EMAIL: "admin@civita.id",
+  EMAIL_GMAIL: "civitakerja@gmail.com",
+  EMAIL_SENDER: "support@civita.id",
   WHATSAPP: "6282312945365",
   LINKS: {
-    HOMEPAGE: "https://civita.id",
-    HOMEPAGE_PLAIN: "civita.id",
+    HOMEPAGE: "https://www.civita.id",
+    HOMEPAGE_PLAIN: "www.civita.id",
     WHATSAPP: "https://wa.me/6282312945365",
+    WHATSAPP_CHAT: (chat: string) => `https://wa.me/6282312945365?text=${encodeURIComponent(chat)}`,
     INSTAGRAM: "https://www.instagram.com/bikincivita/",
     LINKEDIN: "https://www.linkedin.com/company/bikin-civita/",
-    EMAIL: "mailto:civitakerja@gmail.com",
+    EMAIL: "admin@civita.id",
+    EMAIL_GMAIL: "mailto:civitakerja@gmail.com",
   },
 };
 

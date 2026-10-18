@@ -1,12 +1,13 @@
 import { sql } from "@/lib/utils";
 import crypto from "crypto";
 import { NextResponse } from "next/server";
+import { clerkClient } from "@clerk/nextjs/server";
+import { sendOrderSuccessEmail } from "@/lib/email";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    // 1. Ekstrak data dari payload Midtrans
     const {
       order_id,
       transaction_status,
@@ -16,11 +17,9 @@ export async function POST(req: Request) {
       fraud_status
     } = body;
 
-    // 2. Verifikasi Keamanan (Signature Key) dari Midtrans
     const serverKey = process.env.MIDTRANS_SERVER_KEY || "";
     const hash = crypto.createHash("sha512");
 
-    // Format hash: order_id + status_code + gross_amount + serverKey
     hash.update(order_id + status_code + gross_amount + serverKey);
     const calculatedSignature = hash.digest("hex");
 
@@ -29,26 +28,41 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 
-    // 3. Mapping status Midtrans ke status Tabel Orders Anda (menggunakan huruf kecil sesuai default 'pending')
     let newStatus = "pending";
 
     if (transaction_status === "capture") {
       if (fraud_status === "challenge") {
-        newStatus = "challenge"; // Butuh verifikasi manual di dashboard Midtrans
+        newStatus = "challenge";
       } else if (fraud_status === "accept") {
         newStatus = "success";
       }
     } else if (transaction_status === "settlement") {
-      newStatus = "success"; // Transaksi sukses dan dana masuk
+      newStatus = "success";
     } else if (transaction_status === "cancel") {
-      newStatus = "canceled"; // Dibatalkan oleh Midtrans / pengguna
+      newStatus = "canceled";
     } else if (transaction_status === "deny" || transaction_status === "failure") {
-      newStatus = "failed"; // Ditolak oleh provider, fraud, atau terjadi error sistem
+      newStatus = "failed";
     } else if (transaction_status === "expire") {
-      newStatus = "expired"; // Waktu pembayaran habis (zombie order)
+      newStatus = "expired";
     }
 
-    // 4. Eksekusi SQL Update ke Database
+    // 1. Dapatkan status saat ini DARI DATABASE SEBELUM diupdate
+    const currentOrderRows = await sql`
+      SELECT status, user_id, product_id
+      FROM orders
+      WHERE order_id = ${order_id}
+      LIMIT 1
+    `;
+
+    // Pastikan pesanan ditemukan
+    if (currentOrderRows.length === 0) {
+      console.error(`Pesanan ${order_id} tidak ditemukan di database.`);
+      return NextResponse.json({ message: "OK" }, { status: 200 }); // Tetap return 200 ke Midtrans
+    }
+
+    const orderData = currentOrderRows[0];
+
+    // 2. Eksekusi SQL Update ke Database
     await sql`
       UPDATE orders
       SET status = ${newStatus}
@@ -57,7 +71,46 @@ export async function POST(req: Request) {
 
     console.log(`✅ [Webhook Sukses] Order: ${order_id} | Status berubah menjadi: ${newStatus}`);
 
-    // 5. WAJIB return 200 OK agar Midtrans tidak menembak endpoint ini berulang-ulang
+    // ==============================================================================
+    // BAGIAN BARU: KIRIM EMAIL JIKA STATUS BERUBAH MENJADI SUCCESS
+    // ==============================================================================
+
+    // Pastikan kita HANYA mengirim email SATU KALI, yaitu saat status SEBELUMNYA bukan success
+    // Ini penting karena Midtrans terkadang menembak status "capture" lalu "settlement" berurutan.
+    if (newStatus === "success" && orderData.status !== "success") {
+      try {
+        // a. Ambil detail produk (untuk mendapatkan nama produk)
+        const productRows = await sql`SELECT title FROM products WHERE id = ${orderData.product_id} LIMIT 1`;
+        const productName = productRows.length > 0 ? productRows[0].title : "Produk Digital";
+
+        // b. Ambil detail user dari Clerk menggunakan user_id dari tabel orders
+        const client = await clerkClient();
+        const user = await client.users.getUser(orderData.user_id);
+
+        // Gunakan email address pertama (primary)
+        const userEmail = user.emailAddresses[0]?.emailAddress;
+        const userName = `${user.firstName || ""} ${user.lastName || ""}`.trim() || "Pelanggan Setia Civita";
+
+        // c. Jika email user ditemukan, jalankan pengiriman email secara asinkron
+        if (userEmail) {
+          // Catatan: Anda bisa menambahkan await di bawah ini jika ingin memastikan email terkirim dulu,
+          // Tapi lebih aman tanpa await agar webhook Midtrans cepat dibalas (timeout Midtrans sangat ketat)
+          sendOrderSuccessEmail({
+            userEmail,
+            userName,
+            orderId: order_id,
+            productName
+          });
+        } else {
+          console.warn(`User dengan ID ${orderData.user_id} tidak memiliki email.`);
+        }
+
+      } catch (emailError) {
+        console.error("Gagal saat memproses pengiriman email via Webhook:", emailError);
+      }
+    }
+    // ==============================================================================
+
     return NextResponse.json({ message: "OK" }, { status: 200 });
 
   } catch (error: any) {

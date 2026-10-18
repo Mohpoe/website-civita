@@ -44,7 +44,7 @@ export default function Error({
         </h1>
 
         <p className="text-lg text-foreground/80 font-medium mb-8 border-l-[4px] border-[#f68e51] dark:border-[#d16f34] pl-4">
-          <em>Ubur-ubur ikan lele, error nih le!</em> Kamu bisa refresh atau hubungi admin di <a href={`mailto:${APP_CONFIG.SUPPORT_EMAIL}`} className="font-bold underline decoration-2 underline-offset-2 text-[#ef3936] dark:text-[#c9302c]">email</a> atau <a href={`${APP_CONFIG.LINKS.WHATSAPP}`} target="_blank" rel="noopener noreferrer" className="font-bold underline decoration-2 underline-offset-2 text-[#ef3936] dark:text-[#c9302c]">WhatsApp</a>.
+          <em>Ubur-ubur ikan lele, error nih le!</em> Kamu bisa refresh atau hubungi admin di <a href={`mailto:${APP_CONFIG.EMAIL}`} className="font-bold underline decoration-2 underline-offset-2 text-[#ef3936] dark:text-[#c9302c]">email</a> atau <a href={`${APP_CONFIG.LINKS.WHATSAPP}`} target="_blank" rel="noopener noreferrer" className="font-bold underline decoration-2 underline-offset-2 text-[#ef3936] dark:text-[#c9302c]">WhatsApp</a>.
         </p>
 
         {/* Area Tombol */}

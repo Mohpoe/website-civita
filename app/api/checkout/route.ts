@@ -49,6 +49,10 @@ export async function POST(req: Request) {
           order_id: orderId,
           gross_amount: product.price
         },
+        customer_details: {
+          first_name: user.firstName || "User",
+          email: user.emailAddresses[0]?.emailAddress || "user@example.com"
+        },
         item_details: [{
           id: productId,
           price: product.price,

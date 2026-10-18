@@ -135,7 +135,7 @@ const Navigation = () => {
           <div className="hidden md:block w-1.5 h-1.5 rounded-full bg-foreground mx-1" />
 
           {/* CTA Utama Desktop */}
-          <Button onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP, "_blank")} className="hidden md:flex h-10 px-5 rounded-full font-bold bg-[#ef3936] dark:bg-[#d9302d] text-white border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px] transition-all">
+          <Button onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP_CHAT("Halo admin CIVITA, saya ingin konsultasi terkait pembuatan CV yang ATS-friendly."), "_blank")} className="hidden md:flex h-10 px-5 rounded-full font-bold bg-[#ef3936] dark:bg-[#d9302d] text-white border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px] transition-all">
             Konsultasi <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
 
@@ -175,7 +175,7 @@ const MobileBottomBar = () => (
       </div> */}
     </Show>
 
-    <Button onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP, "_blank")} className="flex-none aspect-square p-0 w-12 h-12 rounded-full bg-[#ef3936] dark:bg-[#d9302d] text-white border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground active:translate-y-1 active:shadow-none transition-all">
+    <Button onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP_CHAT("Halo admin CIVITA, saya ingin konsultasi terkait pembuatan CV yang ATS-friendly."), "_blank")} className="flex-none aspect-square p-0 w-12 h-12 rounded-full bg-[#ef3936] dark:bg-[#d9302d] text-white border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground active:translate-y-1 active:shadow-none transition-all">
       <SiWhatsapp className="w-6 h-6" />
     </Button>
   </div>
@@ -232,7 +232,7 @@ const Hero = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row flex-wrap items-center gap-4 w-full mt-4">
-            <Button className="rounded-full h-14 px-8 w-full sm:w-auto font-bold text-base bg-[#ef3936] dark:bg-[#d9302d] text-white border-2 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px] transition-all" size="lg" onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP, "_blank")}>
+            <Button className="rounded-full h-14 px-8 w-full sm:w-auto font-bold text-base bg-[#ef3936] dark:bg-[#d9302d] text-white border-2 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px] transition-all" size="lg" onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP_CHAT("Halo admin CIVITA, saya ingin konsultasi terkait pembuatan CV yang ATS-friendly."), "_blank")}>
               <SiWhatsapp className="w-5 h-5 ml-0 mr-2" />
               Chat via WhatsApp
             </Button>
@@ -374,7 +374,7 @@ const Process = () => {
               <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-[#f68e51] dark:bg-[#d97941] text-black border-2 border-foreground font-black text-sm shadow-[2px_2px_0px_0px] shadow-foreground">PROSES CEPAT</div>
               <h2 className="text-4xl md:text-5xl font-black tracking-tighter mb-6">Murah, Cepat & Profesional.</h2>
               <p className="text-foreground/80 font-medium mb-10 text-lg leading-relaxed">Dirancang oleh profesional untuk kamu yang pusing cari pekerjaan <em>in this economy</em>. Kami tangani dengan cepat!</p>
-              <Button className="h-14 px-8 w-full rounded-full font-bold text-lg bg-[#ef3936] dark:bg-[#d9302d] text-white border-2 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px] shadow-foreground transition-all" onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP, "_blank")}>
+              <Button className="h-14 px-8 w-full rounded-full font-bold text-lg bg-[#ef3936] dark:bg-[#d9302d] text-white border-2 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px] shadow-foreground transition-all" onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP_CHAT("Halo admin CIVITA, saya ingin konsultasi terkait pembuatan CV yang ATS-friendly."), "_blank")}>
                 Mulai Sekarang!
               </Button>
             </div>
@@ -628,7 +628,7 @@ const CTA = () => {
         <div className="flex justify-center pt-8">
           <div className="flex flex-col w-full sm:w-auto gap-6">
             <button
-              onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP, "_blank")}
+              onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP_CHAT("Halo admin CIVITA, saya ingin konsultasi terkait pembuatan CV yang ATS-friendly."), "_blank")}
               className="group relative inline-flex items-center justify-center gap-3 h-16 px-10 bg-[#f68e51] dark:bg-[#d97941] text-black border-4 border-foreground rounded-full font-black text-xl shadow-[6px_6px_0px_0px] shadow-foreground hover:shadow-[2px_2px_0px_0px] shadow-foreground hover:translate-y-1 transition-all"
             >
               Chat Admin CIVITA

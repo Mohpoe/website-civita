@@ -693,7 +693,7 @@ export default function NeobrutalismLandingPage() {
               <a href={APP_CONFIG.LINKS.LINKEDIN} target="_blank" rel="noopener noreferrer" className="border-3 border-black shadow-[3px_3px_0px_0px_#000] p-2 rounded-xl bg-[#98F5E1] text-[#154D40] hover:scale-105 transition" aria-label="LinkedIn">
                 <Linkedin size={18} />
               </a>
-              <a href={`mailto:${APP_CONFIG.SUPPORT_EMAIL}`} className="border-3 border-black shadow-[3px_3px_0px_0px_#000] p-2 rounded-xl bg-[#B3A2FF] text-[#32275C] hover:scale-105 transition" aria-label="Email">
+              <a href={`mailto:${APP_CONFIG.EMAIL}`} className="border-3 border-black shadow-[3px_3px_0px_0px_#000] p-2 rounded-xl bg-[#B3A2FF] text-[#32275C] hover:scale-105 transition" aria-label="Email">
                 <Mail size={18} />
               </a>
               <a href={waGlobalUrl} target="_blank" rel="noopener noreferrer" className="border-3 border-black shadow-[3px_3px_0px_0px_#000] p-2 rounded-xl bg-[#FFE66D] text-[#4A4310] hover:scale-105 transition" aria-label="WhatsApp">
@@ -717,7 +717,7 @@ export default function NeobrutalismLandingPage() {
             <h4 className="font-black text-base mb-4">Kontak & Dukungan</h4>
             <ul className="space-y-2 text-sm font-bold text-gray-700">
               <li>WhatsApp: <a href={waGlobalUrl} target="_blank" rel="noopener noreferrer" className="hover:opacity-70">+{APP_CONFIG.WHATSAPP}</a></li>
-              <li>Email: <a href={APP_CONFIG.LINKS.EMAIL} className="hover:opacity-70">{APP_CONFIG.SUPPORT_EMAIL}</a></li>
+              <li>Email: <a href={APP_CONFIG.LINKS.EMAIL} className="hover:opacity-70">{APP_CONFIG.EMAIL}</a></li>
               <li className="pt-2">
                 <a
                   href={waGlobalUrl}
