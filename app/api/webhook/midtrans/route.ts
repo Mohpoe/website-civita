@@ -83,7 +83,6 @@ export async function POST(req: Request) {
     console.log("Periksa status pesanan!");
     console.log(`newStatus = ${newStatus} dan orderData.status = ${orderData.status}`);
     if (newStatus === "success" && orderData.status !== "success") {
-      console.log("Bersiap mengirim email!");
       try {
         // a. Nama produk sudah didapatkan dari query JOIN sebelumnya
         const productName = orderData.product_title || "Produk Digital CIVITA";
@@ -97,6 +96,7 @@ export async function POST(req: Request) {
 
         // c. Kirim email
         if (userEmail) {
+          console.log("Email ditemukan! Bersiap mengirim email!");
           sendOrderSuccessEmail({
             userEmail,
             userName,
