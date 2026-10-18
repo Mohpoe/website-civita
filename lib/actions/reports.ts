@@ -1,7 +1,7 @@
 "use server";
 
 import { sql } from "@/lib/utils";
-import { ReportChartData, ReportKPI, TopProduct } from "@/types/global";
+import { ReportChartData, ReportKPI, TopProduct, ReportOrderHistory } from "@/types/global";
 import { auth, currentUser } from "@clerk/nextjs/server";
 
 export async function getReportData(range: string) {
@@ -11,16 +11,14 @@ export async function getReportData(range: string) {
     throw new Error("Akses ditolak");
   }
 
-  // Hitung batas waktu di Javascript untuk mencegah SQL Injection pada parameter interval
   let startDate: string | null = null;
   const now = new Date();
   if (range === "7d") startDate = new Date(now.setDate(now.getDate() - 7)).toISOString();
   else if (range === "30d") startDate = new Date(now.setDate(now.getDate() - 30)).toISOString();
   else if (range === "90d") startDate = new Date(now.setDate(now.getDate() - 90)).toISOString();
-  // Jika range === 'all', startDate tetap null
 
   try {
-    // 1. Ambil KPI (Key Performance Indicators)
+    // 1. Ambil KPI
     const kpiData = await sql`
       SELECT
         COALESCE(SUM(CASE WHEN status = 'success' THEN amount ELSE 0 END), 0)::numeric AS total_revenue,
@@ -30,18 +28,14 @@ export async function getReportData(range: string) {
       WHERE ${startDate}::timestamptz IS NULL OR created_at >= ${startDate}::timestamptz
     `;
 
-    // 2. Ambil Data Grafik Harian (Diatur ke WITA / Asia/Makassar)
+    // 2. Ambil Data Grafik Harian
     const chartData = await sql`
       SELECT
         TO_CHAR(created_at AT TIME ZONE 'Asia/Makassar', 'YYYY-MM-DD') AS date,
-        -- Metrik Pendapatan (tetap 2 grup: sukses vs gagal/pending keseluruhan)
         COALESCE(SUM(CASE WHEN status IN ('success', 'challenge') THEN amount ELSE 0 END), 0)::numeric AS success_revenue,
         COALESCE(SUM(CASE WHEN status NOT IN ('success', 'challenge') THEN amount ELSE 0 END), 0)::numeric AS failed_revenue,
-
-        -- Metrik Pesanan (dibagi 3 grup)
         COUNT(CASE WHEN status IN ('success', 'challenge') THEN 1 END)::int AS success_orders,
         COUNT(CASE WHEN status = 'pending' THEN 1 END)::int AS pending_orders,
-        -- Asumsi status gagal Midtrans selain sukses dan pending
         COUNT(CASE WHEN status NOT IN ('success', 'challenge', 'pending') THEN 1 END)::int AS failed_orders
       FROM orders
       WHERE ${startDate}::timestamptz IS NULL OR created_at >= ${startDate}::timestamptz
@@ -67,10 +61,26 @@ export async function getReportData(range: string) {
       LIMIT 5
     `;
 
+    // 4. Ambil Riwayat Transaksi Lengkap
+    const orderHistory = await sql`
+      SELECT
+        o.order_id,
+        o.email,
+        o.amount,
+        o.status,
+        o.created_at,
+        p.title as product_title
+      FROM orders o
+      LEFT JOIN products p ON o.product_id = p.id
+      WHERE ${startDate}::timestamptz IS NULL OR o.created_at >= ${startDate}::timestamptz
+      ORDER BY o.created_at DESC
+    `;
+
     return {
       kpi: kpiData[0] as ReportKPI,
       chart: chartData as ReportChartData[],
       topProducts: topProducts as TopProduct[],
+      orderHistory: orderHistory as ReportOrderHistory[],
     };
   } catch (error) {
     console.error("Gagal mengambil data laporan:", error);
@@ -78,6 +88,7 @@ export async function getReportData(range: string) {
       kpi: { total_revenue: 0, total_orders: 0, total_success: 0 },
       chart: [],
       topProducts: [],
+      orderHistory: [],
     };
   }
 }

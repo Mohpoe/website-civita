@@ -1,3 +1,4 @@
+import { PageTitle } from "@/components/context/dashboard-page-title";
 import DashboardReport from "@/components/dashboard-report";
 import { getReportData } from "@/lib/actions/reports";
 import { Metadata } from "next";
@@ -14,21 +15,21 @@ interface ReportPageProps {
 
 export default async function ReportPage({ searchParams }: ReportPageProps) {
   try {
-    // Await searchParams karena di Next.js 15 (atau App Router versi terbaru), searchParams bersifat asinkron.
     const resolvedParams = await searchParams;
     const range = resolvedParams.range || "30d";
 
-    // Panggil query SQL dengan rentang waktu dari URL
-    const { kpi, chart, topProducts } = await getReportData(range);
+    // Destructure orderHistory di sini
+    const { kpi, chart, orderHistory } = await getReportData(range);
 
     return (
-      <div className="px-4 md:px-6 py-0 w-full max-w-7xl mx-auto">
+      <>
+        <PageTitle title={mainTitle} />
         <DashboardReport
           kpi={kpi}
           chartData={chart}
-          topProducts={topProducts}
+          orderHistory={orderHistory}
         />
-      </div>
+      </>
     );
   } catch (error) {
     throw error;
