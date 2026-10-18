@@ -46,11 +46,16 @@ export async function POST(req: Request) {
       newStatus = "expired";
     }
 
-    // 1. Dapatkan status saat ini DARI DATABASE SEBELUM diupdate
+    // 1. Dapatkan status saat ini beserta NAMA PRODUK dari database (Hanya 1 Query dengan JOIN)
     const currentOrderRows = await sql`
-      SELECT status, user_id, product_id
-      FROM orders
-      WHERE order_id = ${order_id}
+      SELECT
+        o.status,
+        o.user_id,
+        o.product_id,
+        p.title as product_title
+      FROM orders o
+      LEFT JOIN products p ON o.product_id = p.id
+      WHERE o.order_id = ${order_id}
       LIMIT 1
     `;
 
@@ -72,29 +77,23 @@ export async function POST(req: Request) {
     console.log(`✅ [Webhook Sukses] Order: ${order_id} | Status berubah menjadi: ${newStatus}`);
 
     // ==============================================================================
-    // BAGIAN BARU: KIRIM EMAIL JIKA STATUS BERUBAH MENJADI SUCCESS
+    // BAGIAN EMAIL: KIRIM EMAIL JIKA STATUS BERUBAH MENJADI SUCCESS
     // ==============================================================================
 
-    // Pastikan kita HANYA mengirim email SATU KALI, yaitu saat status SEBELUMNYA bukan success
-    // Ini penting karena Midtrans terkadang menembak status "capture" lalu "settlement" berurutan.
     if (newStatus === "success" && orderData.status !== "success") {
       try {
-        // a. Ambil detail produk (untuk mendapatkan nama produk)
-        const productRows = await sql`SELECT title FROM products WHERE id = ${orderData.product_id} LIMIT 1`;
-        const productName = productRows.length > 0 ? productRows[0].title : "Produk Digital";
+        // a. Nama produk sudah didapatkan dari query JOIN sebelumnya
+        const productName = orderData.product_title || "Produk Digital CIVITA";
 
         // b. Ambil detail user dari Clerk menggunakan user_id dari tabel orders
         const client = await clerkClient();
         const user = await client.users.getUser(orderData.user_id);
 
-        // Gunakan email address pertama (primary)
         const userEmail = user.emailAddresses[0]?.emailAddress;
-        const userName = `${user.firstName || ""} ${user.lastName || ""}`.trim() || "Pelanggan Setia Civita";
+        const userName = `${user.firstName || ""} ${user.lastName || ""}`.trim() || "Pelanggan Setia CIVITA";
 
-        // c. Jika email user ditemukan, jalankan pengiriman email secara asinkron
+        // c. Kirim email
         if (userEmail) {
-          // Catatan: Anda bisa menambahkan await di bawah ini jika ingin memastikan email terkirim dulu,
-          // Tapi lebih aman tanpa await agar webhook Midtrans cepat dibalas (timeout Midtrans sangat ketat)
           sendOrderSuccessEmail({
             userEmail,
             userName,
