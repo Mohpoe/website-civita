@@ -80,7 +80,10 @@ export async function POST(req: Request) {
     // BAGIAN EMAIL: KIRIM EMAIL JIKA STATUS BERUBAH MENJADI SUCCESS
     // ==============================================================================
 
+    console.log("Periksa status pesanan!");
+    console.log(`newStatus = ${newStatus} dan orderData.status = ${orderData.status}`);
     if (newStatus === "success" && orderData.status !== "success") {
+      console.log("Bersiap mengirim email!");
       try {
         // a. Nama produk sudah didapatkan dari query JOIN sebelumnya
         const productName = orderData.product_title || "Produk Digital CIVITA";
@@ -104,10 +107,12 @@ export async function POST(req: Request) {
           console.warn(`User dengan ID ${orderData.user_id} tidak memiliki email.`);
         }
 
+        console.log("✅ Telah melewati fungsi mengirim email");
       } catch (emailError) {
         console.error("Gagal saat memproses pengiriman email via Webhook:", emailError);
       }
     }
+    console.log("✅ Apakah ini tampil tanpa bersiap mengirim email?");
     // ==============================================================================
 
     return NextResponse.json({ message: "OK" }, { status: 200 });
