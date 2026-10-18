@@ -80,8 +80,6 @@ export async function POST(req: Request) {
     // BAGIAN EMAIL: KIRIM EMAIL JIKA STATUS BERUBAH MENJADI SUCCESS
     // ==============================================================================
 
-    console.log("Periksa status pesanan!");
-    console.log(`newStatus = ${newStatus} dan orderData.status = ${orderData.status}`);
     if (newStatus === "success" && orderData.status !== "success") {
       try {
         // a. Nama produk sudah didapatkan dari query JOIN sebelumnya
@@ -96,7 +94,6 @@ export async function POST(req: Request) {
 
         // c. Kirim email
         if (userEmail) {
-          console.log("Email ditemukan! Bersiap mengirim email!");
           const sendEmail = await sendOrderSuccessEmail({
             userEmail,
             userName,
@@ -113,12 +110,10 @@ export async function POST(req: Request) {
           console.warn(`User dengan ID ${orderData.user_id} tidak memiliki email.`);
         }
 
-        console.log("✅ Telah melewati fungsi mengirim email");
       } catch (emailError) {
         console.error("Gagal saat memproses pengiriman email via Webhook:", emailError);
       }
     }
-    console.log("✅ Apakah ini tampil tanpa bersiap mengirim email?");
     // ==============================================================================
 
     return NextResponse.json({ message: "OK" }, { status: 200 });
