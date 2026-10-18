@@ -113,13 +113,31 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // Skema JSON-LD untuk Web Bisnis
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "CIVITA",
+    "url": "https://www.civita.id",
+    "logo": "https://www.civita.id/favicon-32x32.png",
+    "description": "Jasa pembuatan CV ATS-friendly, CV Kreatif, dan portfolio profesional.",
+    "sameAs": [
+      "https://www.instagram.com/bikincivita/",
+      "https://www.linkedin.com/company/bikin-civita/",
+    ]
+  };
+
   return (
     <html
-      lang="en"
+      lang="id"
       className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-mono", inter.variable)}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <ClerkProvider
           localization={idID}
           telemetry={false}
