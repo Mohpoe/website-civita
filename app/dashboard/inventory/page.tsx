@@ -15,7 +15,7 @@ export default async function InventoryPage() {
   try {
     const user = await currentUser();
     const [orders] = await Promise.all([
-      getOrders(user?.id) as Promise<Order[]>
+      getOrders(user?.emailAddresses[0].emailAddress) as Promise<Order[]>
     ]);
     return (
       <>

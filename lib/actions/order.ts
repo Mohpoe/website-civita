@@ -2,9 +2,9 @@ import { sql } from "@/lib/utils";
 import { Order } from "@/types/global";
 
 // #region 1. GET ORDERS
-export async function getOrders(userId?: string): Promise<Order[]> {
+export async function getOrders(userEmail?: string): Promise<Order[]> {
   try {
-    const data = !userId
+    const data = !userEmail
       ? await sql`
           SELECT
             o.*,
@@ -30,7 +30,7 @@ export async function getOrders(userId?: string): Promise<Order[]> {
         FROM orders o
         LEFT JOIN products p ON o.product_id = p.id
         LEFT JOIN categories c ON p.category_id = c.id
-        WHERE o.user_id = ${userId}
+        WHERE o.email = ${userEmail}
         ORDER BY o.created_at DESC
       `;
     return data as Order[];
