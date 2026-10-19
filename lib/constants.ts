@@ -13,7 +13,7 @@ export const APP_CONFIG = {
     WHATSAPP_CHAT: (chat: string) => `https://wa.me/6282312945365?text=${encodeURIComponent(chat)}`,
     INSTAGRAM: "https://www.instagram.com/bikincivita/",
     LINKEDIN: "https://www.linkedin.com/company/bikin-civita/",
-    EMAIL: "admin@civita.id",
+    EMAIL: "mailto:admin@civita.id",
     EMAIL_GMAIL: "mailto:civitakerja@gmail.com",
   },
 };
