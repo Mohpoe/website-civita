@@ -48,6 +48,7 @@ interface UserData {
   email: string;
   role: string;
   imageUrl: string;
+  orderCount: number;
 }
 
 interface DashboardUsersProps {
@@ -61,7 +62,7 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
 
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [alertAction, setAlertAction] = useState<"promote" | "demote" | "delete" | null>(null);
-  const [selectedUser, setSelectedUser] = useState<{ id: string; name: string } | null>(null);
+  const [selectedUser, setSelectedUser] = useState<{ id: string; name: string; orderCount: number } | null>(null);
 
   const uniqueRoles = useMemo(() => {
     // Gunakan Set untuk menyaring nilai yang duplikat, lalu ubah kembali menjadi array
@@ -70,8 +71,8 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
   }, [users]);
 
   // 2. Fungsi untuk memicu dialog dari tabel
-  const triggerAlert = (action: "promote" | "demote" | "delete", userId: string, userName: string) => {
-    setSelectedUser({ id: userId, name: userName });
+  const triggerAlert = (action: "promote" | "demote" | "delete", userId: string, userName: string, orderCount: number) => {
+    setSelectedUser({ id: userId, name: userName, orderCount });
     setAlertAction(action);
     setIsAlertOpen(true);
   };
@@ -176,7 +177,22 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
         },
       }),
 
-      // 4. Kolom Aksi
+      // 4. Kolom Jumlah Transaksi (peringatan sebelum menghapus)
+      columnHelper.accessor("orderCount", {
+        id: "transaksi",
+        header: "Transaksi",
+        cell: (row) => {
+          const count = row.getValue();
+          if (count === 0) return <span className="text-xs text-muted-foreground">-</span>;
+          return (
+            <Badge variant="secondary" className="text-xs" title="Memiliki riwayat transaksi. Data order akan dianonimkan (user_id di-NULL-kan) saat akun dihapus.">
+              {count} order
+            </Badge>
+          );
+        },
+      }),
+
+      // 5. Kolom Aksi
       columnHelper.display({
         id: "actions",
         cell: ({ row }) => {
@@ -193,19 +209,19 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
                   <DropdownMenuContent align="end" className="w-[160px] rounded-xl shadow-lg">
 
                     {user.role === "user" && (
-                      <DropdownMenuItem onClick={() => triggerAlert("promote", user.id, user.name)} disabled={isPending}>
+                      <DropdownMenuItem onClick={() => triggerAlert("promote", user.id, user.name, user.orderCount)} disabled={isPending}>
                         <ShieldCogCornerIcon />
                         {isPending && alertAction === "promote" && selectedUser?.id === user.id ? "Memproses..." : "Jadikan Admin"}
                       </DropdownMenuItem>
                     )}
                     {user.role === "admin" && (
-                      <DropdownMenuItem onClick={() => triggerAlert("demote", user.id, user.name)} disabled={isPending}>
+                      <DropdownMenuItem onClick={() => triggerAlert("demote", user.id, user.name, user.orderCount)} disabled={isPending}>
                         <ShieldCogCornerIcon />
                         {isPending && alertAction === "demote" && selectedUser?.id === user.id ? "Memproses..." : "Cabut Akses"}
                       </DropdownMenuItem>
                     )}
                     {user.role !== "superadmin" && (
-                      <DropdownMenuItem onClick={() => triggerAlert("delete", user.id, user.name)} disabled={isPending} variant="destructive">
+                      <DropdownMenuItem onClick={() => triggerAlert("delete", user.id, user.name, user.orderCount)} disabled={isPending} variant="destructive">
                         <Trash2Icon />
                         {isPending && alertAction === "delete" && selectedUser?.id === user.id ? "Memproses..." : "Hapus Pengguna"}
                       </DropdownMenuItem>
@@ -602,6 +618,11 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
                 {alertAction === "delete" && (
                   <>
                     Anda akan menghapus akun <strong className="text-foreground">{selectedUser?.name}</strong> secara permanen. Tindakan ini tidak dapat dibatalkan. Lanjutkan?
+                    {selectedUser?.orderCount && selectedUser.orderCount > 0 && (
+                      <span className="block mt-2 text-sm text-destructive">
+                        Peringatan: Pengguna ini memiliki <strong>{selectedUser.orderCount}</strong> riwayat pesanan.
+                      </span>
+                    )}
                   </>
                 )}
               </AlertDialogDescription>

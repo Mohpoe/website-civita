@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from 'framer-motion';
-import { AlertCircle, BadgeCheckIcon, CheckCircle2, ChevronRight, Clock, Download, ImageIcon, RefreshCcw, Search, ShoppingBag, XCircle } from 'lucide-react';
+import { AlertCircle, BadgeCheckIcon, CheckCircle2, ChevronRight, Clock, Download, ImageIcon, RefreshCcw, Search, ShoppingBag, UserX, XCircle } from 'lucide-react';
 import { useEffect, useState, useMemo, useTransition } from 'react';
 
 // Import Shadcn UI Components
@@ -248,6 +248,15 @@ export default function DashboardInventory({ orders: initialOrders }: DashboardI
                             <Badge variant="secondary" className="font-mono text-xs font-normal">
                               {order.order_id}
                             </Badge>
+                            {order.clerk_user_deleted_at ? (
+                              <Badge
+                                variant="destructive"
+                                className="text-xs font-normal"
+                                title="Akun pelanggan ini telah dihapus dari sistem. Email tetap tersimpan untuk bukti transaksi."
+                              >
+                                <UserX className="w-3 h-3" /> Akun Tidak Aktif
+                              </Badge>
+                            ) : null}
                             <span className="text-xs text-muted-foreground hidden sm:inline-block">• {orderDate}</span>
                           </div>
                           {renderStatusBadge(order.status)}

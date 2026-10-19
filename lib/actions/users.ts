@@ -2,6 +2,7 @@
 
 import { currentUser } from "@clerk/nextjs/server";
 import { clerkClient } from "@clerk/nextjs/server";
+import { sql } from "@/lib/utils";
 
 // #region Get All Users
 export async function getAllUsers() {
@@ -17,19 +18,34 @@ export async function getAllUsers() {
 
     // 3. Ambil daftar user (Clerk membatasi default 10, kita set limit lebih besar misal 100)
     const usersResponse = await client.users.getUserList({
-      limit: 100, // Anda bisa menambahkan offset/pagination jika user sangat banyak
-      orderBy: "-created_at", // Urutkan dari yang terbaru mendaftar
+      limit: 100,
+      orderBy: "-created_at",
     });
 
-    // 4. Petakan (mapping) data agar lebih bersih saat dikirim ke Frontend
-    const users = usersResponse.data.map((u) => ({
-      id: u.id,
-      name: `${u.firstName || ""} ${u.lastName || ""}`.trim() || "[Tanpa_Nama]",
-      email: u.emailAddresses[0]?.emailAddress || "Tidak ada email",
-      role: (u.publicMetadata.role as string) || "user", // Default ke 'user' jika kosong
-      imageUrl: u.imageUrl,
-      createdAt: u.createdAt,
-    }));
+    // 4. Hitung jumlah order per email dari tabel orders (untuk peringatan sebelum hapus)
+    const orderCountsRaw = await sql`
+      SELECT email, COUNT(*)::int as order_count
+      FROM orders
+      GROUP BY email
+    `;
+    const orderCountMap = new Map<string, number>();
+    for (const row of orderCountsRaw as Array<{ email: string; order_count: number }>) {
+      orderCountMap.set(row.email, row.order_count);
+    }
+
+    // 5. Petakan (mapping) data agar lebih bersih saat dikirim ke Frontend
+    const users = usersResponse.data.map((u) => {
+      const email = u.emailAddresses[0]?.emailAddress || "Tidak ada email";
+      return {
+        id: u.id,
+        name: `${u.firstName || ""} ${u.lastName || ""}`.trim() || "[Tanpa_Nama]",
+        email,
+        role: (u.publicMetadata.role as string) || "user",
+        imageUrl: u.imageUrl,
+        createdAt: u.createdAt,
+        orderCount: orderCountMap.get(email) ?? 0,
+      };
+    });
 
     return users;
   } catch (error) {
@@ -119,10 +135,12 @@ export async function deleteUserAction(targetUserId: string) {
       throw new Error("Tidak dapat menghapus akun sesama Superadmin.");
     }
 
-    // 3. Hapus pengguna menggunakan Clerk API
+    // 3. Hapus pengguna menggunakan Clerk API.
+    //    Pembersihan data order (user_id di-NULL-kan + clerk_user_deleted_at)
+    //    ditangani oleh Clerk Webhook `user.deleted` sebagai titik tunggal.
     await client.users.deleteUser(targetUserId);
 
-    return { success: true, message: "Pengguna berhasil dihapus." };
+    return { success: true, message: "Pengguna berhasil dihapus. Data transaksi tetap dipertahankan (anonim)." };
   } catch (error: any) {
     console.error("Gagal menghapus pengguna:", error);
     throw new Error(error.message || "Gagal menghapus pengguna.");

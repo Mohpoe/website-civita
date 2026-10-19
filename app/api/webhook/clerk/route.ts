@@ -2,6 +2,7 @@ import { clerkClient } from '@clerk/nextjs/server';
 import { WebhookEvent } from '@clerk/nextjs/server';
 import { headers } from 'next/headers';
 import { Webhook } from 'svix';
+import { sql } from '@/lib/utils';
 
 export async function POST(req: Request) {
   // 1. Ambil CLERK_WEBHOOK_SECRET dari environment variable
@@ -66,6 +67,51 @@ export async function POST(req: Request) {
     } catch (error) {
       console.error('Gagal update user metadata:', error);
       return new Response('Error updating metadata', { status: 500 });
+    }
+  }
+
+  // ============================================================================
+  // HANDLER: user.deleted (Titik tunggal baik user sendiri atau admin yang menghapus)
+  // - Menghapus user_id (set NULL) di semua order terkait
+  // - Mengisi clerk_user_deleted_at sebagai penanda akun tidak aktif
+  // - Email tetap disimpan di order untuk keperluan bukti transaksi / audit
+  // ============================================================================
+  if (eventType === 'user.deleted') {
+    const data = payloadJson.data as {
+      id: string;
+      email_addresses?: Array<{ email_address: string }>;
+    };
+
+    const clerkUserId = data.id;
+    const email = data.email_addresses?.[0]?.email_address ?? null;
+
+    try {
+      if (clerkUserId) {
+        await sql`
+          UPDATE orders
+          SET
+            user_id = NULL,
+            clerk_user_deleted_at = NOW()
+          WHERE user_id = ${clerkUserId}
+        `;
+        console.log(`Order terkait Clerk ID ${clerkUserId} telah di-anonimkan (user_id di-NULL-kan).`);
+      }
+
+      if (email) {
+        await sql`
+          UPDATE orders
+          SET
+            user_id = NULL,
+            clerk_user_deleted_at = NOW()
+          WHERE email = ${email} AND user_id IS NOT NULL
+        `;
+        console.log(`Order terkait email ${email} telah di-anonimkan (user_id di-NULL-kan).`);
+      }
+
+      return new Response('User deleted and orders anonymized', { status: 200 });
+    } catch (error) {
+      console.error('Gagal menganonimkan order saat user.deleted:', error);
+      return new Response('Error anonymizing orders', { status: 500 });
     }
   }
 

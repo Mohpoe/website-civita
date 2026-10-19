@@ -38,12 +38,13 @@ export interface Product {
 
 export interface Order {
   order_id: string;
-  user_id: string;
+  user_id: string | null;
   product_id: string;
   amount: number;
   status: 'pending' | 'success' | 'failed' | 'expired' | 'canceled' | 'challenge';
   snap_token: string | null;
   created_at: string;
+  clerk_user_deleted_at: string | null;
   product?: Product;
   email?: string;
 }
