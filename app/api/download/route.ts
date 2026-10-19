@@ -17,7 +17,7 @@ export async function GET(req: Request) {
     const orderId = searchParams.get('orderId');
     const productId = searchParams.get("productId");
 
-    // --- TAMBAHKAN BLOK LOGIKA ADMIN INI ---
+    // #region Jalur Admin
     if (productId) {
       // Pastikan yang mengakses menggunakan productId murni adalah Admin
       if (user.publicMetadata.role !== "admin" && user.publicMetadata.role !== "superadmin") {
@@ -61,7 +61,7 @@ export async function GET(req: Request) {
       SELECT o.status, CASE WHEN p.id IS NOT NULL THEN jsonb_build_object('title', p.title, 'file_url', p.file_url) ELSE null END as product
       FROM orders o
       LEFT JOIN products p ON o.product_id = p.id
-      WHERE o.order_id = ${orderId} AND o.user_id = ${user.id}
+      WHERE o.order_id = ${orderId} AND o.email = ${user.emailAddresses[0].emailAddress}
       LIMIT 1
     `;
 

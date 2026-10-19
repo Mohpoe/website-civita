@@ -39,7 +39,7 @@ export async function POST(req: Request) {
     await sql`
       UPDATE orders
       SET status = 'canceled'
-      WHERE order_id = ${orderId} AND user_id = ${user.id}
+      WHERE order_id = ${orderId} AND user_id = ${user.emailAddresses[0].emailAddress}
     `;
 
     return NextResponse.json({ success: true, message: "Pesanan berhasil dibatalkan." });
