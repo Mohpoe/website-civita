@@ -7,14 +7,14 @@ import { Separator } from "@/components/ui/separator";
 import { APP_CONFIG, ROUTES } from "@/lib/constants";
 import { Show, SignInButton, SignUpButton } from "@clerk/nextjs";
 import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
-import { ArrowLeft, ArrowRight, Briefcase, FileText, Layout, Mail, MessageCircle, QuoteIcon, Sparkles, XIcon } from "lucide-react";
+import { ArrowRight, Briefcase, FileText, Layout, Mail, MessageCircle, QuoteIcon, Sparkles, XIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { SiInstagram as Instagram, SiWhatsapp } from "react-icons/si";
 import { TfiLinkedin } from "react-icons/tfi";
 
-// #region DOCUMENT MOCKUPS (NEO-POP STYLED)
+// #region Document Mockups (Neo-Pop Styled)
 interface DocumentMockupProps { className?: string; }
 
 const DocumentMockupCV = ({ className }: DocumentMockupProps) => (
@@ -72,7 +72,7 @@ const DocumentMockupCoverLetter = ({ className }: DocumentMockupProps) => (
 );
 // #endregion
 
-// #region HEADER NAVIGATION
+// #region Header Navigation
 const Navigation = () => {
   const [scrolled, setScrolled] = useState(false);
 
@@ -149,7 +149,7 @@ const Navigation = () => {
 };
 // #endregion
 
-// #region MOBILE BOTTOM BAR (Khusus Smartphone)
+// #region Mobile Bottom Bar (Khusus Smartphone)
 const MobileBottomBar = () => (
   <div className="md:hidden fixed bottom-0 left-0 right-0 z-[60] bg-background border-t border-foreground p-3 flex items-center justify-between gap-3 shadow-[0px_-4px_0px_0px] shadow-foreground">
     <Show when="signed-out">
@@ -166,13 +166,9 @@ const MobileBottomBar = () => (
     </Show>
 
     <Show when="signed-in">
-      {/* <Link href={ROUTES.DASHBOARD.HOME} className={buttonVariants({ className: "flex-1 h-12 rounded-full border-2 font-bold border-foreground shadow-[2px_2px_0px_0px] shadow-foreground active:translate-y-1 active:shadow-none transition-all" })}> */}
       <Link href={ROUTES.DASHBOARD.HOME} className={buttonVariants({ className: "flex-1 h-12 !rounded-full !border-2 font-bold !border-foreground shadow-[2px_2px_0px_0px] shadow-foreground active:translate-y-1 active:shadow-none transition-all !bg-[#f68e51] dark:!bg-[#d97941] !text-black" })}>
         Dashboard
       </Link>
-      {/* <div className="flex items-center justify-center px-1">
-        <UserButton />
-      </div> */}
     </Show>
 
     <Button onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP_CHAT("Halo admin CIVITA, saya ingin konsultasi terkait pembuatan CV yang ATS-friendly."), "_blank")} className="flex-none aspect-square p-0 w-12 h-12 rounded-full bg-[#ef3936] dark:bg-[#d9302d] text-white border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground active:translate-y-1 active:shadow-none transition-all">
@@ -182,7 +178,7 @@ const MobileBottomBar = () => (
 );
 // #endregion
 
-// #region HERO SECTION
+// #region Hero Section
 const Hero = () => {
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({
@@ -274,7 +270,7 @@ const Hero = () => {
 };
 // #endregion
 
-// #region SERVICES SECTION
+// #region Services Section
 const Services = () => {
   return (
     <section className="py-32 px-6 bg-muted/40 border-b-4 border-foreground">
@@ -353,7 +349,7 @@ const Services = () => {
 };
 // #endregion
 
-// #region PROCESS SECTION
+// #region Process Section
 const Process = () => {
   const steps = [
     { num: "01", title: "Konsultasi Kebutuhan", desc: "Diskusi via WhatsApp, konfirmasi jenis CV atau kebutuhan lain, baik berbahasa Indonesia atau English." },
@@ -368,8 +364,8 @@ const Process = () => {
       <div className="absolute right-0 top-0 w-1/2 h-full bg-[radial-gradient(#f68e51_2px,transparent_2px)] dark:bg-[radial-gradient(#d97941_2px,transparent_2px)] [background-size:24px_24px] opacity-20 -z-10" />
 
       <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col md:flex-row gap-16 lg:gap-24">
-          <div className="md:w-5/12">
+        <div className="flex flex-col lg:flex-row gap-16 lg:gap-24">
+          <div className="lg:w-5/12">
             <div className="sticky top-32 bg-background p-8 rounded-[2rem] border-4 border-foreground shadow-[6px_6px_0px_0px] shadow-foreground">
               <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-[#f68e51] dark:bg-[#d97941] text-black border-2 border-foreground font-black text-sm shadow-[2px_2px_0px_0px] shadow-foreground">PROSES CEPAT</div>
               <h2 className="text-4xl md:text-5xl font-black tracking-tighter mb-6">Murah, Cepat & Profesional.</h2>
@@ -380,13 +376,13 @@ const Process = () => {
             </div>
           </div>
 
-          <div className="md:w-7/12 py-8">
+          <div className="lg:w-7/12 py-8">
             <div className="space-y-12">
               {steps.map((step, i) => (
                 <div key={i} className="group relative flex gap-6 md:gap-8 bg-card/50 p-6 rounded-3xl border-2 border-transparent hover:border-foreground hover:bg-background hover:shadow-[4px_4px_0px_0px] shadow-foreground transition-all duration-300">
                   {/* Line connector */}
                   {i !== steps.length - 1 && (
-                    <div className="absolute left-[3rem] md:left-[3rem] top-20 bottom-[-8rem] w-1.5 bg-foreground/10 group-hover:bg-[#f68e51] dark:group-hover:bg-[#d97941] transition-colors rounded-full z-5" />
+                    <div className="absolute left-[3rem] md:left-[3.3rem] top-20 bottom-[-8rem] w-1.5 bg-foreground/10 group-hover:bg-[#f68e51] dark:group-hover:bg-[#d97941] transition-colors rounded-full z-5" />
                   )}
 
                   <div className="relative z-10 flex-shrink-0 w-14 h-14 rounded-2xl bg-[#f68e51] dark:bg-[#d97941] border-4 border-foreground flex items-center justify-center text-xl font-black text-black shadow-[4px_4px_0px_0px] shadow-foreground group-hover:scale-110 transition-transform duration-300 group-hover:bg-[#ef3936] dark:group-hover:bg-[#d9302d] group-hover:text-white">
@@ -408,7 +404,7 @@ const Process = () => {
 };
 // #endregion
 
-// #region PORTFOLIO SHOWCASE
+// #region Portfolio Showcase
 const PortfolioShowcase = () => {
   const [activeTab, setActiveTab] = useState("Semua");
   const tabs = ["Semua", "ATS", "Resume", "Surat Lamaran"];
@@ -493,7 +489,7 @@ const PortfolioShowcase = () => {
 };
 // #endregion
 
-// #region TESTIMONIALS SECTION
+// #region Testimonials Section
 const TestimonialTextVariant = () => {
   const reviews = [
     { name: "Raka, 22", role: "Fresh Grad HTS", text: "Sumpah awalnya pesimis gara-gara IPK nasakom, eh desain CV dari Civita bikin HRD salfok. Besok langsung dapet panggilan interview njir." },
@@ -555,7 +551,7 @@ const TestimonialChatVariant = () => {
         <CarouselContent>
           {screenshots.map((src, idx) => (
             <CarouselItem key={idx} className="pl-4 md:pl-6 basis-full sm:basis-1/2 lg:basis-1/3">
-              <div className="aspect-[9/16] relative rounded-[2rem] overflow-hidden border-4 border-foreground bg-muted group">
+              <div className="aspect-[9/16] relative rounded-2xl overflow-hidden border-4 border-foreground bg-muted group">
                 <img
                   src={src}
                   alt={`WhatsApp Testimonial ${idx + 1}`}
@@ -610,7 +606,7 @@ const Testimonials = () => {
 };
 // #endregion
 
-// #region CTA SECTION
+// #region CTA Section
 const CTA = () => {
   return (
     <section className="relative py-32 px-6 overflow-hidden bg-[#ef3936] dark:bg-[#d9302d]">
@@ -654,7 +650,7 @@ const CTA = () => {
 };
 // #endregion
 
-// #region FOOTER & POPUP
+// #region Footer & Popup
 const Footer = () => {
   return (
     <footer className="bg-background border-t-4 border-foreground pt-16 pb-32 md:pb-12 px-6">
@@ -669,7 +665,7 @@ const Footer = () => {
 
           <div className="flex flex-col gap-4 text-base font-bold">
             <a href={APP_CONFIG.LINKS.WHATSAPP} target="_blank" rel="noreferrer" className="flex items-center gap-3 hover:text-[#ef3936] dark:hover:text-[#d9302d] transition-colors bg-muted w-max px-4 py-2 rounded-full border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground">
-              <SiWhatsapp className="w-5 h-5" /> +62 823-1294-5365
+              <SiWhatsapp className="w-5 h-5" /> +{APP_CONFIG.WHATSAPP}
             </a>
             <a href={APP_CONFIG.LINKS.EMAIL} className="flex items-center gap-3 hover:text-[#f68e51] dark:hover:text-[#d97941] transition-colors bg-muted w-max px-4 py-2 rounded-full border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground">
               <Mail className="w-5 h-5" /> civitakerja@gmail.com
@@ -738,7 +734,7 @@ const PricingPopup = () => {
 };
 // #endregion
 
-// #region APP WRAPPER
+// #region App Wrapper
 export default function App() {
   return (
     <div className="font-mono text-foreground antialiased selection:bg-[#f68e51] dark:selection:bg-[#d97941] selection:text-black min-h-screen bg-background pb-20 md:pb-0 overflow-x-hidden">
