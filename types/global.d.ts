@@ -77,5 +77,6 @@ export interface ReportOrderHistory {
   amount: number;
   status: string;
   created_at: string;
+  clerk_user_deleted_at: string | null;
   product_title: string | null;
 }

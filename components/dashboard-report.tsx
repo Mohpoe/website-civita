@@ -14,7 +14,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { formatRupiah } from "@/lib/utils";
 import { ReportChartData, ReportKPI, ReportOrderHistory, TopProduct } from "@/types/global";
 import { columnFilteringFeature, ColumnFiltersState, columnVisibilityFeature, ColumnVisibilityState, createColumnHelper, createFilteredRowModel, createPaginatedRowModel, createSortedRowModel, filterFn_includesString, globalFilteringFeature, rowPaginationFeature, rowSortingFeature, sortFn_alphanumeric, sortFn_text, SortingState, tableFeatures, useTable } from "@tanstack/react-table";
-import { ActivityIcon, BadgeAlertIcon, BadgeCheckIcon, BadgeXIcon, ChevronDownIcon, ChevronFirstIcon, ChevronLastIcon, ChevronLeftIcon, ChevronRightIcon, ChevronsUpDownIcon, ChevronUpIcon, Columns3Icon, CreditCardIcon, FilterIcon, GhostIcon, PackageIcon, PercentIcon, RefreshCcwIcon, Rows3Icon, SearchIcon, SlidersHorizontalIcon } from "lucide-react";
+import { ActivityIcon, BadgeAlertIcon, BadgeCheckIcon, BadgeXIcon, ChevronDownIcon, ChevronFirstIcon, ChevronLastIcon, ChevronLeftIcon, ChevronRightIcon, ChevronsUpDownIcon, ChevronUpIcon, Columns3Icon, CreditCardIcon, FilterIcon, GhostIcon, PackageIcon, PercentIcon, RefreshCcwIcon, Rows3Icon, SearchIcon, SlidersHorizontalIcon, UserX } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
@@ -98,17 +98,32 @@ export default function DashboardReport({ kpi, chartData, orderHistory }: Dashbo
       columnHelper.accessor("email", {
         id: "email",
         header: "Email Pembeli",
-        cell: (info) => (
-          <span className="font-medium text-sm">
-            {info.getValue() || <span className="italic opacity-50">Tanpa email</span>}
-          </span>
-        ),
+        cell: (info) => {
+          const email = info.getValue();
+          const clerkUserDeletedAt = info.row.original.clerk_user_deleted_at;
+          return (
+            <div className="flex items-center gap-2 justify-between">
+              <span className={`font-medium text-sm ${clerkUserDeletedAt && "opacity-50"}`}>
+                {email || <span className="italic opacity-50">Tanpa email</span>}
+              </span>
+              {clerkUserDeletedAt && (
+                <Badge
+                  variant="destructive"
+                  className="text-xs px-2 py-1"
+                  title="Akun pembeli telah dihapus dari sistem."
+                >
+                  <UserX className="w-3 h-3" />
+                </Badge>
+              )}
+            </div>
+          );
+        },
       }),
       columnHelper.accessor("product_title", {
         id: "nama_produk",
         header: "Nama Produk",
         cell: (info) => (
-          <span className="font-medium max-w-[200px] truncate block" title={info.getValue() || ""}>
+          <span className="font-medium max-w-xs truncate block" title={info.getValue() || ""}>
             {info.getValue() || <span className="italic opacity-50">Produk Dihapus</span>}
           </span>
         ),

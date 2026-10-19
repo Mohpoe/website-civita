@@ -69,6 +69,7 @@ export async function getReportData(range: string) {
         o.amount,
         o.status,
         o.created_at,
+        o.clerk_user_deleted_at,
         p.title as product_title
       FROM orders o
       LEFT JOIN products p ON o.product_id = p.id
