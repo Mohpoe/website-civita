@@ -65,6 +65,7 @@ export async function getReportData(range: string) {
     const orderHistory = await sql`
       SELECT
         o.order_id,
+        o.user_id,
         o.email,
         o.amount,
         o.status,

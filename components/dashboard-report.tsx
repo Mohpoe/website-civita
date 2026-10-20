@@ -98,14 +98,16 @@ export default function DashboardReport({ kpi, chartData, orderHistory }: Dashbo
       columnHelper.accessor("email", {
         id: "email",
         header: "Email Pembeli",
-        cell: (info) => {
-          const email = info.getValue();
-          const clerkUserDeletedAt = info.row.original.clerk_user_deleted_at;
+        cell: ({ row }) => {
+          const email = row.original.email;
+          const clerkUserDeletedAt = row.original.clerk_user_deleted_at;
+          const userId = row.original.user_id;
           return (
             <div className="flex items-center gap-2 justify-between">
-              <span className={`font-medium text-sm ${clerkUserDeletedAt && "opacity-50"}`}>
-                {email || <span className="italic opacity-50">Tanpa email</span>}
-              </span>
+              <div className={`flex flex-col items-start font-medium text-sm ${clerkUserDeletedAt && "text-foreground/50"}`}>
+                {email || <span className="italic text-foreground/50">Tanpa email</span>}
+                {userId ? <span className="text-xs text-muted-foreground/50">{userId}</span> : <span className="text-xs text-muted-foreground/50">Akun dihapus.</span>}
+              </div>
               {clerkUserDeletedAt && (
                 <Badge
                   variant="destructive"
@@ -118,6 +120,10 @@ export default function DashboardReport({ kpi, chartData, orderHistory }: Dashbo
             </div>
           );
         },
+      }),
+      columnHelper.accessor("user_id", {
+        id: "user_id",
+        enableHiding: false,
       }),
       columnHelper.accessor("product_title", {
         id: "nama_produk",
@@ -166,7 +172,9 @@ export default function DashboardReport({ kpi, chartData, orderHistory }: Dashbo
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<ColumnVisibilityState>({});
+  const [columnVisibility, setColumnVisibility] = useState<ColumnVisibilityState>({
+    user_id: false,
+  });
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
 
   const table = useTable({

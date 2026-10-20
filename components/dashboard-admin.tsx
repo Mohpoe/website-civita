@@ -2,7 +2,7 @@
 
 import { deleteBlobFileAction, deleteProductAction, upsertProductAction } from "@/lib/actions/product";
 import { formatRupiah } from "@/lib/utils";
-import { Category, Order, Product } from "@/types/global";
+import { Category, Order, Product, ProductSnapshot } from "@/types/global";
 import { columnFilteringFeature, ColumnFiltersState, columnVisibilityFeature, ColumnVisibilityState, createColumnHelper, createFilteredRowModel, createPaginatedRowModel, createSortedRowModel, filterFn_includesString, globalFilteringFeature, rowPaginationFeature, rowSortingFeature, sortFn_alphanumeric, sortFn_text, SortingState, tableFeatures, useTable } from "@tanstack/react-table";
 import { uploadPresigned } from "@vercel/blob/client";
 import { BadgeAlertIcon, BadgeCheckIcon, BadgeXIcon, ChevronDownIcon, ChevronFirstIcon, ChevronLastIcon, ChevronLeftIcon, ChevronRightIcon, ChevronsUpDownIcon, ChevronUpIcon, Columns3Icon, DownloadIcon, EyeIcon, FileTextIcon, GhostIcon, ImageIcon, MoreHorizontalIcon, PlusIcon, RefreshCcwIcon, Rows3Icon, SearchIcon, SlidersHorizontalIcon, SquarePenIcon, TagsIcon, Trash2Icon, UploadIcon } from "lucide-react";
@@ -25,11 +25,14 @@ import { Switch } from "./ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import { Textarea } from "./ui/textarea";
 import { toast } from "./ui/toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import DashboardSnapshots from "@/components/dashboard-snapshots";
 
 interface DashboardAdminProps {
-  products: Product[],
-  categories: Category[],
-  orders: Order[],
+  products: Product[];
+  categories: Category[];
+  orders: Order[];
+  snapshots: ProductSnapshot[];
 }
 
 const formatBytes = (bytes: number, decimals = 2) => {
@@ -41,10 +44,11 @@ const formatBytes = (bytes: number, decimals = 2) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 };
 
-export default function DashboardAdmin({ products, categories, orders }: DashboardAdminProps) {
+export default function DashboardAdmin({ products, categories, orders, snapshots }: DashboardAdminProps) {
   const [isPending, startTransition] = useTransition();
+  const [activeTab, setActiveTab] = useState("produk");
 
-  // #region CREATE/UPDATE STATES
+  // #region Create/Update States
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [productToUpdate, setProductToUpdate] = useState<Product | null>(null);
   const [upsertState, upsertFormAction, upsertIsPending] = useActionState(upsertProductAction, null);
@@ -87,7 +91,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
   }, [upsertState]);
   // #endregion CREATE & UPDATE STATES (Tambah & Edit Produk)
 
-  // #region DELETE STATES
+  // #region Delete States
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
 
@@ -122,7 +126,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
   };
   // #endregion
 
-  // #region COLUMN
+  // #region Column
   // 0. Rekap Statistik Pesanan
   const orderStats = useMemo(() => {
     const stats: Record<string, { success: number; pending: number; failed: number }> = {};
@@ -380,7 +384,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
   );
   // #endregion
 
-  // #region TABLE
+  // #region Table
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -432,7 +436,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
   const filteredStatus = filteredStatusValue !== undefined ? String(filteredStatusValue[0]) : "all";
   // #endregion
 
-  // #region LIST DEFINITION
+  // #region List Definition
   const categoryList = useMemo(() => categories?.map((cat) => ({
     label: cat.name,
     value: cat.id
@@ -440,221 +444,361 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
   // #endregion
 
   return (
-    <>
-      <Card className="shadow-md">
-        <CardHeader className="border-b">
-          <CardTitle>Kelola Produk Digital</CardTitle>
-          <CardDescription>Silakan atur produk digital yang ingin dijual.</CardDescription>
-          <CardAction>
-            <Button variant="outline" onClick={() => {
-              handleCreate();
-              setIsDialogOpen(true);
-            }}>
-              <PlusIcon />
-              <span className="hidden md:block">Tambah</span>
-            </Button>
-          </CardAction>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between w-full">
-            {
-              // #region DATATABLE MENU
-              <div className="flex flex-row items-center gap-2 w-full lg:w-auto">
-                <DropdownMenu>
-                  <DropdownMenuTrigger render={<Button variant="outline" className="min-h-8 text-sm w-full" />}>
-                    <SlidersHorizontalIcon />
-                    Atur Tabel
-                    <ChevronDownIcon className="size-4 ml-2 opacity-50" />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="min-w-64" align="start">
-                    <DropdownMenuGroup>
-                      <DropdownMenuLabel>Kolom</DropdownMenuLabel>
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <TabsList className="w-full mb-4" variant="line">
+        <TabsTrigger value="produk" className="flex-1 px-4 py-2">
+          Produk Digital
+        </TabsTrigger>
+        <TabsTrigger value="arsip" className="flex-1 px-4 py-2">
+          Arsip Produk
+        </TabsTrigger>
+      </TabsList>
 
-                      <DropdownMenuSub>
-                        <DropdownMenuSubTrigger>
-                          <TagsIcon />
-                          Kategori
-                        </DropdownMenuSubTrigger>
-                        <DropdownMenuPortal>
-                          <DropdownMenuSubContent>
-                            <DropdownMenuGroup>
-                              <DropdownMenuLabel>Pilih kategori</DropdownMenuLabel>
-                              <DropdownMenuCheckboxItem
-                                checked={filteredKategori.length === categories.length || filteredKategori.length === 0}
-                                onCheckedChange={() => table.getColumn("kategori")?.setFilterValue(undefined)}
+      <TabsContent value="produk" className="w-full">
+        <Card className="shadow-md">
+          <CardHeader className="border-b">
+            <CardTitle>Kelola Produk Digital</CardTitle>
+            <CardDescription>Silakan atur produk digital yang ingin dijual.</CardDescription>
+            <CardAction>
+              <Button variant="outline" onClick={() => {
+                handleCreate();
+                setIsDialogOpen(true);
+              }}>
+                <PlusIcon />
+                <span className="hidden md:block">Tambah</span>
+              </Button>
+            </CardAction>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between w-full">
+              {
+                // #region Datatable Menu
+                <div className="flex flex-row items-center gap-2 w-full lg:w-auto">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger render={<Button variant="outline" className="min-h-8 text-sm w-full" />}>
+                      <SlidersHorizontalIcon />
+                      Atur Tabel
+                      <ChevronDownIcon className="size-4 ml-2 opacity-50" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="min-w-64" align="start">
+                      <DropdownMenuGroup>
+                        <DropdownMenuLabel>Kolom</DropdownMenuLabel>
+
+                        <DropdownMenuSub>
+                          <DropdownMenuSubTrigger>
+                            <TagsIcon />
+                            Kategori
+                          </DropdownMenuSubTrigger>
+                          <DropdownMenuPortal>
+                            <DropdownMenuSubContent>
+                              <DropdownMenuGroup>
+                                <DropdownMenuLabel>Pilih kategori</DropdownMenuLabel>
+                                <DropdownMenuCheckboxItem
+                                  checked={filteredKategori.length === categories.length || filteredKategori.length === 0}
+                                  onCheckedChange={() => table.getColumn("kategori")?.setFilterValue(undefined)}
+                                >
+                                  Semua kategori
+                                </DropdownMenuCheckboxItem>
+                                {categories.map((category) => (
+                                  <DropdownMenuCheckboxItem
+                                    key={category.id}
+                                    checked={filteredKategori.includes(category.id)}
+                                    onCheckedChange={(checked) => {
+                                      const newFilters = checked
+                                        ? [...filteredKategori, category.id]
+                                        : filteredKategori.filter((id) => id !== category.id);
+                                      table.getColumn("kategori")?.setFilterValue(newFilters.length === 0 || newFilters.length === categories.length ? undefined : newFilters);
+                                    }}
+                                  >
+                                    {category.name}
+                                  </DropdownMenuCheckboxItem>
+                                ))}
+                              </DropdownMenuGroup>
+                            </DropdownMenuSubContent>
+                          </DropdownMenuPortal>
+                        </DropdownMenuSub>
+
+                        <DropdownMenuSub>
+                          <DropdownMenuSubTrigger>
+                            <EyeIcon />
+                            Status
+                          </DropdownMenuSubTrigger>
+                          <DropdownMenuPortal>
+                            <DropdownMenuSubContent>
+                              <DropdownMenuLabel>Pilih status produk</DropdownMenuLabel>
+                              <DropdownMenuRadioGroup
+                                value={filteredStatus}
+                                onValueChange={(val) => {
+                                  table.getColumn("status")?.setFilterValue(val === "all" ? undefined : [val === "true"]);
+                                }}
                               >
-                                Semua kategori
-                              </DropdownMenuCheckboxItem>
-                              {categories.map((category) => (
-                                <DropdownMenuCheckboxItem
-                                  key={category.id}
-                                  checked={filteredKategori.includes(category.id)}
-                                  onCheckedChange={(checked) => {
-                                    const newFilters = checked
-                                      ? [...filteredKategori, category.id]
-                                      : filteredKategori.filter((id) => id !== category.id);
-                                    table.getColumn("kategori")?.setFilterValue(newFilters.length === 0 || newFilters.length === categories.length ? undefined : newFilters);
-                                  }}
-                                >
-                                  {category.name}
-                                </DropdownMenuCheckboxItem>
-                              ))}
-                            </DropdownMenuGroup>
-                          </DropdownMenuSubContent>
-                        </DropdownMenuPortal>
-                      </DropdownMenuSub>
-
-                      <DropdownMenuSub>
-                        <DropdownMenuSubTrigger>
-                          <EyeIcon />
-                          Status
-                        </DropdownMenuSubTrigger>
-                        <DropdownMenuPortal>
-                          <DropdownMenuSubContent>
-                            <DropdownMenuLabel>Pilih status produk</DropdownMenuLabel>
-                            <DropdownMenuRadioGroup
-                              value={filteredStatus}
-                              onValueChange={(val) => {
-                                table.getColumn("status")?.setFilterValue(val === "all" ? undefined : [val === "true"]);
-                              }}
-                            >
-                              <DropdownMenuRadioItem value="all">
-                                Semua
-                              </DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="true">
-                                Aktif
-                              </DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="false">
-                                Tidak aktif
-                              </DropdownMenuRadioItem>
-                            </DropdownMenuRadioGroup>
-                          </DropdownMenuSubContent>
-                        </DropdownMenuPortal>
-                      </DropdownMenuSub>
-
-                      <DropdownMenuSeparator />
-                      <DropdownMenuLabel>Kolom</DropdownMenuLabel>
-
-                      <DropdownMenuSub>
-                        <DropdownMenuSubTrigger>
-                          <Columns3Icon />
-                          Tampilkan
-                        </DropdownMenuSubTrigger>
-                        <DropdownMenuPortal>
-                          <DropdownMenuSubContent>
-                            <DropdownMenuGroup>
-                              <DropdownMenuLabel>Tampilkan kolom</DropdownMenuLabel>
-                              {table.getAllColumns().filter((col) => col.getCanHide()).map((col) => (
-                                <DropdownMenuCheckboxItem
-                                  key={col.id}
-                                  className="capitalize"
-                                  checked={col.getIsVisible()}
-                                  onCheckedChange={(val) => col.toggleVisibility(!!val)}
-                                >
-                                  {col.id.replace("_", " ")}
-                                </DropdownMenuCheckboxItem>
-                              ))}
-                            </DropdownMenuGroup>
-                          </DropdownMenuSubContent>
-                        </DropdownMenuPortal>
-                      </DropdownMenuSub>
-
-                      <DropdownMenuSeparator />
-                      <DropdownMenuLabel>Baris</DropdownMenuLabel>
-
-                      <DropdownMenuSub>
-                        <DropdownMenuSubTrigger>
-                          <Rows3Icon />
-                          Tampilkan
-                        </DropdownMenuSubTrigger>
-                        <DropdownMenuPortal>
-                          <DropdownMenuSubContent>
-                            <DropdownMenuLabel>Tampilkan baris</DropdownMenuLabel>
-                            <DropdownMenuRadioGroup
-                              value={
-                                table.state.pagination.pageSize === table.getCoreRowModel().rows.length
-                                  ? "all"
-                                  : String(table.state.pagination.pageSize)
-                              }
-                              onValueChange={(val) => {
-                                if (val === "all") {
-                                  table.setPageSize(table.getCoreRowModel().rows.length);
-                                } else {
-                                  table.setPageSize(Number(val));
-                                }
-                              }}
-                            >
-                              {[10, 20, 50, 100].map((pageSize) => (
-                                <DropdownMenuRadioItem key={pageSize} value={String(pageSize)}>
-                                  {pageSize}
+                                <DropdownMenuRadioItem value="all">
+                                  Semua
                                 </DropdownMenuRadioItem>
-                              ))}
-                              <DropdownMenuRadioItem value="all">
-                                Semua ({table.getCoreRowModel().rows.length})
-                              </DropdownMenuRadioItem>
-                            </DropdownMenuRadioGroup>
-                          </DropdownMenuSubContent>
-                        </DropdownMenuPortal>
-                      </DropdownMenuSub>
+                                <DropdownMenuRadioItem value="true">
+                                  Aktif
+                                </DropdownMenuRadioItem>
+                                <DropdownMenuRadioItem value="false">
+                                  Tidak aktif
+                                </DropdownMenuRadioItem>
+                              </DropdownMenuRadioGroup>
+                            </DropdownMenuSubContent>
+                          </DropdownMenuPortal>
+                        </DropdownMenuSub>
 
-                      <DropdownMenuSeparator />
+                        <DropdownMenuSeparator />
+                        <DropdownMenuLabel>Kolom</DropdownMenuLabel>
 
-                      <DropdownMenuItem onClick={handleResetFilters}>
-                        <RefreshCcwIcon />
-                        Reset
-                      </DropdownMenuItem>
-                    </DropdownMenuGroup>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+                        <DropdownMenuSub>
+                          <DropdownMenuSubTrigger>
+                            <Columns3Icon />
+                            Tampilkan
+                          </DropdownMenuSubTrigger>
+                          <DropdownMenuPortal>
+                            <DropdownMenuSubContent>
+                              <DropdownMenuGroup>
+                                <DropdownMenuLabel>Tampilkan kolom</DropdownMenuLabel>
+                                {table.getAllColumns().filter((col) => col.getCanHide()).map((col) => (
+                                  <DropdownMenuCheckboxItem
+                                    key={col.id}
+                                    className="capitalize"
+                                    checked={col.getIsVisible()}
+                                    onCheckedChange={(val) => col.toggleVisibility(!!val)}
+                                  >
+                                    {col.id.replace("_", " ")}
+                                  </DropdownMenuCheckboxItem>
+                                ))}
+                              </DropdownMenuGroup>
+                            </DropdownMenuSubContent>
+                          </DropdownMenuPortal>
+                        </DropdownMenuSub>
+
+                        <DropdownMenuSeparator />
+                        <DropdownMenuLabel>Baris</DropdownMenuLabel>
+
+                        <DropdownMenuSub>
+                          <DropdownMenuSubTrigger>
+                            <Rows3Icon />
+                            Tampilkan
+                          </DropdownMenuSubTrigger>
+                          <DropdownMenuPortal>
+                            <DropdownMenuSubContent>
+                              <DropdownMenuLabel>Tampilkan baris</DropdownMenuLabel>
+                              <DropdownMenuRadioGroup
+                                value={
+                                  table.state.pagination.pageSize === table.getCoreRowModel().rows.length
+                                    ? "all"
+                                    : String(table.state.pagination.pageSize)
+                                }
+                                onValueChange={(val) => {
+                                  if (val === "all") {
+                                    table.setPageSize(table.getCoreRowModel().rows.length);
+                                  } else {
+                                    table.setPageSize(Number(val));
+                                  }
+                                }}
+                              >
+                                {[10, 20, 50, 100].map((pageSize) => (
+                                  <DropdownMenuRadioItem key={pageSize} value={String(pageSize)}>
+                                    {pageSize}
+                                  </DropdownMenuRadioItem>
+                                ))}
+                                <DropdownMenuRadioItem value="all">
+                                  Semua ({table.getCoreRowModel().rows.length})
+                                </DropdownMenuRadioItem>
+                              </DropdownMenuRadioGroup>
+                            </DropdownMenuSubContent>
+                          </DropdownMenuPortal>
+                        </DropdownMenuSub>
+
+                        <DropdownMenuSeparator />
+
+                        <DropdownMenuItem onClick={handleResetFilters}>
+                          <RefreshCcwIcon />
+                          Reset
+                        </DropdownMenuItem>
+                      </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+                // #endregion
+              }
+              {
+                // #region Datatable Search
+                <div className="flex items-center justify-between sm:justify-end gap-2 w-full lg:w-auto border-t pt-4 lg:border-none lg:pt-0">
+                  <Field className="flex-1 lg:w-64">
+                    <InputGroup className="w-full min-h-8">
+                      <InputGroupInput
+                        className="text-sm!"
+                        type="search"
+                        placeholder="Pencarian..."
+                        autoComplete="off"
+                        value={globalFilter ?? ""}
+                        onChange={(e) => setGlobalFilter(e.target.value)}
+                      />
+                      <InputGroupAddon>
+                        <SearchIcon className="size-4" />
+                      </InputGroupAddon>
+                    </InputGroup>
+                  </Field>
+                </div>
+                // #endregion
+              }
+            </div>
+
+            {
+              // #region Upper Pagination
+              table.getRowModel().rows?.length > 0 && (
+                <>
+                  <Separator />
+                  <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+                    <div className="text-xs font-medium text-muted-foreground order-2 sm:order-1 text-center sm:text-left">
+                      Baris{" "}
+                      <span className="font-bold text-foreground">
+                        {table.getFilteredRowModel().rows.length > 0
+                          ? table.state.pagination.pageIndex * table.state.pagination.pageSize + 1
+                          : 0}
+                      </span>
+                      {" "}s/d{" "}
+                      <span className="font-bold text-foreground">
+                        {table.state.pagination.pageIndex * table.state.pagination.pageSize +
+                          table.getRowModel().rows.length}
+                      </span>
+                      {" "}dari{" "}
+                      <span className="font-bold text-foreground">{table.getFilteredRowModel().rows.length}</span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 order-1 sm:order-2">
+                      <Button
+                        variant="outline"
+                        className="size-8 p-0"
+                        onClick={() => table.setPageIndex(0)}
+                        disabled={!table.getCanPreviousPage()}
+                        title="Halaman Pertama"
+                      >
+                        <ChevronFirstIcon className="size-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="size-8 p-0"
+                        onClick={() => table.previousPage()}
+                        disabled={!table.getCanPreviousPage()}
+                        title="Halaman Sebelumnya"
+                      >
+                        <ChevronLeftIcon className="size-4" />
+                      </Button>
+
+                      <div className="flex h-8 items-center justify-center rounded-md border bg-muted/40 px-3 text-xs font-bold tabular-nums">
+                        {table.state.pagination.pageIndex + 1} / {table.getPageCount()}
+                      </div>
+
+                      <Button
+                        variant="outline"
+                        className="size-8 p-0"
+                        onClick={() => table.nextPage()}
+                        disabled={!table.getCanNextPage()}
+                        title="Halaman Selanjutnya"
+                      >
+                        <ChevronRightIcon className="size-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="size-8 p-0"
+                        onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                        disabled={!table.getCanNextPage()}
+                        title="Halaman Terakhir"
+                      >
+                        <ChevronLastIcon className="size-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              )
               // #endregion
             }
             {
-              // #region DATATABLE SEARCH
-              <div className="flex items-center justify-between sm:justify-end gap-2 w-full lg:w-auto border-t pt-4 lg:border-none lg:pt-0">
-                <Field className="flex-1 lg:w-64">
-                  <InputGroup className="w-full min-h-8">
-                    <InputGroupInput
-                      className="text-sm!"
-                      type="search"
-                      placeholder="Pencarian..."
-                      autoComplete="off"
-                      value={globalFilter ?? ""}
-                      onChange={(e) => setGlobalFilter(e.target.value)}
-                    />
-                    <InputGroupAddon>
-                      <SearchIcon className="size-4" />
-                    </InputGroupAddon>
-                  </InputGroup>
-                </Field>
+              // #region Datatable
+              <div className="overflow-hidden rounded-lg border">
+                <Table>
+                  <TableHeader className="bg-muted">
+                    {table.getHeaderGroups().map((headerGroup) => (
+                      <TableRow key={headerGroup.id} className="*:border-border [&>:not(:last-child)]:border-r">
+                        {headerGroup.headers.map((header) => (
+                          <TableHead key={header.id} onClick={header.column.getToggleSortingHandler()}>
+                            {header.column.getCanSort() ? (
+                              <Button variant="ghost" className="p-0 m-0 flex justify-between w-full">
+                                <div className="flex">
+                                  {header.isPlaceholder
+                                    ? null
+                                    : <table.FlexRender header={header} />
+                                  }
+                                </div>
+                                <div className="flex">
+                                  {header.column.getCanSort() && (
+                                    <span className="opacity-40">
+                                      {(() => {
+                                        const sortState = header.column.getIsSorted();
+                                        if (sortState === 'asc') return <ChevronUpIcon />;
+                                        if (sortState === 'desc') return <ChevronDownIcon />;
+                                        return <ChevronsUpDownIcon />;
+                                      })()}
+                                    </span>
+                                  )}
+                                </div>
+                              </Button>
+                            ) : header.isPlaceholder
+                              ? null
+                              : <table.FlexRender header={header} />
+                            }
+                          </TableHead>
+                        ))}
+                      </TableRow>
+                    ))}
+                  </TableHeader>
+                  <TableBody>
+                    {table.getRowModel().rows.length ? (
+                      table.getRowModel().rows.map((row) => (
+                        <TableRow key={row.id} className="*:border-border [&>:not(:last-child)]:border-r">
+                          {row.getVisibleCells().map((cell) => (
+                            <TableCell key={cell.id}>
+                              <table.FlexRender cell={cell} />
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={columns.length} className="text-center">
+                          <div className="flex flex-col items-center gap-2 opacity-50 py-10">
+                            <GhostIcon className="size-20" />
+                            <p className="font-medium italic">Belum ada produk!</p>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
               </div>
               // #endregion
             }
-          </div>
-
+          </CardContent>
           {
-            // #region UPPER PAGINATION
+            // #region Lower Pagination
             table.getRowModel().rows?.length > 0 && (
-              <>
-                <Separator />
-                <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
-                  <div className="text-xs font-medium text-muted-foreground order-2 sm:order-1 text-center sm:text-left">
-                    Baris{" "}
-                    <span className="font-bold text-foreground">
-                      {table.getFilteredRowModel().rows.length > 0
-                        ? table.state.pagination.pageIndex * table.state.pagination.pageSize + 1
-                        : 0}
-                    </span>
-                    {" "}s/d{" "}
-                    <span className="font-bold text-foreground">
-                      {table.state.pagination.pageIndex * table.state.pagination.pageSize +
-                        table.getRowModel().rows.length}
-                    </span>
-                    {" "}dari{" "}
-                    <span className="font-bold text-foreground">{table.getFilteredRowModel().rows.length}</span>
+              <CardFooter>
+                <div className="flex w-full flex-col items-center justify-between gap-4 py-1 lg:flex-row lg:gap-8">
+                  <div className="order-2 text-xs font-medium lg:order-1 lg:flex-1">
+                    <span className="opacity-50">Baris</span>{" "}
+                    {table.getFilteredRowModel().rows.length > 0
+                      ? table.state.pagination.pageIndex * table.state.pagination.pageSize + 1
+                      : 0}
+                    {" "}<span className="opacity-50">s/d</span>{" "}
+                    {table.state.pagination.pageIndex * table.state.pagination.pageSize + table.getRowModel().rows.length}
+                    {" "}<span className="opacity-50">dari</span>{" "}
+                    <span className="font-bold">{table.getFilteredRowModel().rows.length}</span>{" "}
                   </div>
 
-                  <div className="flex items-center gap-1.5 order-1 sm:order-2">
+                  <div className="order-1 flex items-center gap-1.5 lg:order-2">
                     <Button
                       variant="outline"
                       className="size-8 p-0"
@@ -674,7 +818,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                       <ChevronLeftIcon className="size-4" />
                     </Button>
 
-                    <div className="flex h-8 items-center justify-center rounded-md border bg-muted/40 px-3 text-xs font-bold tabular-nums">
+                    <div className="flex h-8 items-center justify-center rounded-md border bg-muted/50 px-3 text-xs font-bold sm:hidden">
                       {table.state.pagination.pageIndex + 1} / {table.getPageCount()}
                     </div>
 
@@ -697,152 +841,27 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
                       <ChevronLastIcon className="size-4" />
                     </Button>
                   </div>
+
+                  <div className="order-3 hidden text-right text-xs font-medium lg:block lg:flex-1">
+                    <span className="opacity-50">Halaman</span>{" "}
+                    <span className="font-bold">{table.state.pagination.pageIndex + 1}</span>{" "}
+                    <span className="opacity-50">dari</span>{" "}
+                    <span className="font-bold">{table.getPageCount()}</span>
+                  </div>
                 </div>
-              </>
+              </CardFooter>
             )
             // #endregion
           }
-          {
-            // #region DATATABLE
-            <div className="overflow-hidden rounded-lg border">
-              <Table>
-                <TableHeader className="bg-muted">
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <TableRow key={headerGroup.id} className="*:border-border [&>:not(:last-child)]:border-r">
-                      {headerGroup.headers.map((header) => (
-                        <TableHead key={header.id} onClick={header.column.getToggleSortingHandler()}>
-                          {header.column.getCanSort() ? (
-                            <Button variant="ghost" className="p-0 m-0 flex justify-between w-full">
-                              <div className="flex">
-                                {header.isPlaceholder
-                                  ? null
-                                  : <table.FlexRender header={header} />
-                                }
-                              </div>
-                              <div className="flex">
-                                {header.column.getCanSort() && (
-                                  <span className="opacity-40">
-                                    {(() => {
-                                      const sortState = header.column.getIsSorted();
-                                      if (sortState === 'asc') return <ChevronUpIcon />;
-                                      if (sortState === 'desc') return <ChevronDownIcon />;
-                                      return <ChevronsUpDownIcon />;
-                                    })()}
-                                  </span>
-                                )}
-                              </div>
-                            </Button>
-                          ) : header.isPlaceholder
-                            ? null
-                            : <table.FlexRender header={header} />
-                          }
-                        </TableHead>
-                      ))}
-                    </TableRow>
-                  ))}
-                </TableHeader>
-                <TableBody>
-                  {table.getRowModel().rows.length ? (
-                    table.getRowModel().rows.map((row) => (
-                      <TableRow key={row.id} className="*:border-border [&>:not(:last-child)]:border-r">
-                        {row.getVisibleCells().map((cell) => (
-                          <TableCell key={cell.id}>
-                            <table.FlexRender cell={cell} />
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={columns.length} className="text-center">
-                        <div className="flex flex-col items-center gap-2 opacity-50 py-10">
-                          <GhostIcon className="size-20" />
-                          <p className="font-medium italic">Belum ada produk!</p>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-            // #endregion
-          }
-        </CardContent>
-        {
-          // #region LOWER PAGINATION
-          table.getRowModel().rows?.length > 0 && (
-            <CardFooter>
-              <div className="flex w-full flex-col items-center justify-between gap-4 py-1 lg:flex-row lg:gap-8">
-                <div className="order-2 text-xs font-medium lg:order-1 lg:flex-1">
-                  <span className="opacity-50">Baris</span>{" "}
-                  {table.getFilteredRowModel().rows.length > 0
-                    ? table.state.pagination.pageIndex * table.state.pagination.pageSize + 1
-                    : 0}
-                  {" "}<span className="opacity-50">s/d</span>{" "}
-                  {table.state.pagination.pageIndex * table.state.pagination.pageSize + table.getRowModel().rows.length}
-                  {" "}<span className="opacity-50">dari</span>{" "}
-                  <span className="font-bold">{table.getFilteredRowModel().rows.length}</span>{" "}
-                </div>
+        </Card>
+      </TabsContent>
 
-                <div className="order-1 flex items-center gap-1.5 lg:order-2">
-                  <Button
-                    variant="outline"
-                    className="size-8 p-0"
-                    onClick={() => table.setPageIndex(0)}
-                    disabled={!table.getCanPreviousPage()}
-                    title="Halaman Pertama"
-                  >
-                    <ChevronFirstIcon className="size-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="size-8 p-0"
-                    onClick={() => table.previousPage()}
-                    disabled={!table.getCanPreviousPage()}
-                    title="Halaman Sebelumnya"
-                  >
-                    <ChevronLeftIcon className="size-4" />
-                  </Button>
-
-                  <div className="flex h-8 items-center justify-center rounded-md border bg-muted/50 px-3 text-xs font-bold sm:hidden">
-                    {table.state.pagination.pageIndex + 1} / {table.getPageCount()}
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    className="size-8 p-0"
-                    onClick={() => table.nextPage()}
-                    disabled={!table.getCanNextPage()}
-                    title="Halaman Selanjutnya"
-                  >
-                    <ChevronRightIcon className="size-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="size-8 p-0"
-                    onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                    disabled={!table.getCanNextPage()}
-                    title="Halaman Terakhir"
-                  >
-                    <ChevronLastIcon className="size-4" />
-                  </Button>
-                </div>
-
-                <div className="order-3 hidden text-right text-xs font-medium lg:block lg:flex-1">
-                  <span className="opacity-50">Halaman</span>{" "}
-                  <span className="font-bold">{table.state.pagination.pageIndex + 1}</span>{" "}
-                  <span className="opacity-50">dari</span>{" "}
-                  <span className="font-bold">{table.getPageCount()}</span>
-                </div>
-              </div>
-            </CardFooter>
-          )
-          // #endregion
-        }
-      </Card>
+      <TabsContent value="arsip" className="w-full">
+        <DashboardSnapshots snapshots={snapshots} />
+      </TabsContent>
 
       {
-        // #region CREATE & UPDATE DIALOG
+        // #region Create & Update Dialog
         <Dialog
           open={isDialogOpen}
           modal={isUploadingFile || upsertIsPending}
@@ -1192,7 +1211,7 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
         // #endregion
       }
       {
-        // #region DELETE ALERT
+        // #region Delete Alert
         <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
           <AlertDialogContent size="sm">
             <AlertDialogHeader>
@@ -1213,6 +1232,6 @@ export default function DashboardAdmin({ products, categories, orders }: Dashboa
         </AlertDialog>
         // #endregion
       }
-    </>
+    </Tabs>
   );
 }

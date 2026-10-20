@@ -4,7 +4,7 @@ export const APP_CONFIG = {
   VERSION: "1.2",
   EMAIL: "admin@civita.id",
   EMAIL_GMAIL: "civitakerja@gmail.com",
-  EMAIL_SENDER: "support@civita.id",
+  EMAIL_SENDER: "products-delivery-no-reply@civita.id",
   WHATSAPP: "6282312945365",
   LINKS: {
     HOMEPAGE: "https://www.civita.id",

@@ -81,7 +81,7 @@ export default function DashboardInventory({ orders: initialOrders }: DashboardI
 
   // #region Handle Beli Lagi
   const [isReorderPending, startReorderTransition] = useTransition();
-  const handleReorder = (productId: string, orderId: string) => {
+  const handleReorder = (productId: string | null, orderId: string) => {
     startReorderTransition(async () => {
       setIsLoadingCheckout(orderId);
       try {
@@ -263,20 +263,20 @@ export default function DashboardInventory({ orders: initialOrders }: DashboardI
                         </div>
                         <div className="flex flex-wrap items-center gap-2">
                           <h3 className="font-bold text-lg leading-tight">
-                            {order.product?.title || "Produk Tidak Tersedia"}
+                            {order.product?.title || order.product_snapshot?.title || "Produk Tidak Tersedia"}
                           </h3>
 
-                          {(order.product?.is_active === false) && (
+                          {(order.product?.is_active === false || order.product_snapshot) && (
                             <Badge
                               variant="secondary"
                               className="bg-purple-100 text-purple-700 hover:bg-purple-100 border-purple-200 font-b"
-                              title="Produk ini sudah tidak dijual lagi di toko."
+                              title="Produk ini merupakan edisi terbatas dan tidak lagi tersedia secara umum di toko."
                             >
                               <BadgeCheckIcon data-icon="inline-start" /> Edisi Terbatas
                             </Badge>
                           )}
                         </div>
-                        <p className="text-xs text-foreground/50">{order.product?.short_desc}</p>
+                        <p className="text-xs text-foreground/50">{order.product?.short_desc || order.product_snapshot?.short_desc}</p>
                         <p className="text-sm text-muted-foreground sm:hidden">{orderDate}</p>
                       </div>
 

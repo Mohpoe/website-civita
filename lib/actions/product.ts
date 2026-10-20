@@ -5,7 +5,7 @@ import { sql } from "@/lib/utils";
 import { productSchema } from "@/lib/zod-schemas";
 import { Product } from "@/types/global";
 import { auth, currentUser } from "@clerk/nextjs/server";
-import { del, putImage } from "@vercel/blob";
+import { copy, del, putImage } from "@vercel/blob";
 import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 
@@ -202,39 +202,133 @@ export async function deleteProductAction(formData: FormData) {
   if (!id) return { success: false, message: "ID Produk tidak ditemukan!" };
 
   try {
-    const rows = await sql`SELECT image_url, file_url FROM products WHERE id = ${id}`;
-    if (rows.length === 0) return { success: false, message: "Produk tidak ditemukan di database." };
+    // 1. Cek apakah produk memiliki order terkait
+    const orderCountResult = await sql`SELECT COUNT(*)::int as count FROM orders WHERE product_id = ${id}`;
+    const orderCount = Number(orderCountResult[0]?.count ?? 0);
 
-    const product = rows[0];
+    // 2. Ambil data produk sebelum dihapus
+    const productRows = await sql`SELECT id, title, short_desc, long_desc, price, image_url, file_url, created_at FROM products WHERE id = ${id}`;
+    if (productRows.length === 0) return { success: false, message: "Produk tidak ditemukan di database." };
 
-    if (product.image_url) {
-      try {
-        await del(product.image_url, {
-          storeId: process.env.PUBLIC_BLOB_STORE_ID,
-          oidcToken: process.env.VERCEL_OIDC_TOKEN
-        });
-      } catch (e) {
-        console.error("Gagal menghapus thumbnail:", e);
+    const product = productRows[0] as Product;
+
+    if (orderCount > 0) {
+      // ========================================================================
+      // PRODUK SUDAH PUNYA ORDER → PINDahkan KE SNAPSHOT (jangan hard delete)
+      // ========================================================================
+      const snapshotId = `snap_${randomUUID().substring(0, 8)}`;
+
+      // 3a. Salin thumbnail ke folder snapshots/thumbnails (public store)
+      let thumbnailSnapshotUrl = "";
+      if (product.image_url) {
+        try {
+          const thumbnailFileName = product.image_url.split("/").pop() || "thumbnail";
+          const copied = await copy(product.image_url, `snapshots/thumbnails/${thumbnailFileName}`, {
+            access: "public",
+            addRandomSuffix: true,
+            storeId: process.env.PUBLIC_BLOB_STORE_ID,
+            oidcToken: process.env.VERCEL_OIDC_TOKEN,
+          });
+          thumbnailSnapshotUrl = copied.url;
+        } catch (copyErr) {
+          console.error("Gagal menyalin thumbnail ke snapshot:", copyErr);
+          return { success: false, message: "Gagal memindahkan thumbnail ke arsip." };
+        }
       }
-    }
 
-    if (product.file_url) {
-      try {
-        await del(product.file_url, {
-          storeId: process.env.PRIVATE_BLOB_STORE_ID,
-          oidcToken: process.env.VERCEL_OIDC_TOKEN,
-        });
-      } catch (e) {
-        console.error("Gagal menghapus file digital:", e);
+      // 3b. Salin file download ke folder snapshots/products (private store)
+      let fileSnapshotUrl = "";
+      if (product.file_url) {
+        try {
+          const fileName = product.file_url.split("/").pop() || "file";
+          const copied = await copy(product.file_url, `snapshots/products/${fileName}`, {
+            access: "private",
+            addRandomSuffix: true,
+            storeId: process.env.PRIVATE_BLOB_STORE_ID,
+            oidcToken: process.env.VERCEL_OIDC_TOKEN,
+          });
+          fileSnapshotUrl = copied.url;
+        } catch (copyErr) {
+          console.error("Gagal menyalin file download ke snapshot:", copyErr);
+          // Jika gagal salin file, coba hapus thumbnail yang sudah tersalin
+          if (thumbnailSnapshotUrl) {
+            try { await del(thumbnailSnapshotUrl, { storeId: process.env.PUBLIC_BLOB_STORE_ID, oidcToken: process.env.VERCEL_OIDC_TOKEN }); } catch { }
+          }
+          return { success: false, message: "Gagal memindahkan file download ke arsip." };
+        }
       }
+
+      // 3c. Simpan ke tabel product_snapshots
+      await sql`
+        INSERT INTO product_snapshots (
+          id, original_product_id, title, short_desc, long_desc,
+          price, image_url, file_url, created_at, features, category_id
+        ) VALUES (
+          ${snapshotId}, ${product.id}, ${product.title}, ${product.short_desc},
+          ${product.long_desc}, ${product.price}, ${thumbnailSnapshotUrl},
+          ${fileSnapshotUrl}, ${product.created_at}, ${product.features}, ${product.category_id}
+        )
+      `;
+
+      // 3d. Hapus file asli dari folder utama
+      if (product.image_url) {
+        try { await del(product.image_url, { storeId: process.env.PUBLIC_BLOB_STORE_ID, oidcToken: process.env.VERCEL_OIDC_TOKEN }); } catch { }
+      }
+      if (product.file_url) {
+        try { await del(product.file_url, { storeId: process.env.PRIVATE_BLOB_STORE_ID, oidcToken: process.env.VERCEL_OIDC_TOKEN }); } catch { }
+      }
+
+      // 3e. Hapus baris produk dari tabel products
+      await sql`DELETE FROM products WHERE id = ${id}`;
+
+      // 3f. Update semua order terkait: lepas product_id, pasang product_snapshot_id
+      await sql`
+        UPDATE orders
+        SET product_id = NULL, product_snapshot_id = ${snapshotId}
+        WHERE product_id = ${id}
+      `;
+
+      revalidatePath(ROUTES.DASHBOARD.HOME);
+      revalidatePath(ROUTES.DASHBOARD.INVENTORY);
+      revalidatePath(ROUTES.DASHBOARD.ADMIN);
+      return {
+        success: true,
+        message: `Produk dipindahkan ke arsip karena memiliki ${orderCount} transaksi. Data transaksi tetap aman.`,
+        snapshotId,
+      };
+    } else {
+      // ========================================================================
+      // PRODUK BELUM PUNYA ORDER → HARD DELETE MURNI
+      // ========================================================================
+      if (product.image_url) {
+        try {
+          await del(product.image_url, {
+            storeId: process.env.PUBLIC_BLOB_STORE_ID,
+            oidcToken: process.env.VERCEL_OIDC_TOKEN
+          });
+        } catch (e) {
+          console.error("Gagal menghapus thumbnail:", e);
+        }
+      }
+
+      if (product.file_url) {
+        try {
+          await del(product.file_url, {
+            storeId: process.env.PRIVATE_BLOB_STORE_ID,
+            oidcToken: process.env.VERCEL_OIDC_TOKEN,
+          });
+        } catch (e) {
+          console.error("Gagal menghapus file digital:", e);
+        }
+      }
+
+      await sql`DELETE FROM products WHERE id = ${id}`;
+
+      revalidatePath(ROUTES.DASHBOARD.HOME);
+      revalidatePath(ROUTES.DASHBOARD.INVENTORY);
+      revalidatePath(ROUTES.DASHBOARD.ADMIN);
+      return { success: true, message: "Produk dan file berhasil dihapus!" };
     }
-
-    await sql`DELETE FROM products WHERE id = ${id}`;
-
-    revalidatePath(ROUTES.DASHBOARD.HOME);
-    revalidatePath(ROUTES.DASHBOARD.INVENTORY);
-    revalidatePath(ROUTES.DASHBOARD.ADMIN);
-    return { success: true, message: "Produk dan file berhasil dihapus!" };
   } catch (error) {
     console.error("Error deleting product:", error);
     return { success: false, message: "Gagal menghapus produk." };

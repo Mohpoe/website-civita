@@ -39,14 +39,29 @@ export interface Product {
 export interface Order {
   order_id: string;
   user_id: string | null;
-  product_id: string;
+  product_id: string | null;
+  product_snapshot_id: string | null;
   amount: number;
   status: 'pending' | 'success' | 'failed' | 'expired' | 'canceled' | 'challenge';
   snap_token: string | null;
   created_at: string;
   clerk_user_deleted_at: string | null;
   product?: Product;
+  product_snapshot?: ProductSnapshot;
   email?: string;
+}
+
+export interface ProductSnapshot {
+  id: string;
+  original_product_id: string | null;
+  title: string;
+  short_desc: string | null;
+  long_desc: string | null;
+  price: number;
+  image_url: string;
+  file_url: string;
+  created_at: string;
+  deleted_at: string;
 }
 
 export interface ReportKPI {
@@ -73,6 +88,7 @@ export interface TopProduct {
 
 export interface ReportOrderHistory {
   order_id: string;
+  user_id: string | null;
   email: string | null;
   amount: number;
   status: string;
