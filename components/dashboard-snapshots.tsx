@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import {
+  ArchiveRestoreIcon,
   ChevronDownIcon,
   ChevronFirstIcon,
   ChevronLastIcon,
@@ -588,13 +589,12 @@ export default function DashboardSnapshots({ snapshots: initialSnapshots }: Dash
         <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogMedia className="bg-warning/10 text-warning">
-                <UserX className="w-6 h-6" />
+              <AlertDialogMedia>
+                <ArchiveRestoreIcon />
               </AlertDialogMedia>
               <AlertDialogTitle>Pulihkan Produk?</AlertDialogTitle>
               <AlertDialogDescription>
-                Produk ini akan dipulihkan kembali ke data utama sebagai <strong>draft (tidak aktif)</strong> di katalog.
-                File thumbnail dan download akan dipindahkan kembali ke folder utama. Admin perlu mengedit dan mempublish ulang sebelum produk muncul di toko.
+                Yakin akan memulihkan produk ini untuk ditampilkan?
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
