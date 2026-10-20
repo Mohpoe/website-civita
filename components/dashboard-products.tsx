@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatRupiah } from "@/lib/utils";
-import { Category, Product } from "@/types/global";
+import { Category, Order, Product } from "@/types/global";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowDownUpIcon, ArrowRightIcon, AwardIcon, CheckCircle2Icon, ChevronLeftIcon, ChevronRightIcon, FileTextIcon, MoveRightIcon, PackageSearchIcon, SearchIcon, ShoppingBagIcon, TagIcon, TagsIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -17,8 +17,9 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from "./ui/input-group";
 import { ROUTES } from "@/lib/constants";
 
 interface DashboardProductsProps {
-  products: Product[],
-  categories: Category[],
+  products: Product[];
+  categories: Category[];
+  orders: Order[];
 }
 
 // Konfigurasi Warna Neo-Pop untuk Light & Dark Mode
@@ -31,7 +32,7 @@ const NEO_COLORS = [
   { light: '#B2F0B2', dark: '#1E3E26', textLight: '#151722', textDark: '#F0FDF4' }, // Sage / Forest Green
 ];
 
-export default function DashboardProducts({ products, categories }: DashboardProductsProps) {
+export default function DashboardProducts({ products, categories, orders }: DashboardProductsProps) {
   const router = useRouter();
 
   // Dialog/Modal State
@@ -117,6 +118,24 @@ export default function DashboardProducts({ products, categories }: DashboardPro
   // #region Checkout Handler
   const checkoutHandler = async () => {
     if (!selectedProduct || detailDialog === false || isProcessing) return;
+
+    // Cek apakah produk sudah pernah dibeli dengan status success
+    const alreadyPurchased = orders.some(
+      (order) => order.product_id === selectedProduct.id && order.status === "success"
+    );
+
+    if (alreadyPurchased) {
+      setIsProcessing(false);
+      setDetailDialog(false);
+      toast.add({
+        title: "Produk Sudah Dibeli",
+        description: "Anda sudah memiliki produk ini. Silakan cek halaman 'Pesanan Saya' untuk mengunduh file.",
+        type: "error",
+        priority: "high",
+      });
+      router.push(ROUTES.DASHBOARD.INVENTORY);
+      return;
+    }
 
     setIsProcessing(true);
 

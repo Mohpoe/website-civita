@@ -178,7 +178,7 @@ export default function DashboardSnapshots({ snapshots: initialSnapshots }: Dash
                 <DropdownMenuTrigger render={<Button variant="ghost" className="h-8 w-8 p-0" />}>
                   <MoreHorizontalIcon className="h-4 w-4 text-muted-foreground" />
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-[180px] rounded-xl shadow-lg">
+                <DropdownMenuContent align="end" className="w-full rounded-xl shadow-lg">
                   <DropdownMenuGroup>
                     <DropdownMenuLabel>Pilih Menu</DropdownMenuLabel>
 

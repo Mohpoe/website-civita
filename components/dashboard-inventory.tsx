@@ -16,6 +16,7 @@ import { formatRupiah } from '@/lib/utils';
 import { Order } from '@/types/global';
 import { toast } from './ui/toast';
 import { useRouter } from 'next/navigation';
+import { ROUTES } from "@/lib/constants";
 
 interface DashboardInventoryProps {
   orders: Order[]
@@ -82,6 +83,26 @@ export default function DashboardInventory({ orders: initialOrders }: DashboardI
   // #region Handle Beli Lagi
   const [isReorderPending, startReorderTransition] = useTransition();
   const handleReorder = (productId: string | null, orderId: string) => {
+    if (!productId) return;
+
+    // Cek apakah sudah ada order success untuk produk ini
+    const alreadyPurchased = orders.some(
+      (order) =>
+        (order.product_id === productId || order.product_snapshot_id === productId) &&
+        order.status === "success"
+    );
+
+    if (alreadyPurchased) {
+      toast.add({
+        title: "Produk Sudah Dibeli",
+        description: "Anda sudah memiliki produk ini. Silakan cek halaman 'Pesanan Saya' untuk mengunduh file.",
+        type: "error",
+        priority: "high",
+      });
+      router.push(ROUTES.DASHBOARD.INVENTORY);
+      return;
+    }
+
     startReorderTransition(async () => {
       setIsLoadingCheckout(orderId);
       try {
@@ -345,11 +366,11 @@ export default function DashboardInventory({ orders: initialOrders }: DashboardI
                           )}
 
                           {/* JIKA EXPIRED / CANCELED / FAILED */}
-                          {isFailureStatus && order.product_id && (
+                          {isFailureStatus && (order.product_id || order.product_snapshot_id) && (
                             <Button
                               variant="outline"
                               className="w-full sm:w-auto gap-2"
-                              onClick={() => handleReorder(order.product_id, order.order_id)}
+                              onClick={() => handleReorder(order.product_id || order.product_snapshot_id, order.order_id)}
                               disabled={isLoadingCheckout === order.order_id}
                             >
                               {isLoadingCheckout === order.order_id ? (

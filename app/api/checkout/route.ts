@@ -7,6 +7,7 @@ export async function POST(req: Request) {
   try {
     const user = await currentUser();
     if (!user) return NextResponse.json("Unauthorized", { status: 401 });
+    const userEmail = user.emailAddresses[0]?.emailAddress || "Tidak ada email";
 
     const body = await req.json();
     const { productId } = body;
@@ -31,6 +32,25 @@ export async function POST(req: Request) {
     if (!product.file_url) {
       return NextResponse.json({ error: "File untuk produk ini belum tersedia! Hubungi Admin." }, { status: 400 });
     }
+
+    // #region CEK DUPLIKAT PEMBELIAN
+    // Hanya cek order dengan status 'success' — expired/failed/canceled masih boleh dibeli ulang
+    const existingOrder = await sql`
+      SELECT order_id, status
+      FROM orders
+      WHERE email = ${userEmail} AND product_id = ${productId} AND status = 'success'
+      LIMIT 1
+    `;
+
+    if (existingOrder.length > 0) {
+      return NextResponse.json({
+        error: "Produk ini sudah Anda beli sebelumnya.",
+        alreadyPurchased: true,
+        orderId: existingOrder[0].order_id,
+        message: "Anda sudah memiliki produk ini. Silakan cek halaman 'Pesanan Saya' untuk mengunduh file."
+      }, { status: 409 });
+    }
+    // #endregion
 
     const orderId = `ORD-CIV-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
@@ -69,7 +89,6 @@ export async function POST(req: Request) {
     }
 
     const snapToken = data.token;
-    const userEmail = user.emailAddresses[0]?.emailAddress || "Tidak ada email";
 
     await sql`
       INSERT INTO orders (
