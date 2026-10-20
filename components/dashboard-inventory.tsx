@@ -228,10 +228,10 @@ export default function DashboardInventory({ orders: initialOrders }: DashboardI
 
                     {/* Thumbnail Area */}
                     <div className="relative w-full sm:w-32 aspect-video sm:aspect-square sm:rounded-xl overflow-hidden bg-muted shrink-0 border-b sm:border border-border flex items-center justify-center">
-                      {order.product?.image_url ? (
+                      {order.product?.image_url || order.product_snapshot?.image_url ? (
                         <img
-                          src={order.product.image_url}
-                          alt={order.product?.title}
+                          src={order.product?.image_url || order.product_snapshot?.image_url}
+                          alt={order.product?.title || order.product_snapshot?.title}
                           className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 ${isFailureStatus ? 'grayscale' : ''}`}
                           loading="lazy"
                         />

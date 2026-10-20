@@ -1221,7 +1221,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
               <AlertDialogTitle>Hapus produk?</AlertDialogTitle>
               <AlertDialogDescription>
                 Tindakan ini akan menghapus produk serta berkasnya secara permanen dan tidak dapat dipulihkan!<br />
-                <span className="text-destructive">Arsipkan produk (status tidak aktif) sebagai gantinya.</span>
+                <span className="text-destructive">Disarankan pilih nonaktifkan produk saja.</span>
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

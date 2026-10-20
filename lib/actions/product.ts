@@ -207,7 +207,7 @@ export async function deleteProductAction(formData: FormData) {
     const orderCount = Number(orderCountResult[0]?.count ?? 0);
 
     // 2. Ambil data produk sebelum dihapus
-    const productRows = await sql`SELECT id, title, short_desc, long_desc, price, image_url, file_url, created_at FROM products WHERE id = ${id}`;
+    const productRows = await sql`SELECT * FROM products WHERE id = ${id}`;
     if (productRows.length === 0) return { success: false, message: "Produk tidak ditemukan di database." };
 
     const product = productRows[0] as Product;
@@ -225,7 +225,7 @@ export async function deleteProductAction(formData: FormData) {
           const thumbnailFileName = product.image_url.split("/").pop() || "thumbnail";
           const copied = await copy(product.image_url, `snapshots/thumbnails/${thumbnailFileName}`, {
             access: "public",
-            addRandomSuffix: true,
+            // addRandomSuffix: true,
             storeId: process.env.PUBLIC_BLOB_STORE_ID,
             oidcToken: process.env.VERCEL_OIDC_TOKEN,
           });
@@ -243,7 +243,7 @@ export async function deleteProductAction(formData: FormData) {
           const fileName = product.file_url.split("/").pop() || "file";
           const copied = await copy(product.file_url, `snapshots/products/${fileName}`, {
             access: "private",
-            addRandomSuffix: true,
+            // addRandomSuffix: true,
             storeId: process.env.PRIVATE_BLOB_STORE_ID,
             oidcToken: process.env.VERCEL_OIDC_TOKEN,
           });
@@ -259,6 +259,10 @@ export async function deleteProductAction(formData: FormData) {
       }
 
       // 3c. Simpan ke tabel product_snapshots
+      const featuresJson = Array.isArray(product.features)
+        ? JSON.stringify(product.features)
+        : (product.features || '[]');
+
       await sql`
         INSERT INTO product_snapshots (
           id, original_product_id, title, short_desc, long_desc,
@@ -266,7 +270,7 @@ export async function deleteProductAction(formData: FormData) {
         ) VALUES (
           ${snapshotId}, ${product.id}, ${product.title}, ${product.short_desc},
           ${product.long_desc}, ${product.price}, ${thumbnailSnapshotUrl},
-          ${fileSnapshotUrl}, ${product.created_at}, ${product.features}, ${product.category_id}
+          ${fileSnapshotUrl}, ${product.created_at}, ${featuresJson}::jsonb, ${product.category_id}
         )
       `;
 

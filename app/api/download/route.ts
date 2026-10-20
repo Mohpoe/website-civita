@@ -58,9 +58,15 @@ export async function GET(req: Request) {
 
     // 3. Pengecekan Otorisasi di Database
     const rows = await sql`
-      SELECT o.status, CASE WHEN p.id IS NOT NULL THEN jsonb_build_object('title', p.title, 'file_url', p.file_url) ELSE null END as product
+      SELECT o.status,
+        CASE
+          WHEN p.id IS NOT NULL THEN jsonb_build_object('title', p.title, 'file_url', p.file_url, 'image_url', p.image_url)
+          WHEN ps.id IS NOT NULL THEN jsonb_build_object('title', ps.title, 'file_url', ps.file_url, 'image_url', ps.image_url)
+          ELSE null
+        END as product
       FROM orders o
       LEFT JOIN products p ON o.product_id = p.id
+      LEFT JOIN product_snapshots ps ON o.product_snapshot_id = ps.id
       WHERE o.order_id = ${orderId} AND o.email = ${user.emailAddresses[0].emailAddress}
       LIMIT 1
     `;

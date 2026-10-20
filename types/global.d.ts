@@ -58,6 +58,8 @@ export interface ProductSnapshot {
   short_desc: string | null;
   long_desc: string | null;
   price: number;
+  category_id: string | null;
+  features: string[];
   image_url: string;
   file_url: string;
   created_at: string;

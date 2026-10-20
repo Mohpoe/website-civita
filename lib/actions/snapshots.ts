@@ -18,6 +18,8 @@ export async function getSnapshots(): Promise<ProductSnapshot[]> {
         short_desc,
         long_desc,
         price,
+        category_id,
+        features,
         image_url,
         file_url,
         created_at,
@@ -52,7 +54,7 @@ export async function restoreSnapshotAction(snapshotId: string) {
         const thumbnailFileName = snap.image_url.split("/").pop() || "thumbnail";
         const copied = await copy(snap.image_url, `thumbnails/${thumbnailFileName}`, {
           access: "public",
-          addRandomSuffix: true,
+          // addRandomSuffix: true,
           storeId: process.env.PUBLIC_BLOB_STORE_ID,
           oidcToken: process.env.VERCEL_OIDC_TOKEN,
         });
@@ -70,7 +72,7 @@ export async function restoreSnapshotAction(snapshotId: string) {
         const fileName = snap.file_url.split("/").pop() || "file";
         const copied = await copy(snap.file_url, `products/${fileName}`, {
           access: "private",
-          addRandomSuffix: true,
+          // addRandomSuffix: true,
           storeId: process.env.PRIVATE_BLOB_STORE_ID,
           oidcToken: process.env.VERCEL_OIDC_TOKEN,
         });
@@ -95,13 +97,16 @@ export async function restoreSnapshotAction(snapshotId: string) {
 
     // 5. Buat baris baru di tabel products (is_active = false / draft)
     const newProductId = `prod_${randomUUID().substring(0, 8)}`;
+    const featuresJson = Array.isArray(snap.features)
+      ? JSON.stringify(snap.features)
+      : (snap.features || '[]');
     await sql`
       INSERT INTO products (
         id, title, price, is_active, category_id,
         short_desc, long_desc, features, image_url, file_url
       ) VALUES (
         ${newProductId}, ${snap.title}, ${snap.price}, false,
-        NULL, ${snap.short_desc}, ${snap.long_desc}, '[]'::jsonb,
+        ${snap.category_id}, ${snap.short_desc}, ${snap.long_desc}, ${featuresJson}::jsonb,
         ${restoredThumbnailUrl}, ${restoredFileUrl}
       )
     `;

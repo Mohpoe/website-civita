@@ -84,7 +84,7 @@ export default function DashboardSnapshots({ snapshots: initialSnapshots }: Dash
     });
   };
 
-  // #region TanStack Table Config
+  // #region Column Config
   const features = tableFeatures({
     rowSortingFeature,
     rowPaginationFeature,
@@ -261,136 +261,272 @@ export default function DashboardSnapshots({ snapshots: initialSnapshots }: Dash
 
         <CardContent className="flex flex-col gap-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between w-full">
-            {/* DATATABLE MENU */}
-            <div className="flex flex-row items-center gap-2 w-full lg:w-auto">
-              <DropdownMenu>
-                <DropdownMenuTrigger render={<Button variant="outline" className="min-h-8 text-sm w-full" />}>
-                  <SlidersHorizontalIcon />
-                  Atur Tabel
-                  <ChevronDownIcon className="size-4 ml-2 opacity-50" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="min-w-64" align="start">
-                  <DropdownMenuGroup>
-                    <DropdownMenuLabel>Kolom</DropdownMenuLabel>
+            {
+              // #region Datatable Menu
+              <div className="flex flex-row items-center gap-2 w-full lg:w-auto">
+                <DropdownMenu>
+                  <DropdownMenuTrigger render={<Button variant="outline" className="min-h-8 text-sm w-full" />}>
+                    <SlidersHorizontalIcon />
+                    Atur Tabel
+                    <ChevronDownIcon className="size-4 ml-2 opacity-50" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="min-w-64" align="start">
+                    <DropdownMenuGroup>
+                      <DropdownMenuLabel>Kolom</DropdownMenuLabel>
 
-                    <DropdownMenuSub>
-                      <DropdownMenuSubTrigger>
-                        <Columns3Icon />
-                        Tampilkan
-                      </DropdownMenuSubTrigger>
-                      <DropdownMenuPortal>
-                        <DropdownMenuSubContent>
-                          <DropdownMenuGroup>
-                            <DropdownMenuLabel>Tampilkan kolom</DropdownMenuLabel>
-                            {table.getAllColumns().filter((col) => col.getCanHide()).map((col) => (
-                              <DropdownMenuCheckboxItem
-                                key={col.id}
-                                className="capitalize"
-                                checked={col.getIsVisible()}
-                                onCheckedChange={(val) => col.toggleVisibility(!!val)}
-                              >
-                                {col.id.replace("_", " ")}
-                              </DropdownMenuCheckboxItem>
-                            ))}
-                          </DropdownMenuGroup>
-                        </DropdownMenuSubContent>
-                      </DropdownMenuPortal>
-                    </DropdownMenuSub>
+                      <DropdownMenuSub>
+                        <DropdownMenuSubTrigger>
+                          <Columns3Icon />
+                          Tampilkan
+                        </DropdownMenuSubTrigger>
+                        <DropdownMenuPortal>
+                          <DropdownMenuSubContent>
+                            <DropdownMenuGroup>
+                              <DropdownMenuLabel>Tampilkan kolom</DropdownMenuLabel>
+                              {table.getAllColumns().filter((col) => col.getCanHide()).map((col) => (
+                                <DropdownMenuCheckboxItem
+                                  key={col.id}
+                                  className="capitalize"
+                                  checked={col.getIsVisible()}
+                                  onCheckedChange={(val) => col.toggleVisibility(!!val)}
+                                >
+                                  {col.id.replace("_", " ")}
+                                </DropdownMenuCheckboxItem>
+                              ))}
+                            </DropdownMenuGroup>
+                          </DropdownMenuSubContent>
+                        </DropdownMenuPortal>
+                      </DropdownMenuSub>
 
-                    <DropdownMenuSeparator />
-                    <DropdownMenuLabel>Baris</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuLabel>Baris</DropdownMenuLabel>
 
-                    <DropdownMenuSub>
-                      <DropdownMenuSubTrigger>
-                        <Rows3Icon />
-                        Tampilkan
-                      </DropdownMenuSubTrigger>
-                      <DropdownMenuPortal>
-                        <DropdownMenuSubContent>
-                          <DropdownMenuLabel>Tampilkan baris</DropdownMenuLabel>
-                          <DropdownMenuRadioGroup
-                            value={
-                              table.state.pagination.pageSize === table.getCoreRowModel().rows.length
-                                ? "all"
-                                : String(table.state.pagination.pageSize)
-                            }
-                            onValueChange={(val) => {
-                              if (val === "all") {
-                                table.setPageSize(table.getCoreRowModel().rows.length);
-                              } else {
-                                table.setPageSize(Number(val));
+                      <DropdownMenuSub>
+                        <DropdownMenuSubTrigger>
+                          <Rows3Icon />
+                          Tampilkan
+                        </DropdownMenuSubTrigger>
+                        <DropdownMenuPortal>
+                          <DropdownMenuSubContent>
+                            <DropdownMenuLabel>Tampilkan baris</DropdownMenuLabel>
+                            <DropdownMenuRadioGroup
+                              value={
+                                table.state.pagination.pageSize === table.getCoreRowModel().rows.length
+                                  ? "all"
+                                  : String(table.state.pagination.pageSize)
                               }
-                            }}
-                          >
-                            {[10, 20, 50, 100].map((size) => (
-                              <DropdownMenuRadioItem key={size} value={String(size)}>
-                                {size}
+                              onValueChange={(val) => {
+                                if (val === "all") {
+                                  table.setPageSize(table.getCoreRowModel().rows.length);
+                                } else {
+                                  table.setPageSize(Number(val));
+                                }
+                              }}
+                            >
+                              {[10, 20, 50, 100].map((size) => (
+                                <DropdownMenuRadioItem key={size} value={String(size)}>
+                                  {size}
+                                </DropdownMenuRadioItem>
+                              ))}
+                              <DropdownMenuRadioItem value="all">
+                                Semua ({table.getCoreRowModel().rows.length})
                               </DropdownMenuRadioItem>
-                            ))}
-                            <DropdownMenuRadioItem value="all">
-                              Semua ({table.getCoreRowModel().rows.length})
-                            </DropdownMenuRadioItem>
-                          </DropdownMenuRadioGroup>
-                        </DropdownMenuSubContent>
-                      </DropdownMenuPortal>
-                    </DropdownMenuSub>
+                            </DropdownMenuRadioGroup>
+                          </DropdownMenuSubContent>
+                        </DropdownMenuPortal>
+                      </DropdownMenuSub>
 
-                    <DropdownMenuSeparator />
+                      <DropdownMenuSeparator />
 
-                    <DropdownMenuItem onClick={handleResetFilters}>
-                      <RefreshCcwIcon />
-                      Reset
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+                      <DropdownMenuItem onClick={handleResetFilters}>
+                        <RefreshCcwIcon />
+                        Reset
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+              // #endregion
+            }
 
-            {/* DATATABLE SEARCH */}
-            <div className="flex items-center justify-between sm:justify-end gap-2 w-full lg:w-auto border-t pt-4 lg:border-none lg:pt-0">
-              <Field className="flex-1 lg:w-64">
-                <InputGroup className="w-full min-h-8">
-                  <InputGroupInput
-                    className="text-sm!"
-                    type="search"
-                    placeholder="Cari nama produk..."
-                    autoComplete="off"
-                    value={globalFilter ?? ""}
-                    onChange={(e) => setGlobalFilter(e.target.value)}
-                  />
-                  <InputGroupAddon>
-                    <SearchIcon className="size-4" />
-                  </InputGroupAddon>
-                </InputGroup>
-              </Field>
-            </div>
+
+            {
+              // #region Datatable Search
+              <div className="flex items-center justify-between sm:justify-end gap-2 w-full lg:w-auto border-t pt-4 lg:border-none lg:pt-0">
+                <Field className="flex-1 lg:w-64">
+                  <InputGroup className="w-full min-h-8">
+                    <InputGroupInput
+                      className="text-sm!"
+                      type="search"
+                      placeholder="Cari nama produk..."
+                      autoComplete="off"
+                      value={globalFilter ?? ""}
+                      onChange={(e) => setGlobalFilter(e.target.value)}
+                    />
+                    <InputGroupAddon>
+                      <SearchIcon className="size-4" />
+                    </InputGroupAddon>
+                  </InputGroup>
+                </Field>
+              </div>
+              // #endregion
+            }
           </div>
 
-          {/* UPPER PAGINATION */}
-          {table.getRowModel().rows?.length > 0 && (
-            <>
-              <Separator />
-              <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
-                <div className="text-xs font-medium text-muted-foreground order-2 sm:order-1 text-center sm:text-left">
-                  Baris{" "}
-                  <span className="font-bold text-foreground">
-                    {table.getFilteredRowModel().rows.length > 0
-                      ? table.state.pagination.pageIndex * table.state.pagination.pageSize + 1
-                      : 0}
-                  </span>
-                  {" "}s/d{" "}
-                  <span className="font-bold text-foreground">
-                    {Math.min(
-                      table.state.pagination.pageIndex * table.state.pagination.pageSize +
-                      table.getRowModel().rows.length,
-                      table.getFilteredRowModel().rows.length
-                    )}
-                  </span>
-                  {" "}dari{" "}
-                  <span className="font-bold text-foreground">{table.getFilteredRowModel().rows.length}</span>
+          {
+            // #region Upper Pagination
+            table.getRowModel().rows?.length > 0 && (
+              <>
+                <Separator />
+                <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+                  <div className="text-xs font-medium text-muted-foreground order-2 sm:order-1 text-center sm:text-left">
+                    Baris{" "}
+                    <span className="font-bold text-foreground">
+                      {table.getFilteredRowModel().rows.length > 0
+                        ? table.state.pagination.pageIndex * table.state.pagination.pageSize + 1
+                        : 0}
+                    </span>
+                    {" "}s/d{" "}
+                    <span className="font-bold text-foreground">
+                      {Math.min(
+                        table.state.pagination.pageIndex * table.state.pagination.pageSize +
+                        table.getRowModel().rows.length,
+                        table.getFilteredRowModel().rows.length
+                      )}
+                    </span>
+                    {" "}dari{" "}
+                    <span className="font-bold text-foreground">{table.getFilteredRowModel().rows.length}</span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 order-1 sm:order-2">
+                    <Button
+                      variant="outline"
+                      className="size-8 p-0"
+                      onClick={() => table.setPageIndex(0)}
+                      disabled={!table.getCanPreviousPage()}
+                      title="Halaman Pertama"
+                    >
+                      <ChevronFirstIcon className="size-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="size-8 p-0"
+                      onClick={() => table.previousPage()}
+                      disabled={!table.getCanPreviousPage()}
+                      title="Halaman Sebelumnya"
+                    >
+                      <ChevronLeftIcon className="size-4" />
+                    </Button>
+
+                    <div className="flex h-8 items-center justify-center rounded-md border bg-muted/40 px-3 text-xs font-bold tabular-nums">
+                      {table.state.pagination.pageIndex + 1} / {table.getPageCount()}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      className="size-8 p-0"
+                      onClick={() => table.nextPage()}
+                      disabled={!table.getCanNextPage()}
+                      title="Halaman Selanjutnya"
+                    >
+                      <ChevronRightIcon className="size-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="size-8 p-0"
+                      onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                      disabled={!table.getCanNextPage()}
+                      title="Halaman Terakhir"
+                    >
+                      <ChevronLastIcon className="size-4" />
+                    </Button>
+                  </div>
+                </div>
+              </>
+            )
+            // #endregion
+          }
+
+          {
+            // #region Datatable
+            <div className="overflow-hidden rounded-lg border">
+              <Table>
+                <TableHeader className="bg-muted">
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id} className="*:border-border [&>:not(:last-child)]:border-r">
+                      {headerGroup.headers.map((header) => (
+                        <TableHead key={header.id} onClick={header.column.getToggleSortingHandler()}>
+                          {header.column.getCanSort() ? (
+                            <Button variant="ghost" className="p-0 m-0 flex justify-between w-full">
+                              <div className="flex">
+                                {header.isPlaceholder ? null : <table.FlexRender header={header} />}
+                              </div>
+                              <div className="flex">
+                                {header.column.getCanSort() && (
+                                  <span className="opacity-40">
+                                    {(() => {
+                                      const sortState = header.column.getIsSorted();
+                                      if (sortState === "asc") return <ChevronUpIcon />;
+                                      if (sortState === "desc") return <ChevronDownIcon />;
+                                      return <ChevronsUpDownIcon />;
+                                    })()}
+                                  </span>
+                                )}
+                              </div>
+                            </Button>
+                          ) : header.isPlaceholder ? null : (
+                            <table.FlexRender header={header} />
+                          )}
+                        </TableHead>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableHeader>
+                <TableBody>
+                  {table.getRowModel().rows.length ? (
+                    table.getRowModel().rows.map((row) => (
+                      <TableRow key={row.id} className="*:border-border [&>:not(:last-child)]:border-r hover:bg-muted/30">
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id} className="py-2 px-4">
+                            <table.FlexRender cell={cell} />
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={columns.length} className="text-center">
+                        <div className="flex flex-col items-center gap-2 opacity-50 py-10">
+                          <GhostIcon className="size-20" />
+                          <p className="font-medium italic">Belum ada produk di arsip.</p>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+            // #endregion
+          }
+        </CardContent>
+
+        {
+          // #region Lower Pagination
+          table.getRowModel().rows?.length > 0 && (
+            <CardFooter>
+              <div className="flex w-full flex-col items-center justify-between gap-4 py-1 lg:flex-row lg:gap-8">
+                <div className="order-2 text-xs font-medium lg:order-1 lg:flex-1">
+                  <span className="opacity-50">Baris</span>{" "}
+                  {table.getFilteredRowModel().rows.length > 0
+                    ? table.state.pagination.pageIndex * table.state.pagination.pageSize + 1
+                    : 0}
+                  {" "}<span className="opacity-50">s/d</span>{" "}
+                  {table.state.pagination.pageIndex * table.state.pagination.pageSize + table.getRowModel().rows.length}
+                  {" "}<span className="opacity-50">dari</span>{" "}
+                  <span className="font-bold">{table.getFilteredRowModel().rows.length}</span>
                 </div>
 
-                <div className="flex items-center gap-1.5 order-1 sm:order-2">
+                <div className="order-1 flex items-center gap-1.5 lg:order-2">
                   <Button
                     variant="outline"
                     className="size-8 p-0"
@@ -410,7 +546,7 @@ export default function DashboardSnapshots({ snapshots: initialSnapshots }: Dash
                     <ChevronLeftIcon className="size-4" />
                   </Button>
 
-                  <div className="flex h-8 items-center justify-center rounded-md border bg-muted/40 px-3 text-xs font-bold tabular-nums">
+                  <div className="flex h-8 items-center justify-center rounded-md border bg-muted/50 px-3 text-xs font-bold sm:hidden">
                     {table.state.pagination.pageIndex + 1} / {table.getPageCount()}
                   </div>
 
@@ -433,175 +569,58 @@ export default function DashboardSnapshots({ snapshots: initialSnapshots }: Dash
                     <ChevronLastIcon className="size-4" />
                   </Button>
                 </div>
-              </div>
-            </>
-          )}
 
-          {/* DATATABLE */}
-          <div className="overflow-hidden rounded-lg border">
-            <Table>
-              <TableHeader className="bg-muted">
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id} className="*:border-border [&>:not(:last-child)]:border-r">
-                    {headerGroup.headers.map((header) => (
-                      <TableHead key={header.id} onClick={header.column.getToggleSortingHandler()}>
-                        {header.column.getCanSort() ? (
-                          <Button variant="ghost" className="p-0 m-0 flex justify-between w-full">
-                            <div className="flex">
-                              {header.isPlaceholder ? null : <table.FlexRender header={header} />}
-                            </div>
-                            <div className="flex">
-                              {header.column.getCanSort() && (
-                                <span className="opacity-40">
-                                  {(() => {
-                                    const sortState = header.column.getIsSorted();
-                                    if (sortState === "asc") return <ChevronUpIcon />;
-                                    if (sortState === "desc") return <ChevronDownIcon />;
-                                    return <ChevronsUpDownIcon />;
-                                  })()}
-                                </span>
-                              )}
-                            </div>
-                          </Button>
-                        ) : header.isPlaceholder ? null : (
-                          <table.FlexRender header={header} />
-                        )}
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody>
-                {table.getRowModel().rows.length ? (
-                  table.getRowModel().rows.map((row) => (
-                    <TableRow key={row.id} className="*:border-border [&>:not(:last-child)]:border-r hover:bg-muted/30">
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id} className="py-2 px-4">
-                          <table.FlexRender cell={cell} />
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={columns.length} className="text-center">
-                      <div className="flex flex-col items-center gap-2 opacity-50 py-10">
-                        <GhostIcon className="size-20" />
-                        <p className="font-medium italic">Belum ada produk di arsip.</p>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-
-        {/* LOWER PAGINATION */}
-        {table.getRowModel().rows?.length > 0 && (
-          <CardFooter>
-            <div className="flex w-full flex-col items-center justify-between gap-4 py-1 lg:flex-row lg:gap-8">
-              <div className="order-2 text-xs font-medium lg:order-1 lg:flex-1">
-                <span className="opacity-50">Baris</span>{" "}
-                {table.getFilteredRowModel().rows.length > 0
-                  ? table.state.pagination.pageIndex * table.state.pagination.pageSize + 1
-                  : 0}
-                {" "}<span className="opacity-50">s/d</span>{" "}
-                {table.state.pagination.pageIndex * table.state.pagination.pageSize + table.getRowModel().rows.length}
-                {" "}<span className="opacity-50">dari</span>{" "}
-                <span className="font-bold">{table.getFilteredRowModel().rows.length}</span>
-              </div>
-
-              <div className="order-1 flex items-center gap-1.5 lg:order-2">
-                <Button
-                  variant="outline"
-                  className="size-8 p-0"
-                  onClick={() => table.setPageIndex(0)}
-                  disabled={!table.getCanPreviousPage()}
-                  title="Halaman Pertama"
-                >
-                  <ChevronFirstIcon className="size-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="size-8 p-0"
-                  onClick={() => table.previousPage()}
-                  disabled={!table.getCanPreviousPage()}
-                  title="Halaman Sebelumnya"
-                >
-                  <ChevronLeftIcon className="size-4" />
-                </Button>
-
-                <div className="flex h-8 items-center justify-center rounded-md border bg-muted/50 px-3 text-xs font-bold sm:hidden">
-                  {table.state.pagination.pageIndex + 1} / {table.getPageCount()}
+                <div className="order-3 hidden text-right text-xs font-medium lg:block lg:flex-1">
+                  <span className="opacity-50">Halaman</span>{" "}
+                  <span className="font-bold">{table.state.pagination.pageIndex + 1}</span>{" "}
+                  <span className="opacity-50">dari</span>{" "}
+                  <span className="font-bold">{table.getPageCount()}</span>
                 </div>
-
-                <Button
-                  variant="outline"
-                  className="size-8 p-0"
-                  onClick={() => table.nextPage()}
-                  disabled={!table.getCanNextPage()}
-                  title="Halaman Selanjutnya"
-                >
-                  <ChevronRightIcon className="size-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="size-8 p-0"
-                  onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                  disabled={!table.getCanNextPage()}
-                  title="Halaman Terakhir"
-                >
-                  <ChevronLastIcon className="size-4" />
-                </Button>
               </div>
-
-              <div className="order-3 hidden text-right text-xs font-medium lg:block lg:flex-1">
-                <span className="opacity-50">Halaman</span>{" "}
-                <span className="font-bold">{table.state.pagination.pageIndex + 1}</span>{" "}
-                <span className="opacity-50">dari</span>{" "}
-                <span className="font-bold">{table.getPageCount()}</span>
-              </div>
-            </div>
-          </CardFooter>
-        )}
+            </CardFooter>
+          )
+          // #endregion
+        }
       </Card>
 
-      {/* RESTORE CONFIRM DIALOG */}
-      <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogMedia className="bg-warning/10 text-warning">
-              <UserX className="w-6 h-6" />
-            </AlertDialogMedia>
-            <AlertDialogTitle>Pulihkan Produk?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Produk ini akan dipulihkan kembali ke data utama sebagai <strong>draft (tidak aktif)</strong> di katalog.
-              File thumbnail dan download akan dipindahkan kembali ke folder utama. Admin perlu mengedit dan mempublish ulang sebelum produk muncul di toko.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel
-              variant="outline"
-              disabled={isPending}
-              onClick={() => {
-                setIsAlertOpen(false);
-                setSelectedSnapshotId(null);
-              }}
-            >
-              Batal
-            </AlertDialogCancel>
-            <AlertDialogAction
-              variant="default"
-              disabled={isPending}
-              onClick={confirmRestore}
-            >
-              {isPending ? "Memproses..." : "Pulihkan Produk"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {
+        // #region Restore Confirm Dialog
+        <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogMedia className="bg-warning/10 text-warning">
+                <UserX className="w-6 h-6" />
+              </AlertDialogMedia>
+              <AlertDialogTitle>Pulihkan Produk?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Produk ini akan dipulihkan kembali ke data utama sebagai <strong>draft (tidak aktif)</strong> di katalog.
+                File thumbnail dan download akan dipindahkan kembali ke folder utama. Admin perlu mengedit dan mempublish ulang sebelum produk muncul di toko.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel
+                variant="outline"
+                disabled={isPending}
+                onClick={() => {
+                  setIsAlertOpen(false);
+                  setSelectedSnapshotId(null);
+                }}
+              >
+                Batal
+              </AlertDialogCancel>
+              <AlertDialogAction
+                variant="default"
+                disabled={isPending}
+                onClick={confirmRestore}
+              >
+                {isPending ? "Memproses..." : "Pulihkan Produk"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+        // #endregion
+      }
     </>
   );
 }
-// #endregion
+
