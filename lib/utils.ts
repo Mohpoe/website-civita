@@ -9,3 +9,5 @@ export const formatRupiah = (amount: number) => {
 export const sql = neon(`${process.env.NEONDB_DATABASE_URL}`);
 
 export const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+export const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));

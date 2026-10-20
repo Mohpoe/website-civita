@@ -13,11 +13,7 @@ export const metadata: Metadata = {
   title: mainTitle,
 }
 
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
 export default async function DashboardPage() {
-  // throw new Error("Ini adalah pesan error simulasi untuk keperluan desain!");
-  // await delay(10000);
   try {
     const user = await currentUser();
     const userEmail = user?.emailAddresses[0]?.emailAddress;
