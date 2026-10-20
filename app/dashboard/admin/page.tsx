@@ -4,7 +4,6 @@ import { getCategories } from "@/lib/actions/category";
 import { getOrders } from "@/lib/actions/order";
 import { getProducts } from "@/lib/actions/product";
 import { getSnapshots } from "@/lib/actions/snapshots";
-import { delay } from "@/lib/utils";
 import { Category, Order, Product, ProductSnapshot } from "@/types/global";
 import { Metadata } from "next";
 
