@@ -5,6 +5,8 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Script from "next/script";
+import { getProducts } from "@/lib/actions/product";
+import { Product } from "@/types/global";
 
 export default async function DashBoardLayout({ children }: LayoutProps<"/dashboard">) {
   const { isAuthenticated } = await auth();
@@ -12,6 +14,11 @@ export default async function DashBoardLayout({ children }: LayoutProps<"/dashbo
   if (!isAuthenticated) {
     redirect("/");
   }
+
+  const products = (await getProducts(true)) as Product[];
+  const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+  const hasNewProducts = products.some((p) => new Date(p.created_at) >= twoWeeksAgo);
+
   return (
     <SidebarProvider
       style={{
@@ -19,7 +26,7 @@ export default async function DashBoardLayout({ children }: LayoutProps<"/dashbo
         "--header-height": "calc(var(--spacing) * 12)",
       } as React.CSSProperties}
     >
-      <AppSidebar variant="inset" />
+      <AppSidebar variant="inset" hasNewProducts={hasNewProducts} />
       <SidebarInset>
         <PageTitleProvider defaultTitle="Dashboard">
           <SiteHeader />

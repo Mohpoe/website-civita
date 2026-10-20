@@ -13,7 +13,7 @@ import { NavSecondary } from "./nav-secondary"
 import { Separator } from "./ui/separator"
 import { Skeleton } from "./ui/skeleton"
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<typeof Sidebar> & { hasNewProducts?: boolean }) {
   const { isSignedIn, isLoaded, user } = useUser();
 
   const role = user?.publicMetadata.role;
@@ -25,7 +25,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       {
         title: "Daftar Produk",
         url: ROUTES.DASHBOARD.HOME,
-        special: true,
+        special: hasNewProducts,
         icon: (
           <ShoppingBagIcon />
         ),
