@@ -37,6 +37,8 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
           <PackageIcon />
         ),
       },
+    ],
+    navSecondary: [
       {
         title: "Panduan",
         url: ROUTES.DASHBOARD.HELP,
@@ -44,37 +46,37 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
           <HelpCircleIcon />
         ),
       },
+      ...(role === "admin" || role === "superadmin"
+        ? [
+            {
+              title: "Kelola Produk",
+              url: ROUTES.DASHBOARD.ADMIN,
+              icon: (
+                <PackagePlusIcon />
+              ),
+            },
+            {
+              title: "Kelola Kategori",
+              url: ROUTES.DASHBOARD.CATEGORY,
+              icon: (
+                <GroupIcon />
+              ),
+            },
+            {
+              title: "Laporan Penjualan",
+              url: ROUTES.DASHBOARD.REPORT,
+              icon: (
+                <SquareTextIcon />
+              ),
+            },
+            ...(role === "superadmin" ? [{
+              title: "Kelola Pengguna",
+              url: ROUTES.DASHBOARD.USERS,
+              icon: <UsersIcon />
+            }] : [])
+          ]
+        : []),
     ],
-    navSecondary: role === "admin" || role === "superadmin"
-      ? [
-        {
-          title: "Kelola Produk",
-          url: ROUTES.DASHBOARD.ADMIN,
-          icon: (
-            <PackagePlusIcon />
-          ),
-        },
-        {
-          title: "Kelola Kategori",
-          url: ROUTES.DASHBOARD.CATEGORY,
-          icon: (
-            <GroupIcon />
-          ),
-        },
-        {
-          title: "Laporan Penjualan",
-          url: ROUTES.DASHBOARD.REPORT,
-          icon: (
-            <SquareTextIcon />
-          ),
-        },
-        ...(role === "superadmin" ? [{
-          title: "Kelola Pengguna",
-          url: ROUTES.DASHBOARD.USERS,
-          icon: <UsersIcon />
-        }] : [])
-      ]
-      : [],
   }
 
   return (
