@@ -12,9 +12,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { productId } = body;
 
-    if (!productId) {
-      return NextResponse.json({ error: "Product ID tidak ditemukan!" }, { status: 400 });
-    }
+    if (!productId) return NextResponse.json({ error: "Product ID tidak ditemukan!" }, { status: 400 });
 
     const rows = await sql`
       SELECT title, price, file_url
@@ -23,17 +21,13 @@ export async function POST(req: Request) {
       LIMIT 1
     `;
 
-    if (rows.length === 0) {
-      return NextResponse.json({ error: "Produk tidak ditemukan atau tidak tersedia!" }, { status: 404 });
-    }
+    if (rows.length === 0) return NextResponse.json({ error: "Produk tidak ditemukan atau tidak tersedia!" }, { status: 404 });
 
     const product = rows[0] as Product;
 
-    if (!product.file_url) {
-      return NextResponse.json({ error: "File untuk produk ini belum tersedia! Hubungi Admin." }, { status: 400 });
-    }
+    if (!product.file_url) return NextResponse.json({ error: "File untuk produk ini belum tersedia! Hubungi Admin." }, { status: 400 });
 
-    // #region CEK DUPLIKAT PEMBELIAN
+    // #region Cek Duplikat Pembelian
     // Hanya cek order dengan status 'success' — expired/failed/canceled masih boleh dibeli ulang
     const existingOrder = await sql`
       SELECT order_id, status
