@@ -5,7 +5,7 @@ import { formatRupiah } from "@/lib/utils";
 import { Category, Order, Product, ProductSnapshot } from "@/types/global";
 import { columnFilteringFeature, ColumnFiltersState, columnVisibilityFeature, ColumnVisibilityState, createColumnHelper, createFilteredRowModel, createPaginatedRowModel, createSortedRowModel, filterFn_includesString, globalFilteringFeature, rowPaginationFeature, rowSortingFeature, sortFn_alphanumeric, sortFn_text, SortingState, tableFeatures, useTable } from "@tanstack/react-table";
 import { uploadPresigned } from "@vercel/blob/client";
-import { BadgeAlertIcon, BadgeCheckIcon, BadgeXIcon, ChevronDownIcon, ChevronFirstIcon, ChevronLastIcon, ChevronLeftIcon, ChevronRightIcon, ChevronsUpDownIcon, ChevronUpIcon, Columns3Icon, DownloadIcon, EyeIcon, FileTextIcon, GhostIcon, ImageIcon, MoreHorizontalIcon, PlusIcon, RefreshCcwIcon, Rows3Icon, SearchIcon, SlidersHorizontalIcon, SquarePenIcon, TagsIcon, Trash2Icon, UploadIcon } from "lucide-react";
+import { AlertCircleIcon, BadgeAlertIcon, BadgeCheckIcon, BadgeXIcon, ChevronDownIcon, ChevronFirstIcon, ChevronLastIcon, ChevronLeftIcon, ChevronRightIcon, ChevronsUpDownIcon, ChevronUpIcon, Columns3Icon, DownloadIcon, EyeIcon, FileTextIcon, GhostIcon, ImageIcon, MoreHorizontalIcon, PlusIcon, RefreshCcwIcon, Rows3Icon, SearchIcon, SlidersHorizontalIcon, SquarePenIcon, TagsIcon, Trash2Icon, UploadIcon } from "lucide-react";
 import { useActionState, useEffect, useMemo, useState, useTransition } from "react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle } from "./ui/alert-dialog";
 import { Attachment, AttachmentContent, AttachmentDescription, AttachmentMedia, AttachmentTitle } from "./ui/attachment";
@@ -27,6 +27,7 @@ import { Textarea } from "./ui/textarea";
 import { toast } from "./ui/toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DashboardSnapshots from "@/components/dashboard-snapshots";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 
 interface DashboardAdminProps {
   products: Product[];
@@ -61,6 +62,25 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
   const [isUploadingFile, setIsUploadingFile] = useState(false);
   const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
+  // Form state untuk mempertahankan input saat terjadi error (tidak direset)
+  const [formData, setFormData] = useState<{
+    title: string;
+    price: string;
+    isActive: boolean;
+    category: string;
+    shortDesc: string;
+    longDesc: string;
+    features: string;
+  }>({
+    title: "",
+    price: "",
+    isActive: true,
+    category: "",
+    shortDesc: "",
+    longDesc: "",
+    features: "",
+  });
+  const [formError, setFormError] = useState<string | null>(null);
   // 1. Trigger untuk Tambah Produk
   const handleCreate = () => {
     setProductToUpdate(null);
@@ -69,6 +89,16 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
     setSelectedFile(null);
     setUploadedFileUrl(null);
     setUploadProgress(0);
+    setFormData({
+      title: "",
+      price: "",
+      isActive: true,
+      category: "",
+      shortDesc: "",
+      longDesc: "",
+      features: "",
+    });
+    setFormError(null);
   };
   // 2. Toast Handler
   useEffect(() => {
@@ -77,11 +107,23 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
       setIsDialogOpen(false);
       setImagePreview(null);
       setProductToUpdate(null);
+      setFormData({
+        title: "",
+        price: "",
+        isActive: true,
+        category: "",
+        shortDesc: "",
+        longDesc: "",
+        features: "",
+      });
+      setFormError(null);
       toast.add({
         type: "success",
         description: upsertState.message,
       });
     } else {
+      // Jika error, dialog TIDAK ditutup — biarkan tetap terbuka agar admin bisa memperbaiki input
+      setFormError(upsertState.message || "Terjadi kesalahan saat menyimpan produk.");
       toast.add({
         type: "error",
         description: upsertState.message,
@@ -89,6 +131,38 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
       });
     }
   }, [upsertState]);
+
+  // 3. Populate form saat dialog dibuka untuk EDIT (reliable via useEffect)
+  useEffect(() => {
+    if (isDialogOpen && productToUpdate) {
+      setFormData({
+        title: productToUpdate.title,
+        price: String(productToUpdate.price),
+        isActive: productToUpdate.is_active,
+        category: productToUpdate.category_id || "",
+        shortDesc: productToUpdate.short_desc || "",
+        longDesc: productToUpdate.long_desc || "",
+        features: Array.isArray(productToUpdate.features)
+          ? productToUpdate.features.join("\n")
+          : "",
+      });
+      setImagePreview(productToUpdate.image_url || null);
+      setFormError(null);
+      if (productToUpdate.file_url) {
+        const fileName = productToUpdate.file_url.split('/').pop() || "file-produk";
+        const ext = fileName.split('.').pop()?.toUpperCase() || "FILE";
+        setSelectedFile({
+          name: fileName,
+          size: "Tersimpan di server",
+          type: ext,
+        });
+        setUploadedFileUrl(productToUpdate.file_url);
+      } else {
+        setSelectedFile(null);
+        setUploadedFileUrl(null);
+      }
+    }
+  }, [isDialogOpen, productToUpdate]);
   // #endregion CREATE & UPDATE STATES (Tambah & Edit Produk)
 
   // #region Delete States
@@ -888,6 +962,16 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
               setSelectedFile(null);
               setUploadedFileUrl(null);
               setUploadProgress(0);
+              setFormData({
+                title: "",
+                price: "",
+                isActive: true,
+                category: "",
+                shortDesc: "",
+                longDesc: "",
+                features: "",
+              });
+              setFormError(null);
             }
 
             setIsDialogOpen(open);
@@ -918,6 +1002,17 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                 {productToUpdate && <input type="hidden" name="id" value={productToUpdate.id} />}
 
                 <FieldGroup>
+                  {/* Error message ditampilkan di dalam form (bukan hanya toast) */}
+                  {formError && (
+                    <FieldGroup>
+                      <Alert variant="destructive" className="w-full">
+                        <AlertCircleIcon />
+                        <AlertTitle>Terjadi kesalahan!</AlertTitle>
+                        <AlertDescription>{formError}</AlertDescription>
+                      </Alert>
+                    </FieldGroup>
+                  )}
+
                   <Field>
                     <FieldLabel htmlFor="imageFile">Thumbnail Produk <span className="text-destructive">*</span></FieldLabel>
                     <div className="flex gap-4 items-start">
@@ -984,7 +1079,8 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                       id="title"
                       name="title"
                       placeholder="Nama produk"
-                      defaultValue={productToUpdate?.title || ""}
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                       minLength={3}
                       disabled={upsertIsPending || isUploadingFile}
                     />
@@ -999,7 +1095,8 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                         name="price"
                         inputMode="numeric"
                         placeholder="Harga Produk"
-                        defaultValue={productToUpdate?.price || ""}
+                        value={formData.price}
+                        onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                         min={0}
                         disabled={upsertIsPending || isUploadingFile}
                       />
@@ -1010,7 +1107,8 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                         <Switch
                           id="isActive"
                           name="isActive"
-                          defaultChecked={productToUpdate ? productToUpdate.is_active : true}
+                          checked={formData.isActive}
+                          onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
                           disabled={upsertIsPending || isUploadingFile}
                         />
                         <Label htmlFor="isActive">Aktifkan di toko</Label>
@@ -1024,7 +1122,8 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                       required
                       items={categoryList}
                       name="category"
-                      defaultValue={productToUpdate?.category_id || ""}
+                      value={formData.category}
+                      onValueChange={(val) => setFormData({ ...formData, category: val ?? "" })}
                       disabled={upsertIsPending || isUploadingFile}
                     >
                       <SelectTrigger id="category">
@@ -1048,7 +1147,8 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                       id="shortDesc"
                       name="shortDesc"
                       placeholder="Tulis ringkasan singkat (maks. 150 karakter)..."
-                      defaultValue={productToUpdate?.short_desc || ""}
+                      value={formData.shortDesc}
+                      onChange={(e) => setFormData({ ...formData, shortDesc: e.target.value })}
                       minLength={10}
                       disabled={upsertIsPending || isUploadingFile}
                     />
@@ -1062,7 +1162,8 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                       name="longDesc"
                       className="min-h-[120px]"
                       placeholder="Jelaskan detail produk selengkap-lengkapnya di sini..."
-                      defaultValue={productToUpdate?.long_desc || ""}
+                      value={formData.longDesc}
+                      onChange={(e) => setFormData({ ...formData, longDesc: e.target.value })}
                       minLength={10}
                       disabled={upsertIsPending || isUploadingFile}
                     />
@@ -1076,7 +1177,8 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                       name="features"
                       placeholder="Ketik setiap fitur di baris baru (Enter)..."
                       // Konversi array fitur dari DB menjadi string multi-baris
-                      defaultValue={productToUpdate?.features ? productToUpdate.features.join("\n") : ""}
+                      value={formData.features}
+                      onChange={(e) => setFormData({ ...formData, features: e.target.value })}
                       minLength={1}
                       disabled={upsertIsPending || isUploadingFile}
                     />
