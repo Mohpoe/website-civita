@@ -129,7 +129,7 @@ export default function DashboardReport({ kpi, chartData, orderHistory }: Dashbo
         id: "nama_produk",
         header: "Nama Produk",
         cell: (info) => (
-          <span className="font-medium max-w-xs truncate block" title={info.getValue() || ""}>
+          <span className="font-medium max-w-3xs truncate block" title={info.getValue() || ""}>
             {info.getValue() || <span className="italic opacity-50">Produk Dihapus</span>}
           </span>
         ),
