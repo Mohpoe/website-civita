@@ -38,7 +38,7 @@ export default async function DashBoardLayout({ children }: LayoutProps<"/dashbo
             </div>
           </main>
           <Script
-            src="https://app.sandbox.midtrans.com/snap/snap.js"
+            src="https://app.midtrans.com/snap/snap.js"
             data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
             strategy="lazyOnload" // Tidak akan memperlambat loading web Anda
           />
