@@ -51,7 +51,7 @@ export async function POST(req: Request) {
     const serverKey = process.env.MIDTRANS_SERVER_KEY || "";
     const encodedKey = Buffer.from(serverKey + ":").toString("base64");
 
-    const response = await fetch("https://app.sandbox.midtrans.com/snap/v1/transactions", {
+    const response = await fetch("https://app.midtrans.com/snap/v1/transactions", {
       method: "POST",
       headers: {
         "Accept": "application/json",

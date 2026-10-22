@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     const encodedKey = Buffer.from(serverKey + ":").toString("base64");
 
     // Catatan: Ganti URL ke https://api.midtrans.com/v2/... jika sudah masuk tahap Production
-    const response = await fetch(`https://api.sandbox.midtrans.com/v2/${orderId}/cancel`, {
+    const response = await fetch(`https://api.midtrans.com/v2/${orderId}/cancel`, {
       method: "POST",
       headers: {
         "Accept": "application/json",
