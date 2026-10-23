@@ -1263,6 +1263,17 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                                 const file = e.target.files?.[0];
                                 if (!file) return;
 
+                                // Validasi ukuran file maksimal 50 MB (sama dengan batas di /api/upload)
+                                const MAX_FILE_SIZE = 50 * 1024 * 1024;
+                                if (file.size > MAX_FILE_SIZE) {
+                                  toast.add({
+                                    type: "error",
+                                    description: "Ukuran file terlalu besar. Maksimal 50 MB.",
+                                  });
+                                  e.target.value = "";
+                                  return;
+                                }
+
                                 if (uploadedFileUrl && uploadedFileUrl !== productToUpdate?.file_url) {
                                   deleteBlobFileAction(uploadedFileUrl); // Jalankan di background
                                 }
