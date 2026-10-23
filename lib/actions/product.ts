@@ -63,7 +63,7 @@ export async function upsertProductAction(state: any, formData: FormData) {
     ? featuresRaw.split("\n").map((f) => f.trim()).filter((f) => f !== "")
     : [];
 
-  // #region - Thumbnail Handler
+  // #region - Thumbnail Handler (hanya upload baru, jangan hapus lama sebelum DB sukses)
   const imageFile = formData.get("imageFile") as File | null;
   const oldImageUrl = formData.get("oldImageUrl") as string | null;
   let finalImageUrl = oldImageUrl || "";
@@ -71,10 +71,6 @@ export async function upsertProductAction(state: any, formData: FormData) {
   if (imageFile && imageFile.size > 0) {
     if (imageFile.size > 4 * 1024 * 1024) return { success: false, message: "Ukuran gambar melebihi 4MB!" };
     try {
-      if (oldImageUrl) await del(oldImageUrl, {
-        storeId: process.env.PUBLIC_BLOB_STORE_ID,
-        oidcToken: process.env.VERCEL_OIDC_TOKEN
-      });
       const blob = await putImage(`thumbnails/${imageFile.name}`, imageFile, {
         access: "public",
         optimizeImage: { width: 500 },
@@ -84,27 +80,15 @@ export async function upsertProductAction(state: any, formData: FormData) {
       });
       finalImageUrl = blob.url;
     } catch (error) {
-      console.error("Gagal mengelola file di Blob:", error);
+      console.error("Gagal mengunggah gambar thumbnail:", error);
       return { success: false, message: "Gagal mengunggah gambar thumbnail." };
     }
   }
   // #endregion
 
-  // #region - File Handler
+  // #region - File Handler (hanya tentukan finalFileUrl, jangan hapus lama sebelum DB sukses)
   const oldFileUrl = formData.get("oldFileUrl") as string | null;
   const finalFileUrl = formData.get("finalFileUrl") as string;
-
-  if (oldFileUrl && oldFileUrl !== finalFileUrl) {
-    try {
-      await del(oldFileUrl, {
-        storeId: process.env.PRIVATE_BLOB_STORE_ID,
-        oidcToken: process.env.VERCEL_OIDC_TOKEN,
-      });
-      console.log("File lama berhasil dihapus untuk diganti baru.");
-    } catch (error) {
-      console.error("Gagal menghapus file digital lama:", error);
-    }
-  }
   // #endregion
 
   const rawData = {
@@ -158,6 +142,34 @@ export async function upsertProductAction(state: any, formData: FormData) {
         )
       `;
     }
+
+    // #region - Hapus file lama hanya setelah berhasil disimpan ke database
+    // Hapus thumbnail lama jika diganti
+    if (oldImageUrl && oldImageUrl !== finalImageUrl) {
+      try {
+        await del(oldImageUrl, {
+          storeId: process.env.PUBLIC_BLOB_STORE_ID,
+          oidcToken: process.env.VERCEL_OIDC_TOKEN,
+        });
+        console.log("Thumbnail lama berhasil dihapus.");
+      } catch (error) {
+        console.error("Gagal menghapus thumbnail lama:", error);
+      }
+    }
+
+    // Hapus file download lama jika diganti
+    if (oldFileUrl && oldFileUrl !== finalFileUrl) {
+      try {
+        await del(oldFileUrl, {
+          storeId: process.env.PRIVATE_BLOB_STORE_ID,
+          oidcToken: process.env.VERCEL_OIDC_TOKEN,
+        });
+        console.log("File download lama berhasil dihapus.");
+      } catch (error) {
+        console.error("Gagal menghapus file download lama:", error);
+      }
+    }
+    // #endregion
 
     revalidatePath(ROUTES.DASHBOARD.HOME);
     revalidatePath(ROUTES.DASHBOARD.INVENTORY);
