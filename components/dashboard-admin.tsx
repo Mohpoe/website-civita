@@ -49,7 +49,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
   const [isPending, startTransition] = useTransition();
   const [activeTab, setActiveTab] = useState("produk");
 
-  // #region Create/Update States
+  // #region CREATE/UPDATE STATES
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [productToUpdate, setProductToUpdate] = useState<Product | null>(null);
   const [upsertState, upsertFormAction, upsertIsPending] = useActionState(upsertProductAction, null);
@@ -165,7 +165,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
   }, [isDialogOpen, productToUpdate]);
   // #endregion CREATE & UPDATE STATES (Tambah & Edit Produk)
 
-  // #region Delete States
+  // #region DELETE STATES
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
 
@@ -200,7 +200,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
   };
   // #endregion
 
-  // #region Column
+  // #region COLUMN
   // 0. Rekap Statistik Pesanan
   const orderStats = useMemo(() => {
     const stats: Record<string, { success: number; pending: number; failed: number }> = {};
@@ -458,7 +458,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
   );
   // #endregion
 
-  // #region Table
+  // #region TABLE
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -510,7 +510,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
   const filteredStatus = filteredStatusValue !== undefined ? String(filteredStatusValue[0]) : "all";
   // #endregion
 
-  // #region List Definition
+  // #region LIST DEFINITION
   const categoryList = useMemo(() => categories?.map((cat) => ({
     label: cat.name,
     value: cat.id
@@ -546,7 +546,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
           <CardContent className="flex flex-col gap-4">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between w-full">
               {
-                // #region Datatable Menu
+                // #region DATATABLE MENU
                 <div className="flex flex-row items-center gap-2 w-full lg:w-auto">
                   <DropdownMenu>
                     <DropdownMenuTrigger render={<Button variant="outline" className="min-h-8 text-sm w-full" />}>
@@ -698,7 +698,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                 // #endregion
               }
               {
-                // #region Datatable Search
+                // #region DATATABLE SEARCH
                 <div className="flex items-center justify-between sm:justify-end gap-2 w-full lg:w-auto border-t pt-4 lg:border-none lg:pt-0">
                   <Field className="flex-1 lg:w-64">
                     <InputGroup className="w-full min-h-8">
@@ -721,7 +721,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
             </div>
 
             {
-              // #region Upper Pagination
+              // #region UPPER PAGINATION
               table.getRowModel().rows?.length > 0 && (
                 <>
                   <Separator />
@@ -791,7 +791,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
               // #endregion
             }
             {
-              // #region Datatable
+              // #region DATATABLE
               <div className="overflow-hidden rounded-lg border">
                 <Table>
                   <TableHeader className="bg-muted">
@@ -857,7 +857,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
             }
           </CardContent>
           {
-            // #region Lower Pagination
+            // #region LOWER PAGINATION
             table.getRowModel().rows?.length > 0 && (
               <CardFooter>
                 <div className="flex w-full flex-col items-center justify-between gap-4 py-1 lg:flex-row lg:gap-8">
@@ -935,7 +935,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
       </TabsContent>
 
       {
-        // #region Create & Update Dialog
+        // #region UPSERT DIALOG
         <Dialog
           open={isDialogOpen}
           modal={isUploadingFile || upsertIsPending}
@@ -1013,280 +1013,310 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                     </FieldGroup>
                   )}
 
-                  <Field>
-                    <FieldLabel htmlFor="imageFile">Thumbnail Produk <span className="text-destructive">*</span></FieldLabel>
-                    <div className="flex gap-4 items-start">
-                      <div className={`relative group flex items-center justify-center w-20 h-20 shrink-0 overflow-hidden rounded-xl transition-all ${!imagePreview ? "border-2 border-dashed border-muted-foreground/100" : "border-2 border-muted-foreground"} rounded-xl`}>
-                        {imagePreview ? (
-                          <img id={`preview-${productToUpdate?.id || "new"}`} src={imagePreview} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <ImageIcon className="w-8 h-8 text-muted-foreground" />
-                          </div>
-                        )}
-                        <Label htmlFor="imageFile" className="absolute flex flex-col gap-2 items-center justify-center text-foreground bg-background/50 backdrop-blur-xs inset-0 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                          <UploadIcon className="w-4 h-4" />
-                          Ubah
-                        </Label>
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <div className="flex items-center gap-2">
-
-                          <Button type="button" variant="secondary" size="sm" onClick={() => document.getElementById("imageFile")?.click()}>
-                            {imagePreview ? "Ganti Thumbnail" : "Upload Thumbnail"}
-                          </Button>
-
-                          <input type="hidden" name="oldImageUrl" value={productToUpdate?.image_url} required />
-                          <input
-                            disabled={upsertIsPending || isUploadingFile}
-                            required={!productToUpdate}
-                            id="imageFile"
-                            name="imageFile"
-                            type="file"
-                            accept="image/*"
-                            className="sr-only"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                if (file.size > 4 * 1024 * 1024) {
-                                  toast.add({
-                                    type: "error",
-                                    description: "Ukuran gambar tidak boleh melebihi 4 MB!",
-                                    priority: "high",
-                                  });
-                                  e.target.value = "";
-                                  return;
-                                }
-
-                                setImagePreview(URL.createObjectURL(file));
-                              }
-                            }}
-                          />
-
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          Rekomendasi rasio 1:1. <br />
-                          Ukuran maksimal 4MB.
-                        </p>
-                      </div>
-                    </div>
-                  </Field>
-
-                  <Field>
-                    <Label htmlFor="title">Nama Produk <span className="text-destructive">*</span></Label>
-                    <Input
-                      required
-                      id="title"
-                      name="title"
-                      placeholder="Nama produk"
-                      value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      minLength={3}
-                      disabled={upsertIsPending || isUploadingFile}
-                    />
-                  </Field>
-
-                  <FieldGroup className="grid md:grid-cols-2 gap-4">
+                  {
+                    // #region Thumbnail
                     <Field>
-                      <FieldLabel htmlFor="price">Harga <span className="text-destructive">*</span></FieldLabel>
+                      <FieldLabel htmlFor="imageFile">Thumbnail Produk <span className="text-destructive">*</span></FieldLabel>
+                      <div className="flex gap-4 items-start">
+                        <div className={`relative group flex items-center justify-center w-20 h-20 shrink-0 overflow-hidden rounded-xl transition-all ${!imagePreview ? "border-2 border-dashed border-muted-foreground/100" : "border-2 border-muted-foreground"} rounded-xl`}>
+                          {imagePreview ? (
+                            <img id={`preview-${productToUpdate?.id || "new"}`} src={imagePreview} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <ImageIcon className="w-8 h-8 text-muted-foreground" />
+                            </div>
+                          )}
+                          <Label htmlFor="imageFile" className="absolute flex flex-col gap-2 items-center justify-center text-foreground bg-background/50 backdrop-blur-xs inset-0 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                            <UploadIcon className="w-4 h-4" />
+                            Ubah
+                          </Label>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <div className="flex items-center gap-2">
+
+                            <Button type="button" variant="secondary" size="sm" onClick={() => document.getElementById("imageFile")?.click()}>
+                              {imagePreview ? "Ganti Thumbnail" : "Upload Thumbnail"}
+                            </Button>
+
+                            <input type="hidden" name="oldImageUrl" value={productToUpdate?.image_url} required />
+                            <input
+                              disabled={upsertIsPending || isUploadingFile}
+                              required={!productToUpdate}
+                              id="imageFile"
+                              name="imageFile"
+                              type="file"
+                              accept="image/*"
+                              className="sr-only"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  if (file.size > 4 * 1024 * 1024) {
+                                    toast.add({
+                                      type: "error",
+                                      description: "Ukuran gambar tidak boleh melebihi 4 MB!",
+                                      priority: "high",
+                                    });
+                                    e.target.value = "";
+                                    return;
+                                  }
+
+                                  setImagePreview(URL.createObjectURL(file));
+                                }
+                              }}
+                            />
+
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Rekomendasi rasio 1:1. <br />
+                            Ukuran maksimal 4MB.
+                          </p>
+                        </div>
+                      </div>
+                    </Field>
+                    // #endregion
+                  }
+
+                  {
+                    // #region Nama Produk
+                    <Field>
+                      <Label htmlFor="title">Nama Produk <span className="text-destructive">*</span></Label>
                       <Input
                         required
-                        id="price"
-                        name="price"
-                        inputMode="numeric"
-                        placeholder="Harga Produk"
-                        value={formData.price}
-                        onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                        min={0}
+                        id="title"
+                        name="title"
+                        placeholder="Nama produk"
+                        value={formData.title}
+                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                        minLength={3}
                         disabled={upsertIsPending || isUploadingFile}
                       />
                     </Field>
-                    <Field>
-                      <FieldLabel htmlFor="isActive">Status Publikasi</FieldLabel>
-                      <div className="flex items-center space-x-3 h-full">
-                        <Switch
-                          id="isActive"
-                          name="isActive"
-                          checked={formData.isActive}
-                          onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
+                    // #endregion
+                  }
+
+                  {
+                    // #region Harga & Status
+                    <FieldGroup className="grid md:grid-cols-2 gap-4">
+                      <Field>
+                        <FieldLabel htmlFor="price">Harga <span className="text-destructive">*</span></FieldLabel>
+                        <Input
+                          required
+                          id="price"
+                          name="price"
+                          inputMode="numeric"
+                          placeholder="Harga Produk"
+                          value={formData.price}
+                          onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                          min={0}
                           disabled={upsertIsPending || isUploadingFile}
                         />
-                        <Label htmlFor="isActive">Aktifkan di toko</Label>
-                      </div>
-                    </Field>
-                  </FieldGroup>
-
-                  <Field>
-                    <FieldLabel htmlFor="category">Kategori <span className="text-destructive">*</span></FieldLabel>
-                    <Select
-                      required
-                      items={categoryList}
-                      name="category"
-                      value={formData.category}
-                      onValueChange={(val) => setFormData({ ...formData, category: val ?? "" })}
-                      disabled={upsertIsPending || isUploadingFile}
-                    >
-                      <SelectTrigger id="category">
-                        <SelectValue placeholder="Pilih kategori" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectLabel>Daftar Kategori</SelectLabel>
-                          {categoryList?.map((item) => (
-                            <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                  </Field>
-
-                  <Field>
-                    <FieldLabel htmlFor="shortDesc">Deskripsi Singkat <span className="text-destructive">*</span></FieldLabel>
-                    <Textarea
-                      required
-                      id="shortDesc"
-                      name="shortDesc"
-                      placeholder="Tulis ringkasan singkat (maks. 150 karakter)..."
-                      value={formData.shortDesc}
-                      onChange={(e) => setFormData({ ...formData, shortDesc: e.target.value })}
-                      minLength={10}
-                      disabled={upsertIsPending || isUploadingFile}
-                    />
-                  </Field>
-
-                  <Field>
-                    <FieldLabel htmlFor="longDesc">Deskripsi Lengkap <span className="text-destructive">*</span></FieldLabel>
-                    <Textarea
-                      required
-                      id="longDesc"
-                      name="longDesc"
-                      className="min-h-[120px]"
-                      placeholder="Jelaskan detail produk selengkap-lengkapnya di sini..."
-                      value={formData.longDesc}
-                      onChange={(e) => setFormData({ ...formData, longDesc: e.target.value })}
-                      minLength={10}
-                      disabled={upsertIsPending || isUploadingFile}
-                    />
-                  </Field>
-
-                  <Field>
-                    <FieldLabel htmlFor="features">Fitur (JSONB) <span className="text-destructive">*</span></FieldLabel>
-                    <Textarea
-                      required
-                      id="features"
-                      name="features"
-                      placeholder="Ketik setiap fitur di baris baru (Enter)..."
-                      // Konversi array fitur dari DB menjadi string multi-baris
-                      value={formData.features}
-                      onChange={(e) => setFormData({ ...formData, features: e.target.value })}
-                      minLength={1}
-                      disabled={upsertIsPending || isUploadingFile}
-                    />
-                    <FieldDescription className="text-xs">Pisahkan dengan Enter</FieldDescription>
-                  </Field>
-
-                  <Field>
-                    <FieldLabel htmlFor="fileUrl">File Produk Digital <span className="text-destructive">*</span></FieldLabel>
-
-                    {(selectedFile || isUploadingFile) && (
-                      <Attachment className="mt-3">
-                        <AttachmentMedia>
-                          {isUploadingFile ? (
-                            <Spinner />
-                          ) : (
-                            <FileTextIcon />
-                          )}
-                        </AttachmentMedia>
-                        <AttachmentContent>
-                          <AttachmentTitle>{selectedFile?.name}</AttachmentTitle>
-                          <AttachmentDescription>
-                            {isUploadingFile ? (
-                              <>
-                                Mengunggah · {uploadProgress}%
-                              </>
-                            ) : (
-                              <>
-                                {selectedFile?.type} · {selectedFile?.size}
-                              </>
-                            )}
-                          </AttachmentDescription>
-                        </AttachmentContent>
-                      </Attachment>
-                    )}
-
-                    <Label
-                      htmlFor="fileUrl"
-                      className={`flex justify-center space-x-4 rounded-md border border-input border-dashed px-6 py-10 transition-all duration-300 ${isUploadingFile ? 'opacity-50 pointer-events-none grayscale' : 'cursor-pointer hover:bg-muted-foreground/10'}`}
-                    >
-                      <div className="flex sm:flex-row flex-col items-center gap-3 sm:gap-4 text-center">
-                        <UploadIcon
-                          aria-hidden={true}
-                          className="h-8 w-8 sm:h-6 sm:w-6 text-muted-foreground"
-                        />
-                        <div className="relative rounded-sm hover:underline hover:underline-offset-4">
-                          <span>Klik di sini untuk unggah file</span>
-                          <Input
-                            required={!productToUpdate && !selectedFile && !uploadedFileUrl}
-                            className="sr-only"
-                            id="fileUrl"
-                            type="file"
+                      </Field>
+                      <Field>
+                        <FieldLabel htmlFor="isActive">Status Publikasi</FieldLabel>
+                        <div className="flex items-center space-x-3 h-full">
+                          <Switch
+                            id="isActive"
+                            name="isActive"
+                            checked={formData.isActive}
+                            onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
                             disabled={upsertIsPending || isUploadingFile}
-                            onChange={async (e) => {
-                              const file = e.target.files?.[0];
-                              if (!file) return;
+                          />
+                          <Label htmlFor="isActive">Aktifkan di toko</Label>
+                        </div>
+                      </Field>
+                    </FieldGroup>
+                    // #endregion
+                  }
 
-                              if (uploadedFileUrl && uploadedFileUrl !== productToUpdate?.file_url) {
-                                deleteBlobFileAction(uploadedFileUrl); // Jalankan di background
-                              }
+                  {
+                    // #region Kategori Produk
+                    <Field>
+                      <FieldLabel htmlFor="category">Kategori <span className="text-destructive">*</span></FieldLabel>
+                      <Select
+                        required
+                        items={categoryList}
+                        name="category"
+                        value={formData.category}
+                        onValueChange={(val) => setFormData({ ...formData, category: val ?? "" })}
+                        disabled={upsertIsPending || isUploadingFile}
+                      >
+                        <SelectTrigger id="category">
+                          <SelectValue placeholder="Pilih kategori" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectLabel>Daftar Kategori</SelectLabel>
+                            {categoryList?.map((item) => (
+                              <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                    // #endregion
+                  }
 
-                              const ext = file.name.split('.').pop()?.toUpperCase() || "FILE";
-                              setSelectedFile({
-                                name: file.name,
-                                size: formatBytes(file.size),
-                                type: ext,
-                              });
+                  {
+                    // #region Short/Long Desc
+                    <>
+                      <Field>
+                        <FieldLabel htmlFor="shortDesc">Deskripsi Singkat <span className="text-destructive">*</span></FieldLabel>
+                        <Textarea
+                          required
+                          id="shortDesc"
+                          name="shortDesc"
+                          placeholder="Tulis ringkasan singkat (maks. 150 karakter)..."
+                          value={formData.shortDesc}
+                          onChange={(e) => setFormData({ ...formData, shortDesc: e.target.value })}
+                          minLength={10}
+                          disabled={upsertIsPending || isUploadingFile}
+                        />
+                      </Field>
 
-                              setIsUploadingFile(true);
-                              setUploadProgress(0);
-                              toast.add({ description: "Memulai proses unggah..." });
+                      <Field>
+                        <FieldLabel htmlFor="longDesc">Deskripsi Lengkap <span className="text-destructive">*</span></FieldLabel>
+                        <Textarea
+                          required
+                          id="longDesc"
+                          name="longDesc"
+                          className="min-h-[120px]"
+                          placeholder="Jelaskan detail produk selengkap-lengkapnya di sini..."
+                          value={formData.longDesc}
+                          onChange={(e) => setFormData({ ...formData, longDesc: e.target.value })}
+                          minLength={10}
+                          disabled={upsertIsPending || isUploadingFile}
+                        />
+                      </Field>
+                    </>
+                    // #endregion
+                  }
 
-                              try {
-                                // PROSES CLIENT UPLOAD LANGSUNG KE VERCEL
-                                const newBlob = await uploadPresigned(`products/${file.name}`, file, {
-                                  access: "private",
-                                  handleUploadUrl: "/api/upload",
-                                  onUploadProgress: (progressEvent) => {
-                                    const percentage = Math.round((progressEvent.loaded / progressEvent.total) * 100);
-                                    setUploadProgress(percentage);
-                                  },
+                  {
+                    // #region Fitur
+                    <Field>
+                      <FieldLabel htmlFor="features">Fitur (JSONB) <span className="text-destructive">*</span></FieldLabel>
+                      <Textarea
+                        required
+                        id="features"
+                        name="features"
+                        placeholder="Ketik setiap fitur di baris baru (Enter)..."
+                        // Konversi array fitur dari DB menjadi string multi-baris
+                        value={formData.features}
+                        onChange={(e) => setFormData({ ...formData, features: e.target.value })}
+                        minLength={1}
+                        disabled={upsertIsPending || isUploadingFile}
+                      />
+                      <FieldDescription className="text-xs">Pisahkan dengan Enter</FieldDescription>
+                    </Field>
+                    // #endregion
+                  }
+
+                  {
+                    // #region Upload File
+                    <Field>
+                      <FieldLabel htmlFor="fileUrl">File Produk Digital <span className="text-destructive">*</span></FieldLabel>
+
+                      {(selectedFile || isUploadingFile) && (
+                        <Attachment className="mt-3">
+                          <AttachmentMedia>
+                            {isUploadingFile ? (
+                              <Spinner />
+                            ) : (
+                              <FileTextIcon />
+                            )}
+                          </AttachmentMedia>
+                          <AttachmentContent>
+                            <AttachmentTitle>{selectedFile?.name}</AttachmentTitle>
+                            <AttachmentDescription>
+                              {isUploadingFile ? (
+                                <>
+                                  Mengunggah · {uploadProgress}%
+                                </>
+                              ) : (
+                                <>
+                                  {selectedFile?.type} · {selectedFile?.size}
+                                </>
+                              )}
+                            </AttachmentDescription>
+                          </AttachmentContent>
+                        </Attachment>
+                      )}
+
+                      <Label
+                        htmlFor="fileUrl"
+                        className={`flex justify-center space-x-4 rounded-md border border-input border-dashed px-6 py-10 transition-all duration-300 ${isUploadingFile ? 'opacity-50 pointer-events-none grayscale' : 'cursor-pointer hover:bg-muted-foreground/10'}`}
+                      >
+                        <div className="flex sm:flex-row flex-col items-center gap-3 sm:gap-4 text-center">
+                          <UploadIcon
+                            aria-hidden={true}
+                            className="h-8 w-8 sm:h-6 sm:w-6 text-muted-foreground"
+                          />
+                          <div className="relative rounded-sm hover:underline hover:underline-offset-4">
+                            <span>Klik di sini untuk unggah file</span>
+                            <Input
+                              required={!productToUpdate && !selectedFile && !uploadedFileUrl}
+                              className="sr-only"
+                              id="fileUrl"
+                              type="file"
+                              disabled={upsertIsPending || isUploadingFile}
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+
+                                if (uploadedFileUrl && uploadedFileUrl !== productToUpdate?.file_url) {
+                                  deleteBlobFileAction(uploadedFileUrl); // Jalankan di background
+                                }
+
+                                const ext = file.name.split('.').pop()?.toUpperCase() || "FILE";
+                                setSelectedFile({
+                                  name: file.name,
+                                  size: formatBytes(file.size),
+                                  type: ext,
                                 });
 
-                                // Simpan URL yang didapat ke state
-                                setUploadedFileUrl(newBlob.url);
+                                setIsUploadingFile(true);
+                                setUploadProgress(0);
+                                toast.add({ description: "Memulai proses unggah..." });
 
-                                toast.add({ type: "success", description: "File berhasil diunggah!" });
-                              } catch (error) {
-                                console.error(error);
-                                toast.add({ type: "error", description: "Gagal mengunggah file. Coba lagi." });
-                                setSelectedFile(null);
-                                setUploadedFileUrl(null);
-                              } finally {
-                                setIsUploadingFile(false);
-                                e.target.value = "";
-                              }
-                            }}
-                          />
+                                try {
+                                  // PROSES CLIENT UPLOAD LANGSUNG KE VERCEL
+                                  const newBlob = await uploadPresigned(`products/${file.name}`, file, {
+                                    access: "private",
+                                    handleUploadUrl: "/api/upload",
+                                    onUploadProgress: (progressEvent) => {
+                                      const percentage = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+                                      setUploadProgress(percentage);
+                                    },
+                                  });
+
+                                  // Simpan URL yang didapat ke state
+                                  setUploadedFileUrl(newBlob.url);
+
+                                  toast.add({ type: "success", description: "File berhasil diunggah!" });
+                                } catch (error) {
+                                  console.error(error);
+                                  toast.add({ type: "error", description: "Gagal mengunggah file. Coba lagi." });
+                                  setSelectedFile(null);
+                                  setUploadedFileUrl(null);
+                                } finally {
+                                  setIsUploadingFile(false);
+                                  e.target.value = "";
+                                }
+                              }}
+                            />
+                          </div>
+                          {/* <p className="text-pretty pl-1">untuk di-upload</p> */}
                         </div>
-                        {/* <p className="text-pretty pl-1">untuk di-upload</p> */}
-                      </div>
-                    </Label>
-                    {/* <p className="flex items-center justify-between text-pretty text-muted-foreground text-xs leading-5">
+                      </Label>
+                      {/* <p className="flex items-center justify-between text-pretty text-muted-foreground text-xs leading-5">
                       Recommended max. size: 10 MB, Accepted file types: XLSX, XLS, CSV.
                     </p> */}
 
-                    <input type="hidden" name="oldFileUrl" value={productToUpdate?.file_url || ""} />
-                    <input type="hidden" name="finalFileUrl" value={uploadedFileUrl || ""} />
-                  </Field>
+                      <input type="hidden" name="oldFileUrl" value={productToUpdate?.file_url || ""} />
+                      <input type="hidden" name="finalFileUrl" value={uploadedFileUrl || ""} />
+                    </Field>
+                    // #endregion
+                  }
                 </FieldGroup>
               </form>
             </div>
@@ -1313,7 +1343,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
         // #endregion
       }
       {
-        // #region Delete Alert
+        // #region DELETE ALERT
         <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
           <AlertDialogContent size="sm">
             <AlertDialogHeader>
