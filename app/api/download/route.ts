@@ -35,22 +35,29 @@ export async function GET(req: Request) {
       const safeProductName = rawTitle.replace(/[^a-zA-Z0-9]/g, '_');
       const fileName = `${safeProductName}${originalExtension}`;
 
-      // Fetch ke Vercel Blob menggunakan OIDC Token (Private Access)
-      const blobResponse = await fetch(rows[0].file_url, {
-        headers: {
-          Authorization: `Bearer ${process.env.VERCEL_OIDC_TOKEN}`,
-        },
+      // Gunakan SDK @vercel/blob get() untuk akses private blob yang benar
+      // (Sama seperti jalur user, menghindari masalah fetch manual dengan Bearer token)
+      const result = await get(rows[0].file_url, {
+        access: "private",
+        storeId: process.env.PRIVATE_BLOB_STORE_ID,
+        oidcToken: process.env.VERCEL_OIDC_TOKEN
       });
 
-      if (!blobResponse.ok) throw new Error("Gagal mengambil file dari Blob");
+      if (result?.statusCode !== 200) {
+        return new Response("File tidak ditemukan di penyimpanan server", { status: 404 });
+      }
 
-      return new Response(blobResponse.body, {
+      return new NextResponse(result.stream as any, {
         headers: {
-          "Content-Disposition": `attachment; filename="${fileName}"`, // Sesuaikan format file
-          "Content-Type": blobResponse.headers.get("Content-Type") || "application/octet-stream",
+          "Content-Type": result.blob.contentType || "application/octet-stream",
+          "Content-Disposition": `attachment; filename="${fileName}"`,
+          "X-Content-Type-Options": "nosniff",
+          "Cache-Control": "private, no-cache",
+          "ETag": result.headers.get("etag") || "",
         },
       });
     }
+    // #endregion
 
     if (!orderId) {
       return NextResponse.json({ error: 'Order ID required' }, { status: 400 });
