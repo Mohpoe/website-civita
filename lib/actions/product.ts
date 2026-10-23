@@ -11,7 +11,7 @@ import { revalidatePath } from "next/cache";
 
 const allowedRoles = ["admin", "superadmin"];
 
-// #region 1. GET PRODUCTS
+// #region Get Products
 export async function getProducts(isActive = false): Promise<Product[]> {
   try {
     const data = isActive
@@ -49,7 +49,7 @@ export async function getProducts(isActive = false): Promise<Product[]> {
 }
 // #endregion
 
-// #region 2. CREATE/UPDATE PRODUCT
+// #region Create/Update Product
 export async function upsertProductAction(state: any, formData: FormData) {
   await auth.protect();
   const user = await currentUser();
@@ -63,7 +63,7 @@ export async function upsertProductAction(state: any, formData: FormData) {
     ? featuresRaw.split("\n").map((f) => f.trim()).filter((f) => f !== "")
     : [];
 
-  // #region - THUMBNAIL HANDLER
+  // #region - Thumbnail Handler
   const imageFile = formData.get("imageFile") as File | null;
   const oldImageUrl = formData.get("oldImageUrl") as string | null;
   let finalImageUrl = oldImageUrl || "";
@@ -90,8 +90,7 @@ export async function upsertProductAction(state: any, formData: FormData) {
   }
   // #endregion
 
-  // #region - FILE HANDLER
-  // const productFile = formData.get("productFile") as File | null;
+  // #region - File Handler
   const oldFileUrl = formData.get("oldFileUrl") as string | null;
   const finalFileUrl = formData.get("finalFileUrl") as string;
 
@@ -106,25 +105,6 @@ export async function upsertProductAction(state: any, formData: FormData) {
       console.error("Gagal menghapus file digital lama:", error);
     }
   }
-
-  // if (productFile && productFile.size > 0) {
-  //   try {
-  //     if (oldFileUrl) await del(oldFileUrl, {
-  //       storeId: process.env.PRIVATE_BLOB_STORE_ID,
-  //       oidcToken: process.env.VERCEL_OIDC_TOKEN,
-  //     });
-  //     const fileBlob = await put(`products/${productFile.name}`, productFile, {
-  //       access: "private",
-  //       addRandomSuffix: true,
-  //       storeId: process.env.PRIVATE_BLOB_STORE_ID,
-  //       oidcToken: process.env.VERCEL_OIDC_TOKEN,
-  //     });
-  //     finalFileUrl = fileBlob.url;
-  //   } catch (error) {
-  //     console.error("Gagal upload file produk:", error);
-  //     return { success: false, message: "Gagal mengunggah file produk!" };
-  //   }
-  // }
   // #endregion
 
   const rawData = {
@@ -134,9 +114,7 @@ export async function upsertProductAction(state: any, formData: FormData) {
     categoryId: formData.get("category"),
     shortDesc: formData.get("shortDesc"),
     longDesc: formData.get("longDesc"),
-    // imageUrl: formData.get("imageUrl"),
     imageUrl: finalImageUrl,
-    // fileUrl: formData.get("fileUrl"),
     fileUrl: finalFileUrl,
     features: featuresArray,
   };
@@ -192,7 +170,7 @@ export async function upsertProductAction(state: any, formData: FormData) {
 }
 // #endregion
 
-// #region 3. DELETE PRODUCT
+// #region Delete Product
 export async function deleteProductAction(formData: FormData) {
   await auth.protect();
   const user = await currentUser();
@@ -340,7 +318,7 @@ export async function deleteProductAction(formData: FormData) {
 }
 // #endregion
 
-// #region 4. CLEANUP ORPHANED FILE
+// #region Cleanup Orphaned File
 // Fungsi ini dipanggil jika admin membatalkan form setelah terlanjur mengunggah file
 export async function deleteBlobFileAction(url: string) {
   await auth.protect();
