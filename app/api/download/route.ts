@@ -30,7 +30,7 @@ export async function GET(req: Request) {
         return new Response("File produk tidak ditemukan", { status: 404 });
       }
 
-      const originalExtension = rows[0].file_url.substring(rows[0].file_url.lastIndexOf('.'));
+      const originalExtension = new URL(rows[0].file_url).pathname.substring(new URL(rows[0].file_url).pathname.lastIndexOf('.'));
       const rawTitle = rows[0].title || "Produk_Digital_CIVITA";
       const safeProductName = rawTitle.replace(/[^a-zA-Z0-9]/g, '_');
       const fileName = `${safeProductName}${originalExtension}`;
@@ -107,7 +107,7 @@ export async function GET(req: Request) {
       return new NextResponse("File tidak ditemukan di penyimpanan server", { status: 404 });
     }
 
-    const originalExtension = fileUrl.substring(fileUrl.lastIndexOf('.'));
+    const originalExtension = new URL(fileUrl).pathname.substring(new URL(fileUrl).pathname.lastIndexOf('.'));
     const rawTitle = order.product?.title || "Produk_Digital_CIVITA";
     const safeProductName = rawTitle.replace(/[^a-zA-Z0-9]/g, '_');
     const fileName = `${safeProductName}${originalExtension}`;
