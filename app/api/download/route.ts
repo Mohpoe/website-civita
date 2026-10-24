@@ -3,14 +3,60 @@ import { Order, Product } from '@/types/global';
 import { currentUser } from '@clerk/nextjs/server';
 import { get } from '@vercel/blob';
 import { NextResponse } from 'next/server';
+import { Redis } from '@upstash/redis'
 
 // PENTING: Pindahkan API ini ke Edge Runtime untuk membuka batasan memori (Bebas limit 4.5MB)
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
+// Rate limiting config
+const RATE_LIMIT_WINDOW = 60; // 1 menit dalam detik
+const MAX_REQUESTS_PER_WINDOW = 10; // Maksimal 10 download per menit per user
+
+// Inisialisasi Upstash Redis jika variabel lingkungan tersedia
+let redis: any = null;
+try {
+  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    redis = new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    });
+  }
+} catch (error) {
+  console.warn('Upstash Redis not available, rate limiting disabled:', error);
+}
+
 export async function GET(req: Request) {
   const user = await currentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // Rate limit check (skip if Redis not available)
+  if (redis) {
+    try {
+      const userId = user.id; // Clerk user ID
+      const key = `download:ratelimit:${userId}`;
+
+      // Increment counter and get current value
+      const current = await redis.incr(key);
+
+      // Set expiration on first request
+      if (current === 1) {
+        await redis.expire(key, RATE_LIMIT_WINDOW);
+      }
+
+      // Check if limit exceeded
+      if (current > MAX_REQUESTS_PER_WINDOW) {
+        return NextResponse.json(
+          { error: "Terlalu banyak permintaan download. Silakan coba lagi nanti." },
+          { status: 429 } // Too Many Requests
+        );
+      }
+    } catch (error) {
+      // Jika rate limit check gagal, kita boleh lanjut (fail open) untuk tidak blokir pengguna sah
+      console.warn('Rate limit check failed, proceeding anyway:', error);
+    }
+  }
+
   try {
     // 1. Ambil ID Pesanan dari URL
     const { searchParams } = new URL(req.url);
