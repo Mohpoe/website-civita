@@ -5,7 +5,7 @@ import { NavUser } from "@/components/nav-user"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar"
 import { ROUTES } from "@/lib/constants"
 import { useUser } from "@clerk/nextjs"
-import { GroupIcon, HomeIcon, PackageIcon, PackagePlusIcon, ShoppingBagIcon, SquareTextIcon, HelpCircleIcon, UsersIcon } from "lucide-react"
+import { FileTextIcon, GroupIcon, HomeIcon, PackageIcon, PackagePlusIcon, ShoppingBagIcon, SquareTextIcon, HelpCircleIcon, UsersIcon } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import * as React from "react"
@@ -35,6 +35,13 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
         url: ROUTES.DASHBOARD.INVENTORY,
         icon: (
           <PackageIcon />
+        ),
+      },
+      {
+        title: "PDF Merger",
+        url: ROUTES.DASHBOARD.PDF_MERGER,
+        icon: (
+          <FileTextIcon />
         ),
       },
     ],

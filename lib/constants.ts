@@ -30,5 +30,6 @@ export const ROUTES = {
     REPORT: "/dashboard/admin/report",
     USERS: "/dashboard/admin/users",
     HELP: "/dashboard/help",
+    PDF_MERGER: "/dashboard/pdf-merger",
   },
 };
