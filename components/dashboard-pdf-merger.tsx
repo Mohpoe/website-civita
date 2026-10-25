@@ -97,8 +97,9 @@ function SortableFileItem({
       {/* Handle drag: hanya bagian ini yang bisa menyeret */}
       <button
         type="button"
-        className="cursor-grab active:cursor-grabbing touch-none text-muted-foreground hover:text-foreground shrink-0"
+        className="!cursor-grab active:cursor-grabbing touch-none text-muted-foreground hover:text-foreground shrink-0"
         aria-label="Seret untuk mengurutkan"
+        title="Seret untuk mengurutkan"
         {...attributes}
         {...listeners}
       >
@@ -345,28 +346,28 @@ export default function DashboardPdfMerger() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col items-center justify-center py-8 border-2 border-dashed border-input rounded-lg text-center hover:bg-muted transition-colors">
-            <label
-              className="flex flex-col items-center justify-center gap-3 cursor-pointer"
-              onClick={() => document.getElementById("pdf-file-input")?.click()}
-            >
-              <PlusIcon className="h-8 w-8 text-muted-foreground" />
-              <span className="text-sm font-medium text-foreground">
-                Klik untuk memilih file PDF
-              </span>
-              <span className="text-xs text-muted-foreground">
-                Maksimal {MAX_FILE_SIZE_MB} MB per file
-              </span>
-              <Input
-                id="pdf-file-input"
-                type="file"
-                accept="application/pdf"
-                multiple
-                className="sr-only"
-                onChange={handleFileSelect}
-              />
-            </label>
-          </div>
+          {/* <div className="flex flex-col items-center justify-center py-8 border-2 border-dashed border-input rounded-lg text-center hover:bg-muted transition-colors"> */}
+          <label
+            className="flex flex-col items-center justify-center py-8 border-2 border-dashed border-input rounded-lg text-center hover:bg-muted transition-colors gap-3 cursor-pointer"
+            onClick={() => document.getElementById("pdf-file-input")?.click()}
+          >
+            <PlusIcon className="h-8 w-8 text-muted-foreground" />
+            <span className="text-sm font-medium text-foreground">
+              Klik untuk memilih file PDF
+            </span>
+            <span className="text-xs text-muted-foreground">
+              Maksimal {MAX_FILE_SIZE_MB} MB per file
+            </span>
+            <Input
+              id="pdf-file-input"
+              type="file"
+              accept="application/pdf"
+              multiple
+              className="sr-only"
+              onChange={handleFileSelect}
+            />
+          </label>
+          {/* </div> */}
         </CardContent>
       </Card>
 
