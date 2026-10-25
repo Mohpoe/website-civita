@@ -1,17 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { PDFDocument } from "pdf-lib";
-import {
-  FileDownIcon,
-  FileTextIcon,
-  UploadIcon,
-  XIcon,
-  RefreshCwIcon,
-  DownloadIcon,
-  InfoIcon,
-  CheckCircle2Icon,
-} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -19,13 +8,25 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
-import { toast } from "sonner";
 import { cn } from "cn";
+import {
+  CheckCircle2Icon,
+  DownloadIcon,
+  FileDownIcon,
+  FileTextIcon,
+  InfoIcon,
+  PlusIcon,
+  RefreshCwIcon,
+  XIcon
+} from "lucide-react";
+import { PDFDocument } from "pdf-lib";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
 
 const MAX_FILE_SIZE_MB = 100;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
@@ -129,23 +130,23 @@ export default function DashboardPdfCompressor() {
     try {
       const arrayBuffer = await file.arrayBuffer();
       const pdfDoc = await PDFDocument.load(arrayBuffer);
-      
+
       pdfDoc.setTitle("");
       pdfDoc.setAuthor("");
       pdfDoc.setSubject("");
       pdfDoc.setKeywords([]);
       pdfDoc.setProducer("");
       pdfDoc.setCreator("");
-      
+
       const pdfBytes = await pdfDoc.save({
         useObjectStreams: true,
         addDefaultPage: false,
       });
-      
+
       const blob = new Blob([pdfBytes as unknown as BlobPart], {
         type: "application/pdf",
       });
-      
+
       setCompressedBlob(blob);
       toast.success("PDF berhasil dikompresi!");
     } catch (error) {
@@ -178,8 +179,8 @@ export default function DashboardPdfCompressor() {
 
   const originalSize = file?.size || 0;
   const compressedSize = compressedBlob?.size || 0;
-  const reduction = originalSize > 0 && compressedSize > 0 
-    ? Math.round((1 - compressedSize / originalSize) * 100) 
+  const reduction = originalSize > 0 && compressedSize > 0
+    ? Math.round((1 - compressedSize / originalSize) * 100)
     : 0;
 
   return (
@@ -210,21 +211,18 @@ export default function DashboardPdfCompressor() {
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-normal">Pilih File PDF</CardTitle>
-            <CardDescription>
-              Maksimal {MAX_FILE_SIZE_MB} MB per file
-            </CardDescription>
           </CardHeader>
           <CardContent>
             <div
               className="flex flex-col items-center justify-center py-12 border-2 border-dashed border-input rounded-lg text-center hover:bg-muted transition-colors cursor-pointer"
               onClick={() => fileInputRef.current?.click()}
             >
-              <UploadIcon className="h-10 w-10 text-muted-foreground mb-4" />
+              <PlusIcon className="h-10 w-10 text-muted-foreground mb-4" />
               <span className="text-sm font-medium text-foreground mb-1">
-                Klik atau seret file PDF ke sini
+                Klik untuk memilih file PDF
               </span>
               <span className="text-xs text-muted-foreground">
-                File akan diproses langsung di browser Anda
+                Ukuran file maksimal {MAX_FILE_SIZE_MB} MB
               </span>
               <Input
                 ref={fileInputRef}
@@ -279,27 +277,23 @@ export default function DashboardPdfCompressor() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="space-y-3">
+            <RadioGroup
+              value={selectedPreset}
+              onValueChange={(value) => setSelectedPreset(value as CompressionPreset["id"])}
+              className="space-y-3"
+            >
               {PRESETS.map((preset) => (
-                <button
+                <Label
                   key={preset.id}
-                  type="button"
-                  onClick={() => setSelectedPreset(preset.id)}
+                  htmlFor={`preset-${preset.id}`}
                   className={cn(
-                    "w-full flex items-start space-x-3 p-4 border rounded-lg text-left transition-colors",
+                    "flex items-start space-x-3 p-4 border rounded-lg cursor-pointer transition-colors",
                     selectedPreset === preset.id
                       ? "border-primary bg-primary/5"
                       : "border-input hover:bg-muted/50"
                   )}
                 >
-                  <div className={cn(
-                    "w-4 h-4 rounded-full border mt-0.5",
-                    selectedPreset === preset.id ? "border-primary" : "border-input"
-                  )}>
-                    {selectedPreset === preset.id && (
-                      <div className="w-2 h-2 bg-primary rounded-full m-0.5" />
-                    )}
-                  </div>
+                  <RadioGroupItem value={preset.id} id={`preset-${preset.id}`} className="mt-0.5" />
                   <div className="flex-1">
                     <div className="text-sm font-medium">
                       {preset.name}
@@ -308,9 +302,9 @@ export default function DashboardPdfCompressor() {
                       {preset.description}
                     </p>
                   </div>
-                </button>
+                </Label>
               ))}
-            </div>
+            </RadioGroup>
 
             {selectedPreset === "custom" && (
               <div className="space-y-4 p-4 border border-input rounded-lg bg-muted/30">
@@ -401,7 +395,7 @@ export default function DashboardPdfCompressor() {
               </div>
             </div>
 
-            <div className="flex items-start gap-2 p-3 bg-muted/50 rounded-lg text-xs text-muted-foreground">
+            <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg text-xs text-muted-foreground">
               <InfoIcon className="w-4 h-4 mt-0.5 shrink-0" />
               <p>
                 Kompresi ini menghilangkan metadata tidak penting dan mengoptimalkan struktur PDF.
