@@ -110,6 +110,11 @@ export const metadata: Metadata = {
     ],
   },
   manifest: "/site.webmanifest",
+  verification: {
+    other: {
+      'msvalidate.01': ['CDDE2B01EA602551E1D0F695AA83222B'],
+    },
+  },
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
