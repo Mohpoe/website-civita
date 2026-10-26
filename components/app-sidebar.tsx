@@ -5,10 +5,11 @@ import { NavUser } from "@/components/nav-user"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar"
 import { ROUTES } from "@/lib/constants"
 import { useUser } from "@clerk/nextjs"
-import { FileDownIcon, FileTextIcon, GroupIcon, HomeIcon, PackageIcon, PackagePlusIcon, ShoppingBagIcon, SquareTextIcon, HelpCircleIcon, UsersIcon } from "lucide-react"
+import { FileDownIcon, FileTextIcon, GroupIcon, HelpCircleIcon, PackageIcon, PackagePlusIcon, ShoppingBagIcon, SquareTextIcon, UsersIcon } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import * as React from "react"
+import { NavDocuments } from "./nav-documents"
 import { NavSecondary } from "./nav-secondary"
 import { Separator } from "./ui/separator"
 import { Skeleton } from "./ui/skeleton"
@@ -37,20 +38,6 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
           <PackageIcon />
         ),
       },
-      {
-        title: "PDF Merger",
-        url: ROUTES.DASHBOARD.PDF_MERGER,
-        icon: (
-          <FileTextIcon />
-        ),
-      },
-      {
-        title: "PDF Compressor",
-        url: ROUTES.DASHBOARD.PDF_COMPRESSOR,
-        icon: (
-          <FileDownIcon />
-        ),
-      },
     ],
     navSecondary: [
       {
@@ -62,34 +49,46 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
       },
       ...(role === "admin" || role === "superadmin"
         ? [
-            {
-              title: "Kelola Produk",
-              url: ROUTES.DASHBOARD.ADMIN,
-              icon: (
-                <PackagePlusIcon />
-              ),
-            },
-            {
-              title: "Kelola Kategori",
-              url: ROUTES.DASHBOARD.CATEGORY,
-              icon: (
-                <GroupIcon />
-              ),
-            },
-            {
-              title: "Laporan Penjualan",
-              url: ROUTES.DASHBOARD.REPORT,
-              icon: (
-                <SquareTextIcon />
-              ),
-            },
-            ...(role === "superadmin" ? [{
-              title: "Kelola Pengguna",
-              url: ROUTES.DASHBOARD.USERS,
-              icon: <UsersIcon />
-            }] : [])
-          ]
+          {
+            title: "Kelola Produk",
+            url: ROUTES.DASHBOARD.ADMIN,
+            icon: (
+              <PackagePlusIcon />
+            ),
+          },
+          {
+            title: "Kelola Kategori",
+            url: ROUTES.DASHBOARD.CATEGORY,
+            icon: (
+              <GroupIcon />
+            ),
+          },
+          {
+            title: "Laporan Penjualan",
+            url: ROUTES.DASHBOARD.REPORT,
+            icon: (
+              <SquareTextIcon />
+            ),
+          },
+          ...(role === "superadmin" ? [{
+            title: "Kelola Pengguna",
+            url: ROUTES.DASHBOARD.USERS,
+            icon: <UsersIcon />
+          }] : [])
+        ]
         : []),
+    ],
+    documents: [
+      {
+        name: "PDF Merger",
+        url: ROUTES.DASHBOARD.PDF_MERGER,
+        icon: <FileTextIcon />,
+      },
+      {
+        name: "PDF Compressor",
+        url: ROUTES.DASHBOARD.PDF_COMPRESSOR,
+        icon: <FileDownIcon />,
+      },
     ],
   }
 
@@ -112,6 +111,7 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
       <Separator />
       <SidebarContent>
         <NavMain items={data.navMain} />
+        <NavDocuments items={data.documents} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
