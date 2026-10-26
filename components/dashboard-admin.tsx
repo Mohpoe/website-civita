@@ -247,7 +247,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
       // 1. Kolom Nomor Urut
       columnHelper.display({
         id: "nomor",
-        header: () => <div className="text-center w-8 text-muted-foreground w-full">#</div>,
+        header: () => <div className="text-center">#</div>,
         cell: ({ row }) => <div className="text-center font-mono text-sm text-muted-foreground">{row.index + 1}</div>,
         enableHiding: false,
       }),
@@ -263,7 +263,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
         enableHiding: false,
       }),
 
-      // 3. Kolom Nama Produk + Deskripsi Singkat + Thumbnail
+      // 3. Kolom Nama Produk + Deskripsi Singkat + Thumbnail + Kategori
       columnHelper.accessor("title", {
         id: "informasi_produk",
         header: "Informasi Produk",
@@ -272,37 +272,37 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
           return (
             <div className="flex items-center gap-3">
               {/* Thumbnail Image */}
-              <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center border shrink-0 overflow-hidden">
+              <div className="w-12 h-12 rounded-sm bg-muted flex items-center justify-center border shrink-0 overflow-hidden">
                 {product.image_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={product.image_url} alt={product.title} className="w-full h-full object-cover" />
                 ) : (
-                  <ImageIcon className="w-4 h-4 text-muted-foreground/50" />
+                  <ImageIcon className="w-5 h-5 text-muted-foreground/50" />
                 )}
               </div>
               {/* Teks Informasi */}
-              <div className="flex flex-col max-w-[250px]">
+              <div className="flex flex-col min-w-0 flex-1 max-w-[200px] sm:max-w-[280px] lg:max-w-none lg:w-full">
                 <span className="font-semibold text-foreground truncate" title={product.title}>
                   {product.title}
                 </span>
                 <span className="text-xs text-muted-foreground truncate" title={product.short_desc}>
                   {product.short_desc || "Tidak ada deskripsi"}
                 </span>
+                <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 font-medium bg-muted/50 border-border w-fit mt-0.5">
+                  {product.category?.name || "[Tanpa_kategori]"}
+                </Badge>
               </div>
             </div>
           );
         },
       }),
 
-      // 4. Kolom Kategori
+      // 4. Kolom Kategori (Disembunyikan, digunakan untuk filter)
       columnHelper.accessor("category_id", {
         id: "kategori",
         header: "Kategori",
-        cell: ({ row }) => (
-          <Badge variant="outline" className="font-medium bg-muted/50 border-border">
-            {row.original.category?.name || "[Tanpa_kategori]"}
-          </Badge>
-        ),
+        cell: () => null,
+        enableHiding: false,
         filterFn: (row, id, value) => {
           if (!value || value.length === 0) return true;
           return value.includes(row.getValue(id));
@@ -313,7 +313,6 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
       columnHelper.accessor("price", {
         id: "harga",
         header: "Harga",
-        // header: () => <div className="text-right">Harga</div>,
         cell: (info) => (
           <div className="text-right font-mono text-sm font-medium">
             {formatRupiah(info.getValue())}
@@ -360,11 +359,11 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
         header: "Status",
         cell: (info) => {
           return info.getValue() ? (
-            <Badge variant="secondary">
+            <Badge variant="secondary" className="whitespace-nowrap">
               <BadgeCheckIcon data-icon="inline-start" className="text-success" /> Aktif
             </Badge>
           ) : (
-            <Badge variant="secondary" className="text-muted-foreground">
+            <Badge variant="secondary" className="text-muted-foreground whitespace-nowrap">
               <BadgeXIcon data-icon="inline-start" className="text-destructive" /> Nonaktif
             </Badge>
           );
@@ -388,11 +387,12 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
       // 7. Kolom Aksi (Edit & Delete)
       columnHelper.display({
         id: "actions",
+        header: () => <div className="text-center">Aksi</div>,
         cell: ({ row, table }) => {
           const product = row.original;
 
           return (
-            <div className="flex justify-end">
+            <div className="flex justify-center">
               <DropdownMenu>
                 <DropdownMenuTrigger render={<Button variant="ghost" className="h-8 w-8 p-0 hover:bg-muted" />}>
                   <span className="sr-only">Buka menu aksi</span>
@@ -465,6 +465,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
   const [columnVisibility, setColumnVisibility] = useState<ColumnVisibilityState>({
     keterangan: false,
     deskripsi: false,
+    kategori: false,
   });
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -477,6 +478,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
     setColumnVisibility({
       keterangan: false,
       deskripsi: false,
+      kategori: false,
     });
     setPagination({
       pageIndex: 0,
@@ -792,40 +794,48 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
             }
             {
               // #region DATATABLE
-              <div className="overflow-hidden rounded-lg border">
-                <Table>
+              <div className="overflow-x-auto rounded-lg border">
+                <Table className="w-full min-w-[1100px]">
                   <TableHeader className="bg-muted">
                     {table.getHeaderGroups().map((headerGroup) => (
                       <TableRow key={headerGroup.id} className="*:border-border [&>:not(:last-child)]:border-r">
-                        {headerGroup.headers.map((header) => (
-                          <TableHead key={header.id} onClick={header.column.getToggleSortingHandler()}>
-                            {header.column.getCanSort() ? (
-                              <Button variant="ghost" className="p-0 m-0 flex justify-between w-full">
-                                <div className="flex">
-                                  {header.isPlaceholder
-                                    ? null
-                                    : <table.FlexRender header={header} />
-                                  }
-                                </div>
-                                <div className="flex">
-                                  {header.column.getCanSort() && (
-                                    <span className="opacity-40">
-                                      {(() => {
-                                        const sortState = header.column.getIsSorted();
-                                        if (sortState === 'asc') return <ChevronUpIcon />;
-                                        if (sortState === 'desc') return <ChevronDownIcon />;
-                                        return <ChevronsUpDownIcon />;
-                                      })()}
-                                    </span>
-                                  )}
-                                </div>
-                              </Button>
-                            ) : header.isPlaceholder
-                              ? null
-                              : <table.FlexRender header={header} />
-                            }
-                          </TableHead>
-                        ))}
+                        {headerGroup.headers.map((header) => {
+                          const isActions = header.column.id === "actions";
+                          const isInfo = header.column.id === "informasi_produk";
+                          return (
+                            <TableHead
+                              key={header.id}
+                              onClick={header.column.getToggleSortingHandler()}
+                              className={`relative ${isActions ? "sticky right-0 bg-muted z-10" : "whitespace-nowrap"} ${isInfo ? "min-w-[320px]" : ""}`}
+                            >
+                              {header.column.getCanSort() ? (
+                                <Button variant="ghost" className="p-0 m-0 flex justify-between w-full">
+                                  <div className="flex">
+                                    {header.isPlaceholder
+                                      ? null
+                                      : <table.FlexRender header={header} />
+                                    }
+                                  </div>
+                                  <div className="flex">
+                                    {header.column.getCanSort() && (
+                                      <span className="opacity-40">
+                                        {(() => {
+                                          const sortState = header.column.getIsSorted();
+                                          if (sortState === 'asc') return <ChevronUpIcon />;
+                                          if (sortState === 'desc') return <ChevronDownIcon />;
+                                          return <ChevronsUpDownIcon />;
+                                        })()}
+                                      </span>
+                                    )}
+                                  </div>
+                                </Button>
+                              ) : header.isPlaceholder
+                                ? null
+                                : <table.FlexRender header={header} />
+                              }
+                            </TableHead>
+                          );
+                        })}
                       </TableRow>
                     ))}
                   </TableHeader>
@@ -833,11 +843,18 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                     {table.getRowModel().rows.length ? (
                       table.getRowModel().rows.map((row) => (
                         <TableRow key={row.id} className="*:border-border [&>:not(:last-child)]:border-r">
-                          {row.getVisibleCells().map((cell) => (
-                            <TableCell key={cell.id}>
-                              <table.FlexRender cell={cell} />
-                            </TableCell>
-                          ))}
+                          {row.getVisibleCells().map((cell) => {
+                            const isActions = cell.column.id === "actions";
+                            const isInfo = cell.column.id === "informasi_produk";
+                            return (
+                              <TableCell
+                                key={cell.id}
+                                className={isActions ? "sticky right-0 bg-background z-10" : isInfo ? "min-w-[320px]" : "whitespace-nowrap"}
+                              >
+                                <table.FlexRender cell={cell} />
+                              </TableCell>
+                            );
+                          })}
                         </TableRow>
                       ))
                     ) : (
