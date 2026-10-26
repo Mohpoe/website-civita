@@ -406,8 +406,8 @@ export default function DashboardPdfToImage() {
               </p>
             </div>
 
-            <div className="flex items-start gap-2 p-3 bg-muted/50 rounded-lg text-xs text-muted-foreground">
-              <InfoIcon className="w-4 h-4 mt-0.5 shrink-0" />
+            <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg text-xs text-muted-foreground">
+              <InfoIcon className="w-4 h-4 shrink-0" />
               <p>
                 Akan dikonversi semua {totalPages} halaman PDF menjadi {format.toUpperCase()}.
                 Proses ini sepenuhnya dilakukan di browser Anda.

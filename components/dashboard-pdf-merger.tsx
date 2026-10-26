@@ -1,12 +1,20 @@
 "use client";
 
-import { useState } from "react";
-import { PDFDocument } from "pdf-lib";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 import {
   DndContext,
-  closestCenter,
   KeyboardSensor,
   PointerSensor,
+  closestCenter,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -20,26 +28,18 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
-  FileTextIcon,
-  DownloadIcon,
-  PlusIcon,
-  Trash2Icon,
-  RefreshCwIcon,
   CheckIcon,
-  ChevronUpIcon,
   ChevronDownIcon,
+  ChevronUpIcon,
+  DownloadIcon,
+  FileTextIcon,
   GripVerticalIcon,
+  PlusIcon,
+  RefreshCwIcon,
+  Trash2Icon,
 } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
+import { PDFDocument } from "pdf-lib";
+import { useState } from "react";
 import { toast } from "sonner";
 
 const MAX_FILES = 20;

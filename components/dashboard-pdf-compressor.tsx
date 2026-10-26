@@ -396,7 +396,7 @@ export default function DashboardPdfCompressor() {
             </div>
 
             <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg text-xs text-muted-foreground">
-              <InfoIcon className="w-4 h-4 mt-0.5 shrink-0" />
+              <InfoIcon className="w-4 h-4 shrink-0" />
               <p>
                 Kompresi ini menghilangkan metadata tidak penting dan mengoptimalkan struktur PDF.
               </p>
