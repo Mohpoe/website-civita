@@ -4,17 +4,17 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ROUTES } from "@/lib/constants";
 import { formatRupiah } from "@/lib/utils";
 import { Category, Order, Product } from "@/types/global";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowDownUpIcon, ArrowRightIcon, AwardIcon, CheckCircle2Icon, ChevronLeftIcon, ChevronRightIcon, FileTextIcon, MoveRightIcon, PackageSearchIcon, SearchIcon, ShoppingBagIcon, TagIcon, TagsIcon } from "lucide-react";
+import { ArrowDownUpIcon, AwardIcon, CheckCircle2Icon, ChevronLeftIcon, ChevronRightIcon, FileTextIcon, MoveRightIcon, PackageSearchIcon, SearchIcon, ShoppingBagIcon, TagIcon, TagsIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "./ui/input-group";
 import { Separator } from "./ui/separator";
 import { Spinner } from "./ui/spinner";
 import { toast } from "./ui/toast";
-import { InputGroup, InputGroupAddon, InputGroupInput } from "./ui/input-group";
-import { ROUTES } from "@/lib/constants";
 
 interface DashboardProductsProps {
   products: Product[];
@@ -239,7 +239,7 @@ export default function DashboardProducts({ products, categories, orders }: Dash
           <div className="w-full lg:w-80 shrink-0">
             <InputGroup className="w-full h-10 px-2 rounded-none border-2 !border-foreground font-bold bg-card shadow-[4px_4px_0_0] shadow-foreground has-[:focus]:outline-none has-[:focus]:translate-y-[2px] has-[:focus]:shadow-[2px_2px_0_0] shadow-foreground transition-all !ring-offset-0 !ring-0">
               <InputGroupInput
-                type="text"
+                type="search"
                 placeholder="Cari nama produk..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}

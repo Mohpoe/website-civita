@@ -261,9 +261,6 @@ export default function DashboardPdfToImage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-normal">Pilih File PDF</CardTitle>
-            <CardDescription>
-              Maksimal {MAX_FILE_SIZE_MB} MB per file
-            </CardDescription>
           </CardHeader>
           <CardContent>
             <div
