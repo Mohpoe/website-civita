@@ -145,7 +145,7 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
                 alt={user.name}
                 width={40}
                 height={40}
-                className="rounded-full object-cover border bg-muted shrink-0"
+                className="rounded-full object-cover border bg-muted shrink-0 aspect-square"
               />
               <div className="flex flex-col">
                 <span className="font-semibold text-foreground">{user.name}</span>

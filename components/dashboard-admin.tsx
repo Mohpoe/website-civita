@@ -1194,7 +1194,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                   {
                     // #region Fitur
                     <Field>
-                      <FieldLabel htmlFor="features">Fitur (JSONB) <span className="text-destructive">*</span></FieldLabel>
+                      <FieldLabel htmlFor="features">Fitur <span className="text-destructive">*</span></FieldLabel>
                       <Textarea
                         required
                         id="features"
