@@ -32,5 +32,6 @@ export const ROUTES = {
     HELP: "/dashboard/help",
     PDF_MERGER: "/dashboard/pdf-merger",
     PDF_COMPRESSOR: "/dashboard/pdf-compressor",
+    PDF_TO_IMAGE: "/dashboard/pdf-to-image",
   },
 };
