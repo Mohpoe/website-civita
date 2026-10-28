@@ -40,7 +40,7 @@ import {
 } from "lucide-react";
 import { PDFDocument } from "pdf-lib";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 
 const MAX_FILES = 20;
 const MAX_FILE_SIZE_MB = 50;
@@ -183,9 +183,11 @@ export default function DashboardPdfMerger() {
     if (!selectedFiles.length) return;
 
     if (files.length + selectedFiles.length > MAX_FILES) {
-      toast.error(
-        `Maksimal ${MAX_FILES} file. Sudah ada ${files.length} file.`
-      );
+      toast.add({
+        type: "error",
+        description: `Maksimal ${MAX_FILES} file. Sudah ada ${files.length} file.`,
+        priority: "high",
+      });
       e.target.value = "";
       return;
     }
@@ -194,11 +196,19 @@ export default function DashboardPdfMerger() {
 
     for (const file of selectedFiles) {
       if (file.type !== "application/pdf") {
-        toast.error(`"${file.name}" bukan file PDF.`);
+        toast.add({
+          type: "error",
+          description: `"${file.name}" bukan file PDF.`,
+          priority: "high",
+        });
         continue;
       }
       if (file.size > MAX_FILE_SIZE_BYTES) {
-        toast.error(`"${file.name}" melebihi ${MAX_FILE_SIZE_MB} MB.`);
+        toast.add({
+          type: "error",
+          description: `"${file.name}" melebihi ${MAX_FILE_SIZE_MB} MB.`,
+          priority: "high",
+        });
         continue;
       }
 
@@ -255,13 +265,18 @@ export default function DashboardPdfMerger() {
   // Proses merge
   const handleMerge = async () => {
     if (files.length < 2) {
-      toast.error("Pilih minimal 2 file PDF untuk digabung.");
+      toast.add({
+        type: "error",
+        description: "Pilih minimal 2 file PDF untuk digabung.",
+        priority: "high",
+      });
       return;
     }
 
     setIsMerging(true);
-    toast.info("Sedang menggabungkan PDF...", {
-      description: "Mohon tunggu sebentar",
+    toast.add({
+      type: "info",
+      description: "Sedang menggabungkan PDF...",
     });
 
     try {
@@ -283,10 +298,17 @@ export default function DashboardPdfMerger() {
       });
       setMergedBlob(blob);
 
-      toast.success("PDF berhasil digabung!");
+      toast.add({
+        type: "success",
+        description: "PDF berhasil digabung!",
+      });
     } catch (error) {
       console.error(error);
-      toast.error("Gagal menggabungkan PDF. Pastikan file tidak terkunci.");
+      toast.add({
+        type: "error",
+        description: "Gagal menggabungkan PDF. Pastikan file tidak terkunci.",
+        priority: "high",
+      });
     } finally {
       setIsMerging(false);
     }

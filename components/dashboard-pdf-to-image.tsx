@@ -14,6 +14,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
+import { toast } from "@/components/ui/toast";
 import { cn } from "cn";
 import JSZip from "jszip";
 import {
@@ -29,7 +30,6 @@ import {
 } from "lucide-react";
 import * as pdfjsLib from "pdfjs-dist";
 import { useRef, useState } from "react";
-import { toast } from "sonner";
 
 if (typeof window !== "undefined") {
   pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -74,13 +74,21 @@ export default function DashboardPdfToImage() {
     if (!selectedFile) return;
 
     if (selectedFile.type !== "application/pdf") {
-      toast.error("Hanya file PDF yang diperbolehkan.");
+      toast.add({
+        type: "error",
+        description: "Hanya file PDF yang diperbolehkan.",
+        priority: "high",
+      });
       e.target.value = "";
       return;
     }
 
     if (selectedFile.size > MAX_FILE_SIZE_BYTES) {
-      toast.error(`File terlalu besar. Maksimal ${MAX_FILE_SIZE_MB} MB.`);
+      toast.add({
+        type: "error",
+        description: `File terlalu besar. Maksimal ${MAX_FILE_SIZE_MB} MB.`,
+        priority: "high",
+      });
       e.target.value = "";
       return;
     }
@@ -98,7 +106,11 @@ export default function DashboardPdfToImage() {
       setTotalPages(pdf.numPages);
     } catch (error) {
       console.error(error);
-      toast.error("Gagal membaca file PDF.");
+      toast.add({
+        type: "error",
+        description: "Gagal membaca file PDF.",
+        priority: "high",
+      });
     }
 
     e.target.value = "";
@@ -112,14 +124,19 @@ export default function DashboardPdfToImage() {
 
   const handleConvert = async () => {
     if (!file) {
-      toast.error("Pilih file PDF terlebih dahulu.");
+      toast.add({
+        type: "error",
+        description: "Pilih file PDF terlebih dahulu.",
+        priority: "high",
+      });
       return;
     }
 
     setIsConverting(true);
     setConvertedImages([]);
-    toast.info("Sedang mengkonversi PDF ke gambar...", {
-      description: `Mengkonversi ${totalPages} halaman`,
+    toast.add({
+      type: "info",
+      description: "Sedang mengkonversi PDF ke gambar...",
     });
 
     try {
@@ -176,10 +193,18 @@ export default function DashboardPdfToImage() {
       }
 
       setConvertedImages(images);
-      toast.success(`Berhasil mengkonversi ${images.length} halaman!`);
+
+      toast.add({
+        type: "success",
+        description: `Berhasil mengkonversi ${images.length} halaman!`,
+      });
     } catch (error) {
       console.error(error);
-      toast.error("Gagal mengkonversi PDF. Silakan coba lagi.");
+      toast.add({
+        type: "error",
+        description: "Gagal mengkonversi PDF. Silakan coba lagi.",
+        priority: "high",
+      });
     } finally {
       setIsConverting(false);
     }
@@ -217,10 +242,18 @@ export default function DashboardPdfToImage() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      toast.success("Berhasil mengunduh semua gambar dalam format ZIP!");
+
+      toast.add({
+        type: "success",
+        description: "Berhasil mengunduh semua gambar dalam format ZIP!",
+      });
     } catch (error) {
       console.error(error);
-      toast.error("Gagal membuat file ZIP.");
+      toast.add({
+        type: "error",
+        description: "Gagal membuat file ZIP.",
+        priority: "high",
+      });
     }
   };
 

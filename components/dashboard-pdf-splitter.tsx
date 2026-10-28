@@ -9,25 +9,25 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Separator } from "@/components/ui/separator";
+import { toast } from "@/components/ui/toast";
+import { cn } from "cn";
+import JSZip from "jszip";
 import {
+  ArchiveIcon,
   CheckIcon,
   DownloadIcon,
   FileTextIcon,
   PlusIcon,
   RefreshCwIcon,
   ScissorsIcon,
-  ArchiveIcon,
   XIcon,
 } from "lucide-react";
 import { PDFDocument } from "pdf-lib";
-import { useState, useRef } from "react";
-import { toast } from "sonner";
-import JSZip from "jszip";
 import * as pdfjsLib from "pdfjs-dist";
-import { cn } from "cn";
+import { useRef, useState } from "react";
 
 if (typeof window !== "undefined") {
   pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -66,7 +66,7 @@ export default function DashboardPdfSplitter() {
   const [rangeTo, setRangeTo] = useState("1");
   const [customPages, setCustomPages] = useState("");
   const [splitResults, setSplitResults] = useState<SplitResult[]>([]);
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,13 +74,21 @@ export default function DashboardPdfSplitter() {
     if (!selectedFile) return;
 
     if (selectedFile.type !== "application/pdf") {
-      toast.error("Hanya file PDF yang diperbolehkan.");
+      toast.add({
+        type: "error",
+        description: "Hanya file PDF yang diperbolehkan.",
+        priority: "high",
+      });
       e.target.value = "";
       return;
     }
 
     if (selectedFile.size > MAX_FILE_SIZE_BYTES) {
-      toast.error(`File terlalu besar. Maksimal ${MAX_FILE_SIZE_MB} MB.`);
+      toast.add({
+        type: "error",
+        description: `File terlalu besar. Maksimal ${MAX_FILE_SIZE_MB} MB.`,
+        priority: "high",
+      });
       e.target.value = "";
       return;
     }
@@ -93,20 +101,27 @@ export default function DashboardPdfSplitter() {
     try {
       const buffer = await selectedFile.arrayBuffer();
       setArrayBuffer(buffer.slice(0));
-      
-      const pdf = await pdfjsLib.getDocument({ 
+
+      const pdf = await pdfjsLib.getDocument({
         data: buffer,
         useWorkerFetch: false,
         useSystemFonts: true,
       } as any).promise;
-      
+
       setTotalPages(pdf.numPages);
       setRangeFrom("1");
       setRangeTo(String(pdf.numPages));
-      toast.success("PDF berhasil dimuat!");
+      toast.add({
+        type: "success",
+        description: "PDF berhasil dimuat!",
+      });
     } catch (error) {
       console.error(error);
-      toast.error("Gagal memuat file PDF.");
+      toast.add({
+        type: "error",
+        description: "Gagal memuat file PDF.",
+        priority: "high",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -114,14 +129,19 @@ export default function DashboardPdfSplitter() {
 
   const handleSplit = async () => {
     if (!file || !arrayBuffer) {
-      toast.error("Pilih file PDF terlebih dahulu.");
+      toast.add({
+        type: "error",
+        description: "Pilih file PDF terlebih dahulu.",
+        priority: "high",
+      });
       return;
     }
 
     setIsSplitting(true);
     setSplitResults([]);
-    toast.info("Sedang memisahkan PDF...", {
-      description: "Proses ini dapat memakan beberapa saat",
+    toast.add({
+      type: "info",
+      description: "Sedang memisahkan PDF...",
     });
 
     try {
@@ -146,7 +166,11 @@ export default function DashboardPdfSplitter() {
         const from = parseInt(rangeFrom);
         const to = parseInt(rangeTo);
         if (isNaN(from) || isNaN(to) || from < 1 || to > totalPages || from > to) {
-          toast.error("Rentang halaman tidak valid.");
+          toast.add({
+            type: "error",
+            description: "Rentang halaman tidak valid.",
+            priority: "high",
+          });
           setIsSplitting(false);
           return;
         }
@@ -170,13 +194,17 @@ export default function DashboardPdfSplitter() {
           .filter((p) => p.trim())
           .map((p) => parseInt(p.trim()))
           .filter((p) => !isNaN(p) && p >= 1 && p <= totalPages);
-        
+
         if (pageNumbers.length === 0) {
-          toast.error("Masukkan nomor halaman yang valid.");
+          toast.add({
+            type: "error",
+            description: "Masukkan nomor halaman yang valid.",
+            priority: "high",
+          });
           setIsSplitting(false);
           return;
         }
-        
+
         for (const pageNum of pageNumbers) {
           const newPdf = await PDFDocument.create();
           const [copiedPage] = await newPdf.copyPages(sourcePdf, [pageNum - 1]);
@@ -192,10 +220,17 @@ export default function DashboardPdfSplitter() {
       }
 
       setSplitResults(results);
-      toast.success(`Berhasil memisahkan menjadi ${results.length} file PDF!`);
+      toast.add({
+        type: "success",
+        description: `Berhasil memisahkan menjadi ${results.length} file PDF!`,
+      });
     } catch (error) {
       console.error(error);
-      toast.error("Gagal memisahkan PDF. Silakan coba lagi.");
+      toast.add({
+        type: "error",
+        description: "Gagal memisahkan PDF. Silakan coba lagi.",
+        priority: "high",
+      });
     } finally {
       setIsSplitting(false);
     }
@@ -214,15 +249,15 @@ export default function DashboardPdfSplitter() {
 
   const handleDownloadAll = async () => {
     if (splitResults.length === 0) return;
-    
+
     try {
       const zip = new JSZip();
       const originalName = file?.name.replace(/\.pdf$/i, "") || "pdf";
-      
+
       for (const result of splitResults) {
         zip.file(result.filename, result.blob);
       }
-      
+
       const zipBlob = await zip.generateAsync({ type: "blob" });
       const url = URL.createObjectURL(zipBlob);
       const a = document.createElement("a");
@@ -232,11 +267,18 @@ export default function DashboardPdfSplitter() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      
-      toast.success("Berhasil mengunduh semua file dalam format ZIP!");
+
+      toast.add({
+        type: "success",
+        description: "Berhasil mengunduh semua file dalam format ZIP!",
+      });
     } catch (error) {
       console.error(error);
-      toast.error("Gagal membuat file ZIP.");
+      toast.add({
+        type: "error",
+        description: "Gagal membuat file ZIP.",
+        priority: "high",
+      });
     }
   };
 

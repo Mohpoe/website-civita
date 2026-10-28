@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { PDFDocument } from "pdf-lib";
 import { useRef, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 
 const MAX_FILE_SIZE_MB = 100;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
@@ -95,13 +95,21 @@ export default function DashboardPdfCompressor() {
     if (!selectedFile) return;
 
     if (selectedFile.type !== "application/pdf") {
-      toast.error("Hanya file PDF yang diperbolehkan.");
+      toast.add({
+        type: "error",
+        description: "Hanya file PDF yang diperbolehkan.",
+        priority: "high",
+      });
       e.target.value = "";
       return;
     }
 
     if (selectedFile.size > MAX_FILE_SIZE_BYTES) {
-      toast.error(`File terlalu besar. Maksimal ${MAX_FILE_SIZE_MB} MB.`);
+      toast.add({
+        type: "error",
+        description: `File terlalu besar. Maksimal ${MAX_FILE_SIZE_MB} MB.`,
+        priority: "high",
+      });
       e.target.value = "";
       return;
     }
@@ -118,13 +126,18 @@ export default function DashboardPdfCompressor() {
 
   const handleCompress = async () => {
     if (!file) {
-      toast.error("Pilih file PDF terlebih dahulu.");
+      toast.add({
+        type: "error",
+        description: "Pilih file PDF terlebih dahulu.",
+        priority: "high",
+      });
       return;
     }
 
     setIsCompressing(true);
-    toast.info("Sedang mengompresi PDF...", {
-      description: "Proses ini dapat memakan beberapa saat",
+    toast.add({
+      type: "info",
+      description: "Sedang mengompresi PDF...",
     });
 
     try {
@@ -148,10 +161,17 @@ export default function DashboardPdfCompressor() {
       });
 
       setCompressedBlob(blob);
-      toast.success("PDF berhasil dikompresi!");
+      toast.add({
+        type: "success",
+        description: "PDF berhasil dikompresi!",
+      });
     } catch (error) {
       console.error(error);
-      toast.error("Gagal mengompresi PDF. Silakan coba lagi.");
+      toast.add({
+        type: "error",
+        description: "Gagal mengompresi PDF. Silakan coba lagi.",
+        priority: "high",
+      });
     } finally {
       setIsCompressing(false);
     }
