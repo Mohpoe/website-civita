@@ -39,7 +39,7 @@ import {
   Trash2Icon,
 } from "lucide-react";
 import { PDFDocument } from "pdf-lib";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "@/components/ui/toast";
 
 const MAX_FILES = 20;
@@ -165,6 +165,7 @@ export default function DashboardPdfMerger() {
   const [files, setFiles] = useState<PdfFileItem[]>([]);
   const [isMerging, setIsMerging] = useState(false);
   const [mergedBlob, setMergedBlob] = useState<Blob | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -180,6 +181,7 @@ export default function DashboardPdfMerger() {
   // Tambah file
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
+    e.target.value = "";
     if (!selectedFiles.length) return;
 
     if (files.length + selectedFiles.length > MAX_FILES) {
@@ -214,7 +216,9 @@ export default function DashboardPdfMerger() {
 
       const arrayBuffer = await file.arrayBuffer();
       accepted.push({
-        id: crypto.randomUUID(),
+        id: typeof crypto !== 'undefined' && 'randomUUID' in crypto
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(36).slice(2)}`,
         file,
         arrayBuffer,
       });
@@ -224,8 +228,6 @@ export default function DashboardPdfMerger() {
       setFiles((prev) => [...prev, ...accepted]);
       setMergedBlob(null);
     }
-
-    e.target.value = "";
   };
 
   // Hapus file
