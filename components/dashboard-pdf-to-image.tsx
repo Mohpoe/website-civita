@@ -43,6 +43,7 @@ const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 type ImageFormat = "jpg" | "png";
 type ScaleOption = 1 | 1.5 | 2 | 2.5 | 3;
+type PageSelectionMode = "all" | "range" | "custom";
 
 interface ConvertedImage {
   pageNumber: number;
@@ -59,6 +60,38 @@ function formatBytes(bytes: number): string {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 }
 
+function parsePageNumbers(input: string, totalPages: number): number[] {
+  const pages = new Set<number>();
+  const parts = input.split(/[,;\s]+/).filter((p) => p.trim());
+
+  for (const part of parts) {
+    const trimmed = part.trim();
+    if (!trimmed) continue;
+
+    if (trimmed.includes("-")) {
+      const rangeParts = trimmed.split("-");
+      if (rangeParts.length !== 2) continue;
+      const from = parseInt(rangeParts[0].trim());
+      const to = parseInt(rangeParts[1].trim());
+      if (isNaN(from) || isNaN(to)) continue;
+      const start = Math.min(from, to);
+      const end = Math.max(from, to);
+      for (let i = start; i <= end; i++) {
+        if (i >= 1 && i <= totalPages) {
+          pages.add(i);
+        }
+      }
+    } else {
+      const page = parseInt(trimmed);
+      if (!isNaN(page) && page >= 1 && page <= totalPages) {
+        pages.add(page);
+      }
+    }
+  }
+
+  return Array.from(pages).sort((a, b) => a - b);
+}
+
 export default function DashboardPdfToImage() {
   const [file, setFile] = useState<File | null>(null);
   const [isConverting, setIsConverting] = useState(false);
@@ -67,6 +100,10 @@ export default function DashboardPdfToImage() {
   const [quality, setQuality] = useState([90]);
   const [scale, setScale] = useState<ScaleOption>(2);
   const [totalPages, setTotalPages] = useState(0);
+  const [pageSelectionMode, setPageSelectionMode] = useState<PageSelectionMode>("all");
+  const [rangeFrom, setRangeFrom] = useState("1");
+  const [rangeTo, setRangeTo] = useState("1");
+  const [customPages, setCustomPages] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,6 +132,8 @@ export default function DashboardPdfToImage() {
 
     setFile(selectedFile);
     setConvertedImages([]);
+    setPageSelectionMode("all");
+    setCustomPages("");
 
     try {
       const arrayBuffer = await selectedFile.arrayBuffer();
@@ -104,6 +143,8 @@ export default function DashboardPdfToImage() {
         useSystemFonts: true,
       } as any).promise;
       setTotalPages(pdf.numPages);
+      setRangeFrom("1");
+      setRangeTo(String(pdf.numPages));
     } catch (error) {
       console.error(error);
       toast.add({
@@ -120,6 +161,49 @@ export default function DashboardPdfToImage() {
     setFile(null);
     setConvertedImages([]);
     setTotalPages(0);
+    setPageSelectionMode("all");
+    setRangeFrom("1");
+    setRangeTo("1");
+    setCustomPages("");
+  };
+
+  const getPagesToConvert = (): number[] | null => {
+    if (pageSelectionMode === "all") {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+
+    if (pageSelectionMode === "range") {
+      const from = parseInt(rangeFrom);
+      const to = parseInt(rangeTo);
+      if (isNaN(from) || isNaN(to) || from < 1 || to > totalPages || from > to) {
+        toast.add({
+          type: "error",
+          description: "Rentang halaman tidak valid.",
+          priority: "high",
+        });
+        return null;
+      }
+      const pages: number[] = [];
+      for (let i = from; i <= to; i++) {
+        pages.push(i);
+      }
+      return pages;
+    }
+
+    if (pageSelectionMode === "custom") {
+      const pages = parsePageNumbers(customPages, totalPages);
+      if (pages.length === 0) {
+        toast.add({
+          type: "error",
+          description: "Masukkan nomor halaman yang valid.",
+          priority: "high",
+        });
+        return null;
+      }
+      return pages;
+    }
+
+    return null;
   };
 
   const handleConvert = async () => {
@@ -129,6 +213,11 @@ export default function DashboardPdfToImage() {
         description: "Pilih file PDF terlebih dahulu.",
         priority: "high",
       });
+      return;
+    }
+
+    const pagesToConvert = getPagesToConvert();
+    if (!pagesToConvert || pagesToConvert.length === 0) {
       return;
     }
 
@@ -149,7 +238,7 @@ export default function DashboardPdfToImage() {
       const images: ConvertedImage[] = [];
       const originalName = file.name.replace(/\.pdf$/i, "");
 
-      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      for (const pageNum of pagesToConvert) {
         const page = await pdf.getPage(pageNum);
         const viewport = page.getViewport({ scale });
 
@@ -264,6 +353,10 @@ export default function DashboardPdfToImage() {
     setFormat("jpg");
     setQuality([90]);
     setScale(2);
+    setPageSelectionMode("all");
+    setRangeFrom("1");
+    setRangeTo("1");
+    setCustomPages("");
   };
 
   return (
@@ -352,137 +445,281 @@ export default function DashboardPdfToImage() {
       )}
 
       {file && convertedImages.length === 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-normal">Pengaturan Konversi</CardTitle>
-            <CardDescription>
-              Atur format, kualitas, dan resolusi gambar hasil konversi
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-3">
-              <Label className="text-sm font-medium">Format Gambar</Label>
+        <>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-normal">Pilihan Halaman</CardTitle>
+              <CardDescription>
+                Pilih halaman PDF yang ingin dikonversi menjadi gambar
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
               <RadioGroup
-                value={format}
-                onValueChange={(value) => setFormat(value as ImageFormat)}
-                className="grid grid-cols-2 gap-3"
+                value={pageSelectionMode}
+                onValueChange={(value) => setPageSelectionMode(value as PageSelectionMode)}
+                className="space-y-3"
               >
                 <Label
-                  htmlFor="format-jpg"
+                  htmlFor="page-mode-all"
                   className={cn(
-                    "flex items-center space-x-3 p-4 border rounded-lg cursor-pointer transition-colors",
-                    format === "jpg"
+                    "flex items-start space-x-3 p-4 border rounded-lg cursor-pointer transition-colors",
+                    pageSelectionMode === "all"
                       ? "border-primary bg-primary/5"
                       : "border-input hover:bg-muted/50"
                   )}
                 >
-                  <RadioGroupItem value="jpg" id="format-jpg" />
-                  <div>
-                    <div className="text-sm font-medium">JPG/JPEG</div>
-                    <p className="text-xs text-muted-foreground">Ukuran lebih kecil</p>
+                  <RadioGroupItem value="all" id="page-mode-all" className="mt-0.5" />
+                  <div className="flex-1">
+                    <div className="text-sm font-medium">Semua Halaman</div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Konversi semua halaman ({totalPages} halaman)
+                    </p>
                   </div>
                 </Label>
+
                 <Label
-                  htmlFor="format-png"
+                  htmlFor="page-mode-range"
                   className={cn(
-                    "flex items-center space-x-3 p-4 border rounded-lg cursor-pointer transition-colors",
-                    format === "png"
+                    "flex items-start space-x-3 p-4 border rounded-lg cursor-pointer transition-colors",
+                    pageSelectionMode === "range"
                       ? "border-primary bg-primary/5"
                       : "border-input hover:bg-muted/50"
                   )}
                 >
-                  <RadioGroupItem value="png" id="format-png" />
-                  <div>
-                    <div className="text-sm font-medium">PNG</div>
-                    <p className="text-xs text-muted-foreground">Kualitas lebih tinggi, transparan</p>
+                  <RadioGroupItem value="range" id="page-mode-range" className="mt-0.5" />
+                  <div className="flex-1">
+                    <div className="text-sm font-medium">Rentang Halaman</div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Konversi beberapa halaman berurutan
+                    </p>
+                  </div>
+                </Label>
+
+                <Label
+                  htmlFor="page-mode-custom"
+                  className={cn(
+                    "flex items-start space-x-3 p-4 border rounded-lg cursor-pointer transition-colors",
+                    pageSelectionMode === "custom"
+                      ? "border-primary bg-primary/5"
+                      : "border-input hover:bg-muted/50"
+                  )}
+                >
+                  <RadioGroupItem value="custom" id="page-mode-custom" className="mt-0.5" />
+                  <div className="flex-1">
+                    <div className="text-sm font-medium">Halaman Tertentu</div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Konversi halaman pilihan, bisa campuran dan rentang
+                    </p>
                   </div>
                 </Label>
               </RadioGroup>
-            </div>
 
-            {format === "jpg" && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">Kualitas JPG: {quality[0]}%</Label>
-                  <span className="text-xs text-muted-foreground">
-                    {quality[0] <= 70 && "Kompres tinggi"}
-                    {quality[0] > 70 && quality[0] <= 85 && "Seimbang"}
-                    {quality[0] > 85 && "Kualitas tinggi"}
-                  </span>
+              {pageSelectionMode === "range" && (
+                <div className="space-y-4 p-4 border border-input rounded-lg bg-muted/30">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="page-range-from" className="text-sm">Dari Halaman</Label>
+                      <Input
+                        id="page-range-from"
+                        type="number"
+                        min="1"
+                        max={totalPages}
+                        value={rangeFrom}
+                        onChange={(e) => setRangeFrom(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="page-range-to" className="text-sm">Sampai Halaman</Label>
+                      <Input
+                        id="page-range-to"
+                        type="number"
+                        min="1"
+                        max={totalPages}
+                        value={rangeTo}
+                        onChange={(e) => setRangeTo(e.target.value)}
+                      />
+                    </div>
+                  </div>
                 </div>
-                <Slider
-                  value={quality}
-                  onValueChange={(value) => setQuality(Array.isArray(value) ? value : [value])}
-                  max={100}
-                  min={10}
-                  step={5}
-                />
-              </div>
-            )}
-
-            <div className="space-y-3">
-              <Label className="text-sm font-medium">Resolusi/Skala</Label>
-              <Select value={String(scale)} onValueChange={(value) => setScale(Number(value) as ScaleOption)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">1x (Normal) - Ukuran lebih kecil</SelectItem>
-                  <SelectItem value="1.5">1.5x (Standar) - Seimbang</SelectItem>
-                  <SelectItem value="2">2x (Tinggi) - Rekomendasi</SelectItem>
-                  <SelectItem value="2.5">2.5x (Sangat Tinggi)</SelectItem>
-                  <SelectItem value="3">3x (Maksimal) - File besar</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground">
-                Skala lebih tinggi menghasilkan gambar lebih tajam namun ukuran file lebih besar
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg text-xs text-muted-foreground">
-              <InfoIcon className="w-4 h-4 shrink-0" />
-              <p>
-                Akan dikonversi semua {totalPages} halaman PDF menjadi {format.toUpperCase()}.
-                Proses ini sepenuhnya dilakukan di browser Anda.
-              </p>
-            </div>
-
-            <Button
-              type="button"
-              onClick={handleConvert}
-              disabled={isConverting}
-              className="w-full"
-              size="lg"
-            >
-              {isConverting ? (
-                <span className="flex items-center gap-2">
-                  <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24">
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="none"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  Sedang Mengkonversi...
-                </span>
-              ) : (
-                <span className="flex items-center gap-2">
-                  <ImageIcon className="w-4 h-4" />
-                  Konversi {totalPages} Halaman
-                </span>
               )}
-            </Button>
-          </CardContent>
-        </Card>
+
+              {pageSelectionMode === "custom" && (
+                <div className="space-y-2 p-4 border border-input rounded-lg bg-muted/30">
+                  <Label htmlFor="custom-pages" className="text-sm">Nomor Halaman</Label>
+                  <Input
+                    id="custom-pages"
+                    placeholder="Contoh: 1, 3, 5-7 atau 2 4 6"
+                    value={customPages}
+                    onChange={(e) => setCustomPages(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Pisahkan dengan koma, titik koma, spasi, atau tanda hubung untuk rentang
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-normal">Pengaturan Konversi</CardTitle>
+              <CardDescription>
+                Atur format, kualitas, dan resolusi gambar hasil konversi
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Format Gambar</Label>
+                <RadioGroup
+                  value={format}
+                  onValueChange={(value) => setFormat(value as ImageFormat)}
+                  className="grid grid-cols-2 gap-3"
+                >
+                  <Label
+                    htmlFor="format-jpg"
+                    className={cn(
+                      "flex items-center space-x-3 p-4 border rounded-lg cursor-pointer transition-colors",
+                      format === "jpg"
+                        ? "border-primary bg-primary/5"
+                        : "border-input hover:bg-muted/50"
+                    )}
+                  >
+                    <RadioGroupItem value="jpg" id="format-jpg" />
+                    <div>
+                      <div className="text-sm font-medium">JPG/JPEG</div>
+                      <p className="text-xs text-muted-foreground">Ukuran lebih kecil</p>
+                    </div>
+                  </Label>
+                  <Label
+                    htmlFor="format-png"
+                    className={cn(
+                      "flex items-center space-x-3 p-4 border rounded-lg cursor-pointer transition-colors",
+                      format === "png"
+                        ? "border-primary bg-primary/5"
+                        : "border-input hover:bg-muted/50"
+                    )}
+                  >
+                    <RadioGroupItem value="png" id="format-png" />
+                    <div>
+                      <div className="text-sm font-medium">PNG</div>
+                      <p className="text-xs text-muted-foreground">Kualitas lebih tinggi, transparan</p>
+                    </div>
+                  </Label>
+                </RadioGroup>
+              </div>
+
+              {format === "jpg" && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-medium">Kualitas JPG: {quality[0]}%</Label>
+                    <span className="text-xs text-muted-foreground">
+                      {quality[0] <= 70 && "Kompres tinggi"}
+                      {quality[0] > 70 && quality[0] <= 85 && "Seimbang"}
+                      {quality[0] > 85 && "Kualitas tinggi"}
+                    </span>
+                  </div>
+                  <Slider
+                    value={quality}
+                    onValueChange={(value) => setQuality(Array.isArray(value) ? value : [value])}
+                    max={100}
+                    min={10}
+                    step={5}
+                  />
+                </div>
+              )}
+
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Resolusi/Skala</Label>
+                <Select value={String(scale)} onValueChange={(value) => setScale(Number(value) as ScaleOption)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1x (Normal) - Ukuran lebih kecil</SelectItem>
+                    <SelectItem value="1.5">1.5x (Standar) - Seimbang</SelectItem>
+                    <SelectItem value="2">2x (Tinggi) - Rekomendasi</SelectItem>
+                    <SelectItem value="2.5">2.5x (Sangat Tinggi)</SelectItem>
+                    <SelectItem value="3">3x (Maksimal) - File besar</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Skala lebih tinggi menghasilkan gambar lebih tajam namun ukuran file lebih besar
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg text-xs text-muted-foreground">
+                <InfoIcon className="w-4 h-4 shrink-0" />
+                <p>
+                  Akan dikonversi{" "}
+                  {(() => {
+                    if (pageSelectionMode === "all") return `${totalPages} halaman`;
+                    if (pageSelectionMode === "range") {
+                      const from = parseInt(rangeFrom);
+                      const to = parseInt(rangeTo);
+                      if (!isNaN(from) && !isNaN(to) && from >= 1 && to >= from && to <= totalPages) {
+                        return `${to - from + 1} halaman`;
+                      }
+                      return "halaman sesuai rentang";
+                    }
+                    const pages = parsePageNumbers(customPages, totalPages);
+                    if (pages.length > 0) return `${pages.length} halaman`;
+                    return "halaman yang dipilih";
+                  })()}{" "}
+                  PDF menjadi {format.toUpperCase()}. Proses ini sepenuhnya dilakukan di browser Anda.
+                </p>
+              </div>
+
+              <Button
+                type="button"
+                onClick={handleConvert}
+                disabled={isConverting}
+                className="w-full"
+                size="lg"
+              >
+                {isConverting ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24">
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>
+                    Sedang Mengkonversi...
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <ImageIcon className="w-4 h-4" />
+                    Konversi{" "}
+                    {(() => {
+                      if (pageSelectionMode === "all") return totalPages;
+                      if (pageSelectionMode === "range") {
+                        const from = parseInt(rangeFrom);
+                        const to = parseInt(rangeTo);
+                        if (!isNaN(from) && !isNaN(to) && from >= 1 && to >= from && to <= totalPages) {
+                          return to - from + 1;
+                        }
+                        return 0;
+                      }
+                      const pages = parsePageNumbers(customPages, totalPages);
+                      return pages.length || 0;
+                    })()}{" "}
+                    Halaman
+                  </span>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+        </>
       )}
 
       {convertedImages.length > 0 && (
