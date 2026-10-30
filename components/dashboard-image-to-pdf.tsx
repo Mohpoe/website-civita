@@ -212,9 +212,9 @@ export default function DashboardImageToPdf() {
     const accepted: ImageFileItem[] = [];
 
     for (const file of selectedFiles) {
-      const isValidType = ACCEPTED_TYPES.includes(file.type) || 
+      const isValidType = ACCEPTED_TYPES.includes(file.type) ||
         ACCEPTED_EXTENSIONS.some(ext => file.name.toLowerCase().endsWith(ext));
-      
+
       if (!isValidType) {
         toast.add({
           type: "error",
@@ -385,7 +385,7 @@ export default function DashboardImageToPdf() {
     const url = URL.createObjectURL(pdfBlob);
     const a = document.createElement("a");
     a.href = url;
-    
+
     let filename = outputFileName.trim();
     if (!filename) {
       // use first image name without extension
@@ -400,7 +400,7 @@ export default function DashboardImageToPdf() {
         filename = `${filename}.pdf`;
       }
     }
-    
+
     a.download = filename;
     document.body.appendChild(a);
     a.click();
@@ -564,7 +564,14 @@ export default function DashboardImageToPdf() {
               {pageSizeMode === "custom" && (
                 <div className="space-y-2 p-4 border border-input rounded-lg bg-muted/30">
                   <Label className="text-sm">Orientasi Halaman</Label>
-                  <Select value={pageOrientation} onValueChange={(value) => setPageOrientation(value as PageOrientation)}>
+                  <Select
+                    value={pageOrientation}
+                    onValueChange={(value) => setPageOrientation(value as PageOrientation)}
+                    items={[
+                      { value: "portrait", label: "Portrait (Vertikal)" },
+                      { value: "landscape", label: "Landscape (Horizontal)" },
+                    ]}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
