@@ -360,11 +360,11 @@ export default function DashboardPdfToImage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">PDF to Image</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl sm:text-2xl font-bold">PDF to Image</h1>
+          <p className="text-sm text-muted-foreground">
             Konversi halaman PDF menjadi gambar JPG atau PNG dengan berbagai pengaturan resolusi. Proses dilakukan di browser.
           </p>
         </div>
@@ -374,6 +374,7 @@ export default function DashboardPdfToImage() {
             variant="outline"
             onClick={handleReset}
             disabled={(!file && convertedImages.length === 0) || isConverting}
+            className="w-full sm:w-auto"
           >
             <RefreshCwIcon className="w-4 h-4" />
             Reset
@@ -390,11 +391,11 @@ export default function DashboardPdfToImage() {
           </CardHeader>
           <CardContent>
             <div
-              className="flex flex-col items-center justify-center py-12 border-2 border-dashed border-input rounded-lg text-center hover:bg-muted transition-colors cursor-pointer"
+              className="flex flex-col items-center justify-center py-6 sm:py-8 md:py-12 border-2 border-dashed border-input rounded-lg text-center hover:bg-muted transition-colors cursor-pointer gap-2 sm:gap-3"
               onClick={() => fileInputRef.current?.click()}
             >
-              <PlusIcon className="h-10 w-10 text-muted-foreground mb-4" />
-              <span className="text-sm font-medium text-foreground mb-1">
+              <PlusIcon className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground" />
+              <span className="text-sm font-medium text-foreground">
                 Klik untuk memilih file PDF
               </span>
               <span className="text-xs text-muted-foreground">
@@ -418,11 +419,11 @@ export default function DashboardPdfToImage() {
             <CardTitle className="text-sm font-normal">File yang Dipilih</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between p-4 border border-input rounded-lg bg-muted/30">
-              <div className="flex items-center gap-3">
-                <FileTextIcon className="w-8 h-8 text-destructive" />
-                <div>
-                  <p className="text-sm font-medium truncate max-w-[200px] md:max-w-md">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 border border-input rounded-lg bg-muted/30">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <FileTextIcon className="w-7 h-7 sm:w-8 sm:h-8 text-destructive shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">
                     {file.name}
                   </p>
                   <p className="text-xs text-muted-foreground">
@@ -436,6 +437,7 @@ export default function DashboardPdfToImage() {
                 size="icon-sm"
                 onClick={handleRemoveFile}
                 disabled={isConverting}
+                className="self-end sm:self-auto"
               >
                 <XIcon className="w-4 h-4" />
               </Button>
@@ -457,12 +459,12 @@ export default function DashboardPdfToImage() {
               <RadioGroup
                 value={pageSelectionMode}
                 onValueChange={(value) => setPageSelectionMode(value as PageSelectionMode)}
-                className="space-y-3"
+                className="space-y-2 sm:space-y-3"
               >
                 <Label
                   htmlFor="page-mode-all"
                   className={cn(
-                    "flex items-start space-x-3 p-4 border rounded-lg cursor-pointer transition-colors",
+                    "flex items-start space-x-2 sm:space-x-3 p-3 sm:p-4 border rounded-lg cursor-pointer transition-colors",
                     pageSelectionMode === "all"
                       ? "border-primary bg-primary/5"
                       : "border-input hover:bg-muted/50"
@@ -471,7 +473,7 @@ export default function DashboardPdfToImage() {
                   <RadioGroupItem value="all" id="page-mode-all" className="mt-0.5" />
                   <div className="flex-1">
                     <div className="text-sm font-medium">Semua Halaman</div>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-muted-foreground mt-0.5 sm:mt-1">
                       Konversi semua halaman ({totalPages} halaman)
                     </p>
                   </div>
@@ -480,7 +482,7 @@ export default function DashboardPdfToImage() {
                 <Label
                   htmlFor="page-mode-range"
                   className={cn(
-                    "flex items-start space-x-3 p-4 border rounded-lg cursor-pointer transition-colors",
+                    "flex items-start space-x-2 sm:space-x-3 p-3 sm:p-4 border rounded-lg cursor-pointer transition-colors",
                     pageSelectionMode === "range"
                       ? "border-primary bg-primary/5"
                       : "border-input hover:bg-muted/50"
@@ -489,7 +491,7 @@ export default function DashboardPdfToImage() {
                   <RadioGroupItem value="range" id="page-mode-range" className="mt-0.5" />
                   <div className="flex-1">
                     <div className="text-sm font-medium">Rentang Halaman</div>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-muted-foreground mt-0.5 sm:mt-1">
                       Konversi beberapa halaman berurutan
                     </p>
                   </div>
@@ -498,7 +500,7 @@ export default function DashboardPdfToImage() {
                 <Label
                   htmlFor="page-mode-custom"
                   className={cn(
-                    "flex items-start space-x-3 p-4 border rounded-lg cursor-pointer transition-colors",
+                    "flex items-start space-x-2 sm:space-x-3 p-3 sm:p-4 border rounded-lg cursor-pointer transition-colors",
                     pageSelectionMode === "custom"
                       ? "border-primary bg-primary/5"
                       : "border-input hover:bg-muted/50"
@@ -507,7 +509,7 @@ export default function DashboardPdfToImage() {
                   <RadioGroupItem value="custom" id="page-mode-custom" className="mt-0.5" />
                   <div className="flex-1">
                     <div className="text-sm font-medium">Halaman Tertentu</div>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-muted-foreground mt-0.5 sm:mt-1">
                       Konversi halaman pilihan, bisa campuran dan rentang
                     </p>
                   </div>
@@ -573,12 +575,12 @@ export default function DashboardPdfToImage() {
                 <RadioGroup
                   value={format}
                   onValueChange={(value) => setFormat(value as ImageFormat)}
-                  className="grid grid-cols-2 gap-3"
+                  className="grid grid-cols-2 gap-2 sm:gap-3"
                 >
                   <Label
                     htmlFor="format-jpg"
                     className={cn(
-                      "flex items-center space-x-3 p-4 border rounded-lg cursor-pointer transition-colors",
+                      "flex items-center space-x-2 sm:space-x-3 p-3 sm:p-4 border rounded-lg cursor-pointer transition-colors",
                       format === "jpg"
                         ? "border-primary bg-primary/5"
                         : "border-input hover:bg-muted/50"
@@ -593,7 +595,7 @@ export default function DashboardPdfToImage() {
                   <Label
                     htmlFor="format-png"
                     className={cn(
-                      "flex items-center space-x-3 p-4 border rounded-lg cursor-pointer transition-colors",
+                      "flex items-center space-x-2 sm:space-x-3 p-3 sm:p-4 border rounded-lg cursor-pointer transition-colors",
                       format === "png"
                         ? "border-primary bg-primary/5"
                         : "border-input hover:bg-muted/50"
@@ -602,7 +604,7 @@ export default function DashboardPdfToImage() {
                     <RadioGroupItem value="png" id="format-png" />
                     <div>
                       <div className="text-sm font-medium">PNG</div>
-                      <p className="text-xs text-muted-foreground">Kualitas lebih tinggi, transparan</p>
+                      <p className="text-xs text-muted-foreground">Kualitas lebih tinggi</p>
                     </div>
                   </Label>
                 </RadioGroup>
@@ -738,7 +740,7 @@ export default function DashboardPdfToImage() {
               <Button
                 type="button"
                 onClick={handleDownloadAll}
-                className="flex-1 flex items-center gap-2"
+                className="w-full sm:flex-1 flex items-center gap-2"
                 size="lg"
               >
                 <ArchiveIcon className="w-4 h-4" />
@@ -748,7 +750,7 @@ export default function DashboardPdfToImage() {
                 type="button"
                 variant="outline"
                 onClick={() => setConvertedImages([])}
-                className="flex-1"
+                className="w-full sm:flex-1"
               >
                 Konversi Ulang
               </Button>
@@ -758,7 +760,7 @@ export default function DashboardPdfToImage() {
 
             <div className="space-y-3">
               <h3 className="text-sm font-medium">Hasil Konversi</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {convertedImages.map((image) => (
                   <Card key={image.pageNumber} className="overflow-hidden">
                     <div className="aspect-[3/4] bg-muted relative overflow-hidden">
@@ -769,7 +771,7 @@ export default function DashboardPdfToImage() {
                         className="w-full h-full object-contain"
                       />
                     </div>
-                    <CardContent className="p-3 space-y-2">
+                    <CardContent className="p-2.5 sm:p-3 space-y-2">
                       <div className="flex items-center justify-between">
                         <p className="text-sm font-medium">Halaman {image.pageNumber}</p>
                         <p className="text-xs text-muted-foreground">{formatBytes(image.blob.size)}</p>

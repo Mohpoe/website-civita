@@ -100,7 +100,7 @@ function SortableImageItem({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-3 p-3 border border-input rounded-lg bg-background hover:bg-muted/50 transition-colors"
+      className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 border border-input rounded-lg bg-background hover:bg-muted/50 transition-colors"
     >
       <button
         type="button"
@@ -113,11 +113,11 @@ function SortableImageItem({
         <GripVerticalIcon className="w-4 h-4" />
       </button>
 
-      <span className="text-xs font-medium text-muted-foreground w-5 text-center shrink-0">
+      <span className="text-xs font-medium text-muted-foreground w-4 sm:w-5 text-center shrink-0">
         {index + 1}
       </span>
 
-      <div className="w-12 h-12 rounded-md overflow-hidden border border-input shrink-0 bg-muted">
+      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-md overflow-hidden border border-input shrink-0 bg-muted">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={item.previewUrl}
@@ -127,16 +127,16 @@ function SortableImageItem({
       </div>
 
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <FileImageIcon className="w-4 h-4 text-primary shrink-0" />
-          <span className="text-sm truncate">{item.file.name}</span>
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <FileImageIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary shrink-0" />
+          <span className="text-xs sm:text-sm truncate">{item.file.name}</span>
         </div>
-        <div className="text-xs text-muted-foreground">
+        <div className="text-[11px] sm:text-xs text-muted-foreground">
           {(item.file.size / 1024 / 1024).toFixed(2)} MB
         </div>
       </div>
 
-      <div className="flex items-center gap-1 shrink-0">
+      <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
         <Button
           type="button"
           variant="outline"
@@ -146,8 +146,9 @@ function SortableImageItem({
           disabled={index === 0}
           aria-label="Naikkan"
           title="Naikkan"
+          className="h-7 w-7 sm:h-8 sm:w-8"
         >
-          <ChevronUpIcon />
+          <ChevronUpIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
         </Button>
         <Button
           type="button"
@@ -158,8 +159,9 @@ function SortableImageItem({
           disabled={index === total - 1}
           aria-label="Turunkan"
           title="Turunkan"
+          className="h-7 w-7 sm:h-8 sm:w-8"
         >
-          <ChevronDownIcon />
+          <ChevronDownIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
         </Button>
         <Button
           type="button"
@@ -169,8 +171,9 @@ function SortableImageItem({
           onClick={() => onRemove(item.id)}
           aria-label="Hapus"
           title="Hapus"
+          className="h-7 w-7 sm:h-8 sm:w-8"
         >
-          <Trash2Icon />
+          <Trash2Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
         </Button>
       </div>
     </div>
@@ -418,11 +421,11 @@ export default function DashboardImageToPdf() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Image to PDF</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl sm:text-2xl font-bold">Image to PDF</h1>
+          <p className="text-sm text-muted-foreground">
             Konversi gambar JPG, JPEG, atau PNG menjadi file PDF. Atur urutan halaman sesuai kebutuhan Anda.
           </p>
         </div>
@@ -432,6 +435,7 @@ export default function DashboardImageToPdf() {
             variant="outline"
             onClick={handleReset}
             disabled={images.length === 0 || isConverting}
+            className="w-full sm:w-auto"
           >
             <RefreshCwIcon className="w-4 h-4" />
             Reset
@@ -450,10 +454,10 @@ export default function DashboardImageToPdf() {
         </CardHeader>
         <CardContent>
           <label
-            className="flex flex-col items-center justify-center py-8 border-2 border-dashed border-input rounded-lg text-center hover:bg-muted transition-colors gap-3 cursor-pointer"
+            className="flex flex-col items-center justify-center py-6 sm:py-8 md:py-10 border-2 border-dashed border-input rounded-lg text-center hover:bg-muted transition-colors gap-2 sm:gap-3 cursor-pointer"
             onClick={() => fileInputRef.current?.click()}
           >
-            <PlusIcon className="h-8 w-8 text-muted-foreground" />
+            <PlusIcon className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground" />
             <span className="text-sm font-medium text-foreground">
               Klik untuk memilih gambar
             </span>
@@ -522,12 +526,12 @@ export default function DashboardImageToPdf() {
               <RadioGroup
                 value={pageSizeMode}
                 onValueChange={(value) => setPageSizeMode(value as PageSizeMode)}
-                className="space-y-3"
+                className="space-y-2 sm:space-y-3"
               >
                 <Label
                   htmlFor="page-original"
                   className={cn(
-                    "flex items-start space-x-3 p-4 border rounded-lg cursor-pointer transition-colors",
+                    "flex items-start space-x-2 sm:space-x-3 p-3 sm:p-4 border rounded-lg cursor-pointer transition-colors",
                     pageSizeMode === "original"
                       ? "border-primary bg-primary/5"
                       : "border-input hover:bg-muted/50"
@@ -536,7 +540,7 @@ export default function DashboardImageToPdf() {
                   <RadioGroupItem value="original" id="page-original" className="mt-0.5" />
                   <div className="flex-1">
                     <div className="text-sm font-medium">Ikuti Ukuran Gambar</div>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-muted-foreground mt-0.5 sm:mt-1">
                       Setiap halaman PDF disesuaikan dengan ukuran gambar asli
                     </p>
                   </div>
@@ -545,7 +549,7 @@ export default function DashboardImageToPdf() {
                 <Label
                   htmlFor="page-custom"
                   className={cn(
-                    "flex items-start space-x-3 p-4 border rounded-lg cursor-pointer transition-colors",
+                    "flex items-start space-x-2 sm:space-x-3 p-3 sm:p-4 border rounded-lg cursor-pointer transition-colors",
                     pageSizeMode === "custom"
                       ? "border-primary bg-primary/5"
                       : "border-input hover:bg-muted/50"
@@ -554,7 +558,7 @@ export default function DashboardImageToPdf() {
                   <RadioGroupItem value="custom" id="page-custom" className="mt-0.5" />
                   <div className="flex-1">
                     <div className="text-sm font-medium">Ukuran Halaman Kustom (A4)</div>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-muted-foreground mt-0.5 sm:mt-1">
                       Semua gambar disesuaikan ke halaman A4 dengan proporsi terjaga
                     </p>
                   </div>
@@ -651,7 +655,7 @@ export default function DashboardImageToPdf() {
               <Button
                 type="button"
                 onClick={handleDownload}
-                className="flex-1 flex items-center gap-2"
+                className="w-full sm:flex-1 flex items-center gap-2"
                 size="lg"
               >
                 <DownloadIcon className="w-4 h-4" />
@@ -661,7 +665,7 @@ export default function DashboardImageToPdf() {
                 type="button"
                 variant="outline"
                 onClick={() => setPdfBlob(null)}
-                className="flex-1"
+                className="w-full sm:flex-1"
               >
                 Konversi Ulang
               </Button>

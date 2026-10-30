@@ -849,7 +849,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                             return (
                               <TableCell
                                 key={cell.id}
-                                className={isActions ? "sticky right-0 z-10" : isInfo ? "min-w-[320px]" : "whitespace-nowrap"}
+                                className={isActions ? "sticky right-0 z-10 bg-background" : isInfo ? "min-w-[320px]" : "whitespace-nowrap"}
                               >
                                 <table.FlexRender cell={cell} />
                               </TableCell>

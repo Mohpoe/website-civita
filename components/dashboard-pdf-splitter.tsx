@@ -294,11 +294,11 @@ export default function DashboardPdfSplitter() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">PDF Splitter</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl sm:text-2xl font-bold">PDF Splitter</h1>
+          <p className="text-sm text-muted-foreground">
             Pisahkan file PDF menjadi beberapa file terpisah. Proses dilakukan di browser.
           </p>
         </div>
@@ -308,6 +308,7 @@ export default function DashboardPdfSplitter() {
             variant="outline"
             onClick={handleReset}
             disabled={!file || isSplitting}
+            className="w-full sm:w-auto"
           >
             <RefreshCwIcon className="w-4 h-4" />
             Reset
@@ -327,10 +328,10 @@ export default function DashboardPdfSplitter() {
           </CardHeader>
           <CardContent>
             <label
-              className="flex flex-col items-center justify-center py-12 border-2 border-dashed border-input rounded-lg text-center hover:bg-muted transition-colors gap-3 cursor-pointer"
+              className="flex flex-col items-center justify-center py-6 sm:py-8 md:py-12 border-2 border-dashed border-input rounded-lg text-center hover:bg-muted transition-colors gap-2 sm:gap-3 cursor-pointer"
               onClick={() => fileInputRef.current?.click()}
             >
-              <PlusIcon className="h-8 w-8 text-muted-foreground" />
+              <PlusIcon className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground" />
               <span className="text-sm font-medium text-foreground">
                 Klik untuk memilih file PDF
               </span>
@@ -358,11 +359,11 @@ export default function DashboardPdfSplitter() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between p-4 border border-input rounded-lg bg-muted/30">
-              <div className="flex items-center gap-3">
-                <FileTextIcon className="w-8 h-8 text-destructive" />
-                <div>
-                  <p className="text-sm font-medium truncate max-w-[200px] md:max-w-md">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 border border-input rounded-lg bg-muted/30">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <FileTextIcon className="w-7 h-7 sm:w-8 sm:h-8 text-destructive shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">
                     {file.name}
                   </p>
                   <p className="text-xs text-muted-foreground">
@@ -376,6 +377,7 @@ export default function DashboardPdfSplitter() {
                 size="icon-sm"
                 onClick={handleReset}
                 disabled={isSplitting}
+                className="self-end sm:self-auto"
               >
                 <XIcon className="w-4 h-4" />
               </Button>
@@ -396,12 +398,12 @@ export default function DashboardPdfSplitter() {
             <RadioGroup
               value={splitMode}
               onValueChange={(value) => setSplitMode(value as SplitMode)}
-              className="space-y-3"
+              className="space-y-2 sm:space-y-3"
             >
               <Label
                 htmlFor="mode-all"
                 className={cn(
-                  "flex items-start space-x-3 p-4 border rounded-lg cursor-pointer transition-colors",
+                  "flex items-start space-x-2 sm:space-x-3 p-3 sm:p-4 border rounded-lg cursor-pointer transition-colors",
                   splitMode === "all"
                     ? "border-primary bg-primary/5"
                     : "border-input hover:bg-muted/50"
@@ -410,7 +412,7 @@ export default function DashboardPdfSplitter() {
                 <RadioGroupItem value="all" id="mode-all" className="mt-0.5" />
                 <div className="flex-1">
                   <div className="text-sm font-medium">Pisahkan Semua Halaman</div>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-xs text-muted-foreground mt-0.5 sm:mt-1">
                     Setiap halaman akan menjadi file PDF terpisah ({totalPages} file)
                   </p>
                 </div>
@@ -419,7 +421,7 @@ export default function DashboardPdfSplitter() {
               <Label
                 htmlFor="mode-range"
                 className={cn(
-                  "flex items-start space-x-3 p-4 border rounded-lg cursor-pointer transition-colors",
+                  "flex items-start space-x-2 sm:space-x-3 p-3 sm:p-4 border rounded-lg cursor-pointer transition-colors",
                   splitMode === "range"
                     ? "border-primary bg-primary/5"
                     : "border-input hover:bg-muted/50"
@@ -428,7 +430,7 @@ export default function DashboardPdfSplitter() {
                 <RadioGroupItem value="range" id="mode-range" className="mt-0.5" />
                 <div className="flex-1">
                   <div className="text-sm font-medium">Ekstrak Rentang Halaman</div>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-xs text-muted-foreground mt-0.5 sm:mt-1">
                     Ekstrak beberapa halaman berurutan menjadi satu file
                   </p>
                 </div>
@@ -437,7 +439,7 @@ export default function DashboardPdfSplitter() {
               <Label
                 htmlFor="mode-custom"
                 className={cn(
-                  "flex items-start space-x-3 p-4 border rounded-lg cursor-pointer transition-colors",
+                  "flex items-start space-x-2 sm:space-x-3 p-3 sm:p-4 border rounded-lg cursor-pointer transition-colors",
                   splitMode === "custom"
                     ? "border-primary bg-primary/5"
                     : "border-input hover:bg-muted/50"
@@ -446,7 +448,7 @@ export default function DashboardPdfSplitter() {
                 <RadioGroupItem value="custom" id="mode-custom" className="mt-0.5" />
                 <div className="flex-1">
                   <div className="text-sm font-medium">Pilih Halaman Tertentu</div>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-xs text-muted-foreground mt-0.5 sm:mt-1">
                     Pisahkan halaman pilihan menjadi file terpisah
                   </p>
                 </div>
@@ -551,7 +553,7 @@ export default function DashboardPdfSplitter() {
               <Button
                 type="button"
                 onClick={handleDownloadAll}
-                className="flex-1 flex items-center gap-2"
+                className="w-full sm:flex-1 flex items-center gap-2"
                 size="lg"
               >
                 <ArchiveIcon className="w-4 h-4" />
@@ -561,7 +563,7 @@ export default function DashboardPdfSplitter() {
                 type="button"
                 variant="outline"
                 onClick={() => setSplitResults([])}
-                className="flex-1"
+                className="w-full sm:flex-1"
               >
                 Pisahkan Lagi
               </Button>
@@ -574,12 +576,12 @@ export default function DashboardPdfSplitter() {
               {splitResults.map((result, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between p-3 border border-input rounded-lg hover:bg-muted/50 transition-colors"
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-2.5 sm:p-3 border border-input rounded-lg hover:bg-muted/50 transition-colors"
                 >
-                  <div className="flex items-center gap-3">
-                    <FileTextIcon className="w-5 h-5 text-destructive" />
-                    <div>
-                      <p className="text-sm font-medium">{result.filename}</p>
+                  <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                    <FileTextIcon className="w-5 h-5 text-destructive shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate">{result.filename}</p>
                       <p className="text-xs text-muted-foreground">{result.pageRange}</p>
                     </div>
                   </div>
@@ -588,6 +590,7 @@ export default function DashboardPdfSplitter() {
                     variant="outline"
                     size="sm"
                     onClick={() => handleDownloadSingle(result)}
+                    className="w-full sm:w-auto"
                   >
                     <DownloadIcon className="w-3 h-3" />
                     Unduh

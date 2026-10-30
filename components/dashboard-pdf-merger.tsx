@@ -92,7 +92,7 @@ function SortableFileItem({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-3 p-3 border border-input rounded-lg bg-background hover:bg-muted/50 transition-colors"
+      className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 border border-input rounded-lg bg-background hover:bg-muted/50 transition-colors"
     >
       {/* Handle drag: hanya bagian ini yang bisa menyeret */}
       <button
@@ -106,21 +106,21 @@ function SortableFileItem({
         <GripVerticalIcon className="w-4 h-4" />
       </button>
 
-      <span className="text-xs font-medium text-muted-foreground w-5 text-center shrink-0">
+      <span className="text-xs font-medium text-muted-foreground w-4 sm:w-5 text-center shrink-0">
         {index + 1}
       </span>
 
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <FileTextIcon className="w-4 h-4 text-destructive shrink-0" />
-          <span className="text-sm truncate">{item.file.name}</span>
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <FileTextIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-destructive shrink-0" />
+          <span className="text-xs sm:text-sm truncate">{item.file.name}</span>
         </div>
-        <div className="text-xs text-muted-foreground">
+        <div className="text-[11px] sm:text-xs text-muted-foreground">
           {(item.file.size / 1024 / 1024).toFixed(2)} MB
         </div>
       </div>
 
-      <div className="flex items-center gap-1 shrink-0">
+      <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
         <Button
           type="button"
           variant="outline"
@@ -130,8 +130,9 @@ function SortableFileItem({
           disabled={index === 0}
           aria-label="Naikkan"
           title="Naikkan"
+          className="h-7 w-7 sm:h-8 sm:w-8"
         >
-          <ChevronUpIcon />
+          <ChevronUpIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
         </Button>
         <Button
           type="button"
@@ -142,8 +143,9 @@ function SortableFileItem({
           disabled={index === total - 1}
           aria-label="Turunkan"
           title="Turunkan"
+          className="h-7 w-7 sm:h-8 sm:w-8"
         >
-          <ChevronDownIcon />
+          <ChevronDownIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
         </Button>
         <Button
           type="button"
@@ -153,8 +155,9 @@ function SortableFileItem({
           onClick={() => onRemove(item.id)}
           aria-label="Hapus"
           title="Hapus"
+          className="h-7 w-7 sm:h-8 sm:w-8"
         >
-          <Trash2Icon />
+          <Trash2Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
         </Button>
       </div>
     </div>
@@ -336,12 +339,12 @@ export default function DashboardPdfMerger() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">PDF Merger</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl sm:text-2xl font-bold">PDF Merger</h1>
+          <p className="text-sm text-muted-foreground">
             Gabungkan beberapa file PDF menjadi satu dokumen. Urutkan file dengan
             tombol panah atau dengan menyeret handle di samping kiri.
           </p>
@@ -352,6 +355,7 @@ export default function DashboardPdfMerger() {
             variant="outline"
             onClick={handleReset}
             disabled={files.length === 0 || isMerging}
+            className="w-full sm:w-auto"
           >
             <RefreshCwIcon className="w-4 h-4" />
             Reset
@@ -370,12 +374,11 @@ export default function DashboardPdfMerger() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {/* <div className="flex flex-col items-center justify-center py-8 border-2 border-dashed border-input rounded-lg text-center hover:bg-muted transition-colors"> */}
           <label
-            className="flex flex-col items-center justify-center py-8 border-2 border-dashed border-input rounded-lg text-center hover:bg-muted transition-colors gap-3 cursor-pointer"
+            className="flex flex-col items-center justify-center py-6 sm:py-8 md:py-10 border-2 border-dashed border-input rounded-lg text-center hover:bg-muted transition-colors gap-2 sm:gap-3 cursor-pointer"
             onClick={() => document.getElementById("pdf-file-input")?.click()}
           >
-            <PlusIcon className="h-8 w-8 text-muted-foreground" />
+            <PlusIcon className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground" />
             <span className="text-sm font-medium text-foreground">
               Klik untuk memilih file PDF
             </span>
@@ -391,7 +394,6 @@ export default function DashboardPdfMerger() {
               onChange={handleFileSelect}
             />
           </label>
-          {/* </div> */}
         </CardContent>
       </Card>
 
@@ -436,16 +438,16 @@ export default function DashboardPdfMerger() {
       {files.length > 0 && (
         <Card>
           <CardContent className="pt-0">
-            <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <p className="text-sm text-muted-foreground">
                 Total file: {files.length}
               </p>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                 {mergedBlob && (
                   <Button
                     type="button"
                     onClick={handleDownload}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 w-full sm:w-auto"
                   >
                     <DownloadIcon className="w-4 h-4" />
                     Unduh Gabungan PDF
@@ -455,7 +457,7 @@ export default function DashboardPdfMerger() {
                   <Button
                     type="button"
                     onClick={handleMerge}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 w-full sm:w-auto"
                   >
                     <CheckIcon className="w-4 h-4" />
                     Gabungkan PDF
@@ -465,7 +467,7 @@ export default function DashboardPdfMerger() {
                   <Button
                     type="button"
                     disabled
-                    className="flex items-center gap-2 opacity-80"
+                    className="flex items-center gap-2 opacity-80 w-full sm:w-auto"
                   >
                     <span className="flex flex-row items-center gap-2">
                       <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24">

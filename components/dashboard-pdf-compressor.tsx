@@ -204,11 +204,11 @@ export default function DashboardPdfCompressor() {
     : 0;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">PDF Compressor</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl sm:text-2xl font-bold">PDF Compressor</h1>
+          <p className="text-sm text-muted-foreground">
             Kurangi ukuran file PDF dengan berbagai pilihan kompresi. Proses dilakukan di browser.
           </p>
         </div>
@@ -218,6 +218,7 @@ export default function DashboardPdfCompressor() {
             variant="outline"
             onClick={handleReset}
             disabled={(!file && !compressedBlob) || isCompressing}
+            className="w-full sm:w-auto"
           >
             <RefreshCwIcon className="w-4 h-4" />
             Reset
@@ -234,11 +235,11 @@ export default function DashboardPdfCompressor() {
           </CardHeader>
           <CardContent>
             <div
-              className="flex flex-col items-center justify-center py-12 border-2 border-dashed border-input rounded-lg text-center hover:bg-muted transition-colors cursor-pointer"
+              className="flex flex-col items-center justify-center py-6 sm:py-8 md:py-12 border-2 border-dashed border-input rounded-lg text-center hover:bg-muted transition-colors cursor-pointer gap-2 sm:gap-3"
               onClick={() => fileInputRef.current?.click()}
             >
-              <PlusIcon className="h-10 w-10 text-muted-foreground mb-4" />
-              <span className="text-sm font-medium text-foreground mb-1">
+              <PlusIcon className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground" />
+              <span className="text-sm font-medium text-foreground">
                 Klik untuk memilih file PDF
               </span>
               <span className="text-xs text-muted-foreground">
@@ -262,11 +263,11 @@ export default function DashboardPdfCompressor() {
             <CardTitle className="text-sm font-normal">File yang Dipilih</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between p-4 border border-input rounded-lg bg-muted/30">
-              <div className="flex items-center gap-3">
-                <FileTextIcon className="w-8 h-8 text-destructive" />
-                <div>
-                  <p className="text-sm font-medium truncate max-w-[200px] md:max-w-md">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 border border-input rounded-lg bg-muted/30">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <FileTextIcon className="w-7 h-7 sm:w-8 sm:h-8 text-destructive shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">
                     {file.name}
                   </p>
                   <p className="text-xs text-muted-foreground">
@@ -280,6 +281,7 @@ export default function DashboardPdfCompressor() {
                 size="icon-sm"
                 onClick={handleRemoveFile}
                 disabled={isCompressing}
+                className="self-end sm:self-auto"
               >
                 <XIcon className="w-4 h-4" />
               </Button>
@@ -300,14 +302,14 @@ export default function DashboardPdfCompressor() {
             <RadioGroup
               value={selectedPreset}
               onValueChange={(value) => setSelectedPreset(value as CompressionPreset["id"])}
-              className="space-y-3"
+              className="space-y-2 sm:space-y-3"
             >
               {PRESETS.map((preset) => (
                 <Label
                   key={preset.id}
                   htmlFor={`preset-${preset.id}`}
                   className={cn(
-                    "flex items-start space-x-3 p-4 border rounded-lg cursor-pointer transition-colors",
+                    "flex items-start space-x-2 sm:space-x-3 p-3 sm:p-4 border rounded-lg cursor-pointer transition-colors",
                     selectedPreset === preset.id
                       ? "border-primary bg-primary/5"
                       : "border-input hover:bg-muted/50"
@@ -318,7 +320,7 @@ export default function DashboardPdfCompressor() {
                     <div className="text-sm font-medium">
                       {preset.name}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-muted-foreground mt-0.5 sm:mt-1">
                       {preset.description}
                     </p>
                   </div>
@@ -426,7 +428,7 @@ export default function DashboardPdfCompressor() {
               <Button
                 type="button"
                 onClick={handleDownload}
-                className="flex-1 flex items-center gap-2"
+                className="w-full sm:flex-1 flex items-center gap-2"
                 size="lg"
               >
                 <DownloadIcon className="w-4 h-4" />
@@ -436,7 +438,7 @@ export default function DashboardPdfCompressor() {
                 type="button"
                 variant="outline"
                 onClick={() => setCompressedBlob(null)}
-                className="flex-1"
+                className="w-full sm:flex-1"
               >
                 Kompres File Lain
               </Button>
