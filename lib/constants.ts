@@ -34,5 +34,6 @@ export const ROUTES = {
     PDF_SPLITTER: "/dashboard/pdf-splitter",
     PDF_COMPRESSOR: "/dashboard/pdf-compressor",
     PDF_TO_IMAGE: "/dashboard/pdf-to-image",
+    IMAGE_TO_PDF: "/dashboard/image-to-pdf",
   },
 };
