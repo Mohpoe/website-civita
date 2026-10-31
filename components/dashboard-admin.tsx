@@ -954,6 +954,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
       {
         // #region UPSERT DIALOG
         <Dialog
+          disablePointerDismissal={true}
           open={isDialogOpen}
           modal={isUploadingFile || upsertIsPending}
           onOpenChange={(open) => {

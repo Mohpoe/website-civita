@@ -518,7 +518,7 @@ export default function DashboardCategory({ categories }: DashboardCategoryProps
 
       {
         // #region CREATE & UPDATE DIALOG
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen} disablePointerDismissal={true}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle>{categoryToUpdate ? "Edit Kategori" : "Tambah Kategori"}</DialogTitle>
