@@ -505,7 +505,7 @@ export default function DashboardProducts({ products, categories, orders }: Dash
             style={dialogStyleProps}
             className="sm:max-w-xl p-0 overflow-hidden max-h-screen border-4 border-foreground rounded-4xl"
           >
-            <div className="flex flex-col gap-4 no-scrollbar max-h-[80vh] overflow-y-auto">
+            <div className="flex flex-col gap-4 max-h-[80vh] overflow-y-auto">
               {/* Header Bawaan (Tersembunyi secara visual, untuk Screen Reader) */}
               <DialogHeader className="sr-only">
                 <DialogTitle>{selectedProduct?.title}</DialogTitle>
