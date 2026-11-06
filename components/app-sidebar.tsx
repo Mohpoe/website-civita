@@ -5,7 +5,7 @@ import { NavUser } from "@/components/nav-user"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar"
 import { ROUTES } from "@/lib/constants"
 import { useUser } from "@clerk/nextjs"
-import { FileDownIcon, FileImageIcon, FileTextIcon, GroupIcon, HelpCircleIcon, ImagesIcon, PackageIcon, PackagePlusIcon, ScissorsIcon, ShoppingBagIcon, SquareTextIcon, UsersIcon } from "lucide-react"
+import { ExternalLinkIcon, FileDownIcon, FileImageIcon, FileTextIcon, GroupIcon, HelpCircleIcon, ImagesIcon, PackageIcon, PackagePlusIcon, ScissorsIcon, ShoppingBagIcon, SquareTextIcon, UsersIcon } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import * as React from "react"
@@ -81,24 +81,34 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
     documents: [
       {
         name: "PDF Merger",
-        url: ROUTES.DASHBOARD.PDF_MERGER,
+        url: "/pdf-merger",
         icon: <FileTextIcon />,
-      },
+        badge: <ExternalLinkIcon className="size-3.5" />,
+      } as any,
       {
         name: "PDF Splitter",
-        url: ROUTES.DASHBOARD.PDF_SPLITTER,
+        url: "/pdf-splitter",
         icon: <ScissorsIcon />,
-      },
+        badge: <ExternalLinkIcon className="size-3.5" />,
+      } as any,
       {
         name: "PDF Compressor",
-        url: ROUTES.DASHBOARD.PDF_COMPRESSOR,
+        url: "/pdf-compressor",
         icon: <FileDownIcon />,
-      },
+        badge: <ExternalLinkIcon className="size-3.5" />,
+      } as any,
       {
         name: "PDF to Image",
-        url: ROUTES.DASHBOARD.PDF_TO_IMAGE,
+        url: "/pdf-to-image",
         icon: <FileImageIcon />,
-      },
+        badge: <ExternalLinkIcon className="size-3.5" />,
+      } as any,
+      {
+        name: "Image to PDF",
+        url: "/image-to-pdf",
+        icon: <ImagesIcon />,
+        badge: <ExternalLinkIcon className="size-3.5" />,
+      } as any,
       {
         name: "Image to PDF",
         url: ROUTES.DASHBOARD.IMAGE_TO_PDF,

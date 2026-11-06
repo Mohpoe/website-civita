@@ -27,7 +27,7 @@ export function NavDocuments({
         {items.map((item) => (
           <SidebarMenuItem key={item.name}>
             <SidebarMenuButton
-              render={<Link href={item.url} />}
+              render={item.url?.startsWith("/pdf-") || item.url?.startsWith("/image-to-pdf") ? <a href={item.url} target="_blank" rel="noopener noreferrer" /> : <Link href={item.url} />}
               onClick={() => { if (isMobile) setOpenMobile(false) }}
             >
               {item.icon}
