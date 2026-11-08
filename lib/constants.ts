@@ -1,5 +1,6 @@
 export const APP_CONFIG = {
   NAME: "CIVITA",
+  NAME_SECOND: "CIVITA.ID",
   TAGLINE: "Bantu kamu lolos kerja!",
   VERSION: "1.2",
   EMAIL: "admin@civita.id",
@@ -30,10 +31,12 @@ export const ROUTES = {
     REPORT: "/dashboard/admin/report",
     USERS: "/dashboard/admin/users",
     HELP: "/dashboard/help",
-    PDF_MERGER: "/dashboard/pdf-merger",
-    PDF_SPLITTER: "/dashboard/pdf-splitter",
-    PDF_COMPRESSOR: "/dashboard/pdf-compressor",
-    PDF_TO_IMAGE: "/dashboard/pdf-to-image",
-    IMAGE_TO_PDF: "/dashboard/image-to-pdf",
+  },
+  PDF_TOOLS: {
+    PDF_MERGER: "/pdf-merger",
+    PDF_SPLITTER: "/pdf-splitter",
+    PDF_COMPRESSOR: "/pdf-compressor",
+    PDF_TO_IMAGE: "/pdf-to-image",
+    IMAGE_TO_PDF: "/image-to-pdf",
   },
 };
