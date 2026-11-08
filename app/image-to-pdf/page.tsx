@@ -1,6 +1,6 @@
 "use client";
 
-import DashboardImageToPdf from "@/components/dashboard-image-to-pdf";
+import DashboardImageToPdf from "@/components/image-to-pdf-tool";
 import { APP_CONFIG, ROUTES } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { Show, SignInButton, SignUpButton } from "@clerk/nextjs";

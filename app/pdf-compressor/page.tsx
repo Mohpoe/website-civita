@@ -1,6 +1,6 @@
 "use client";
 
-import DashboardPdfCompressor from "@/components/dashboard-pdf-compressor";
+import DashboardPdfCompressor from "@/components/pdf-compressor-tool";
 import { APP_CONFIG, ROUTES } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { Show, SignInButton, SignUpButton } from "@clerk/nextjs";

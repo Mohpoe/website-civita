@@ -1,6 +1,6 @@
 "use client";
 
-import DashboardPdfSplitter from "@/components/dashboard-pdf-splitter";
+import DashboardPdfSplitter from "@/components/pdf-splitter-tool";
 import { APP_CONFIG, ROUTES } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { Show, SignInButton, SignUpButton } from "@clerk/nextjs";

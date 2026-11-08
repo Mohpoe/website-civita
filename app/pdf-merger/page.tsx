@@ -1,6 +1,6 @@
 "use client";
 
-import DashboardPdfMerger from "@/components/dashboard-pdf-merger";
+import DashboardPdfMerger from "@/components/pdf-merger-tool";
 import { APP_CONFIG, ROUTES } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { Show, SignInButton, SignUpButton } from "@clerk/nextjs";

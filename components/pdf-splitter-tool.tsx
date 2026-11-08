@@ -55,6 +55,40 @@ function formatBytes(bytes: number): string {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 }
 
+function parsePageSelection(input: string, totalPages: number): number[] {
+  const parts = input.split(/[,;\s]+/).map((p) => p.trim()).filter(Boolean);
+  const seen = new Set<number>();
+  const pages: number[] = [];
+
+  for (const part of parts) {
+    const rangeMatch = part.match(/^(\d+)\s*-\s*(\d+)$/);
+    if (rangeMatch) {
+      const start = parseInt(rangeMatch[1], 10);
+      const end = parseInt(rangeMatch[2], 10);
+      if (isNaN(start) || isNaN(end)) continue;
+      const from = Math.min(start, end);
+      const to = Math.max(start, end);
+      for (let p = from; p <= to; p++) {
+        if (p >= 1 && p <= totalPages && !seen.has(p)) {
+          seen.add(p);
+          pages.push(p);
+        }
+      }
+      continue;
+    }
+
+    if (/^\d+$/.test(part)) {
+      const p = parseInt(part, 10);
+      if (p >= 1 && p <= totalPages && !seen.has(p)) {
+        seen.add(p);
+        pages.push(p);
+      }
+    }
+  }
+
+  return pages;
+}
+
 export default function DashboardPdfSplitter() {
   const [file, setFile] = useState<File | null>(null);
   const [arrayBuffer, setArrayBuffer] = useState<ArrayBuffer | null>(null);
@@ -65,6 +99,7 @@ export default function DashboardPdfSplitter() {
   const [rangeFrom, setRangeFrom] = useState("1");
   const [rangeTo, setRangeTo] = useState("1");
   const [customPages, setCustomPages] = useState("");
+  const [customMerge, setCustomMerge] = useState(true);
   const [splitResults, setSplitResults] = useState<SplitResult[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -189,33 +224,48 @@ export default function DashboardPdfSplitter() {
           pageRange: `Halaman ${from}-${to}`,
         });
       } else if (splitMode === "custom") {
-        const pageNumbers = customPages
-          .split(/[,;\s]+/)
-          .filter((p) => p.trim())
-          .map((p) => parseInt(p.trim()))
-          .filter((p) => !isNaN(p) && p >= 1 && p <= totalPages);
+        const pageNumbers = parsePageSelection(customPages, totalPages);
 
         if (pageNumbers.length === 0) {
           toast.add({
             type: "error",
-            description: "Masukkan nomor halaman yang valid.",
+            description: "Masukkan nomor/rentang halaman yang valid (contoh: 2, 3-6, 8).",
             priority: "high",
           });
           setIsSplitting(false);
           return;
         }
 
-        for (const pageNum of pageNumbers) {
+        if (customMerge) {
           const newPdf = await PDFDocument.create();
-          const [copiedPage] = await newPdf.copyPages(sourcePdf, [pageNum - 1]);
-          newPdf.addPage(copiedPage);
+          const copiedPages = await newPdf.copyPages(
+            sourcePdf,
+            pageNumbers.map((p) => p - 1)
+          );
+          copiedPages.forEach((page) => newPdf.addPage(page));
           const pdfBytes = await newPdf.save();
           const blob = new Blob([pdfBytes as unknown as BlobPart], { type: "application/pdf" });
+          const rangeLabel = pageNumbers.length === 1
+            ? `Halaman ${pageNumbers[0]}`
+            : `Halaman ${customPages.trim()}`;
           results.push({
             blob,
-            filename: `${originalName}-page-${pageNum}.pdf`,
-            pageRange: `Halaman ${pageNum}`,
+            filename: `${originalName}-selected-pages.pdf`,
+            pageRange: rangeLabel,
           });
+        } else {
+          for (const pageNum of pageNumbers) {
+            const newPdf = await PDFDocument.create();
+            const [copiedPage] = await newPdf.copyPages(sourcePdf, [pageNum - 1]);
+            newPdf.addPage(copiedPage);
+            const pdfBytes = await newPdf.save();
+            const blob = new Blob([pdfBytes as unknown as BlobPart], { type: "application/pdf" });
+            results.push({
+              blob,
+              filename: `${originalName}-page-${pageNum}.pdf`,
+              pageRange: `Halaman ${pageNum}`,
+            });
+          }
         }
       }
 
@@ -291,6 +341,7 @@ export default function DashboardPdfSplitter() {
     setRangeFrom("1");
     setRangeTo("1");
     setCustomPages("");
+    setCustomMerge(true);
   };
 
   return (
@@ -449,7 +500,7 @@ export default function DashboardPdfSplitter() {
                 <div className="flex-1">
                   <div className="text-sm font-medium">Pilih Halaman Tertentu</div>
                   <p className="text-xs text-muted-foreground mt-0.5 sm:mt-1">
-                    Pisahkan halaman pilihan menjadi file terpisah
+                    Ekstrak halaman/rentang pilihan, lalu gabung jadi 1 PDF atau pisah per halaman
                   </p>
                 </div>
               </Label>
@@ -485,17 +536,54 @@ export default function DashboardPdfSplitter() {
             )}
 
             {splitMode === "custom" && (
-              <div className="space-y-2 p-4 border border-input rounded-lg bg-muted/30">
-                <Label htmlFor="custom-pages" className="text-sm">Nomor Halaman</Label>
-                <Input
-                  id="custom-pages"
-                  placeholder="Contoh: 1, 3, 5-7 atau 2 4 6"
-                  value={customPages}
-                  onChange={(e) => setCustomPages(e.target.value)}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Pisahkan dengan koma, titik koma, spasi, atau tanda hubung untuk rentang
-                </p>
+              <div className="space-y-4 p-4 border border-input rounded-lg bg-muted/30">
+                <div className="space-y-2">
+                  <Label htmlFor="custom-pages" className="text-sm">Nomor/Rentang Halaman</Label>
+                  <Input
+                    id="custom-pages"
+                    placeholder="Contoh: 2, 3-6, 8"
+                    value={customPages}
+                    onChange={(e) => setCustomPages(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Pisahkan dengan koma/titik koma/spasi. Gunakan tanda hubung untuk rentang (contoh: 3-6).
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm">Hasil Output</Label>
+                  <RadioGroup
+                    value={customMerge ? "merge" : "separate"}
+                    onValueChange={(value) => setCustomMerge(value === "merge")}
+                    className="grid grid-cols-1 sm:grid-cols-2 gap-2"
+                  >
+                    <Label
+                      htmlFor="custom-merge"
+                      className={cn(
+                        "flex items-start space-x-2 p-3 border rounded-lg cursor-pointer transition-colors",
+                        customMerge ? "border-primary bg-primary/5" : "border-input hover:bg-muted/50"
+                      )}
+                    >
+                      <RadioGroupItem value="merge" id="custom-merge" className="mt-0.5" />
+                      <div>
+                        <div className="text-sm font-medium">Gabung jadi 1 PDF</div>
+                        <p className="text-xs text-muted-foreground mt-0.5">Semua halaman terpilih disatukan</p>
+                      </div>
+                    </Label>
+                    <Label
+                      htmlFor="custom-separate"
+                      className={cn(
+                        "flex items-start space-x-2 p-3 border rounded-lg cursor-pointer transition-colors",
+                        !customMerge ? "border-primary bg-primary/5" : "border-input hover:bg-muted/50"
+                      )}
+                    >
+                      <RadioGroupItem value="separate" id="custom-separate" className="mt-0.5" />
+                      <div>
+                        <div className="text-sm font-medium">Pisah per halaman</div>
+                        <p className="text-xs text-muted-foreground mt-0.5">Setiap halaman jadi file sendiri</p>
+                      </div>
+                    </Label>
+                  </RadioGroup>
+                </div>
               </div>
             )}
 
