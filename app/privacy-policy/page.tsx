@@ -1,26 +1,23 @@
 "use client";
 
-import { Button } from '@/components/ui/button';
-import { APP_CONFIG } from '@/lib/constants';
-import { motion } from 'framer-motion';
-import { ArrowLeft, Shield } from 'lucide-react';
-import Link from 'next/link';
+import { PublicFooter } from "@/components/public-footer";
+import { PublicMobileBottomBar, PublicNavigation } from "@/components/public-header";
+import { Button } from "@/components/ui/button";
+import { APP_CONFIG } from "@/lib/constants";
+import { motion } from "framer-motion";
+import { Shield } from "lucide-react";
 
 export default function PrivacyPolicyPage() {
   return (
-    <div>
-      {/* Header / Navigation */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-foreground/5">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors group">
-            <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center group-hover:bg-input transition-colors">
-              <ArrowLeft className="w-4 h-4" />
-            </div>
-            Kembali ke Beranda
-          </Link>
-          <div className="font-bold tracking-tight text-sm">CIVITA.ID</div>
-        </div>
-      </header>
+    <div className="font-mono text-foreground antialiased min-h-screen bg-background pb-20 md:pb-0">
+      <style dangerouslySetInnerHTML={{
+        __html: `
+        :root { --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+        body { font-family: var(--font-mono); }
+        `
+      }} />
+      <PublicNavigation />
+      <PublicMobileBottomBar />
 
       {/* Page Content */}
       <main className="pt-32 pb-24 px-6">
@@ -146,6 +143,7 @@ export default function PrivacyPolicyPage() {
           </div>
         </div>
       </main>
+      <PublicFooter />
     </div>
   );
 }

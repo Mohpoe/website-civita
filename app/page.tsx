@@ -1,18 +1,17 @@
 "use client";
 
-import { ModeToggle } from "@/components/theme-toggle-button";
+import { PublicFooter } from "@/components/public-footer";
+import { PublicMobileBottomBar, PublicNavigation } from "@/components/public-header";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Separator } from "@/components/ui/separator";
 import { APP_CONFIG, ROUTES } from "@/lib/constants";
 import { Show, SignInButton, SignUpButton } from "@clerk/nextjs";
 import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, Briefcase, FileText, Layout, Mail, MessageCircle, QuoteIcon, Sparkles, XIcon } from "lucide-react";
-import Image from "next/image";
+import { ArrowRight, Briefcase, FileText, Layout, MessageCircle, QuoteIcon, Sparkles, XIcon } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { SiInstagram as Instagram, SiWhatsapp } from "react-icons/si";
-import { TfiLinkedin } from "react-icons/tfi";
 
 // #region Document Mockups (Neo-Pop Styled)
 interface DocumentMockupProps { className?: string; }
@@ -72,110 +71,8 @@ const DocumentMockupCoverLetter = ({ className }: DocumentMockupProps) => (
 );
 // #endregion
 
-// #region Header Navigation
-const Navigation = () => {
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  return (
-    <motion.header
-      className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4 md:pt-6 px-4 pointer-events-none"
-      initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-    >
-      <div className={`
-        pointer-events-auto flex items-center justify-between px-5 md:px-6 py-3 md:py-3.5 rounded-full transition-all duration-500 border-4 border-transparent shadow-[4px_4px_0px_0px] shadow-foreground
-        ${scrolled ? "bg-background/80 backdrop-blur-md w-full max-w-3xl !border-2 !border-foreground" : "bg-background md:bg-background border-foreground w-full max-w-6xl"}
-      `}>
-
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-foreground rounded-xl flex items-center justify-center shadow-inner">
-            <Image
-              alt="Logo"
-              src="https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/Icon.svg"
-              className="size-4 [filter:brightness(0)_invert(1)] dark:[filter:brightness(0)]"
-              width={1}
-              height={1}
-            />
-          </div>
-          <span className="font-black tracking-tight text-xl">CIVITA.ID</span>
-        </div>
-
-        <div className="flex items-center gap-2 md:gap-4">
-          {/* CLERK AUTHENTICATION MENU (DESKTOP ONLY - Mobile ada di Bottom Bar) */}
-          <div className="hidden md:flex items-center gap-3">
-            <Show when="signed-out">
-              <SignInButton mode="modal" fallbackRedirectUrl={ROUTES.DASHBOARD.HOME}>
-                <Button variant="outline" className="h-10 px-5 font-bold rounded-full border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px] transition-all">
-                  Masuk
-                </Button>
-              </SignInButton>
-              <SignUpButton mode="modal" fallbackRedirectUrl={ROUTES.DASHBOARD.HOME}>
-                <Button className="h-10 px-5 font-bold rounded-full bg-[#f68e51] dark:bg-[#d97941] text-black border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px] transition-all">
-                  Daftar
-                </Button>
-              </SignUpButton>
-            </Show>
-            <Show when="signed-in">
-              <Link href={ROUTES.DASHBOARD.HOME} className={buttonVariants({ className: "h-10 px-5 font-bold !rounded-full !border-2 !border-foreground shadow-[2px_2px_0px_0px] shadow-foreground hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px] transition-all mr-2 !bg-[#f68e51] dark:!bg-[#d97941] !text-black" })}>
-                Dashboard
-              </Link>
-              {/* <UserButton /> */}
-            </Show>
-          </div>
-
-          <div className="hidden md:block w-1.5 h-1.5 rounded-full bg-foreground mx-1" />
-
-          {/* CTA Utama Desktop */}
-          <Button onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP_CHAT("Halo admin CIVITA, saya ingin konsultasi terkait pembuatan CV yang ATS-friendly."), "_blank")} className="hidden md:flex h-10 px-5 rounded-full font-bold bg-[#ef3936] dark:bg-[#d9302d] text-white border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px] transition-all">
-            Konsultasi <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
-
-          {/* Mode Toggle (Selalu tampil) */}
-          <ModeToggle />
-        </div>
-
-      </div>
-    </motion.header>
-  );
-};
-// #endregion
-
-// #region Mobile Bottom Bar (Khusus Smartphone)
-const MobileBottomBar = () => (
-  <div className="md:hidden fixed bottom-0 left-0 right-0 z-[60] bg-background border-t border-foreground p-3 flex items-center justify-between gap-3 shadow-[0px_-4px_0px_0px] shadow-foreground">
-    <Show when="signed-out">
-      <SignInButton mode="modal" fallbackRedirectUrl={ROUTES.DASHBOARD.HOME}>
-        <Button variant="outline" className="flex-1 h-12 rounded-full border-2 border-foreground font-bold shadow-[2px_2px_0px_0px] shadow-foreground active:translate-y-1 active:shadow-none transition-all">
-          Masuk
-        </Button>
-      </SignInButton>
-      <SignUpButton mode="modal" fallbackRedirectUrl={ROUTES.DASHBOARD.HOME}>
-        <Button className="flex-1 h-12 rounded-full border-2 border-foreground bg-[#f68e51] dark:bg-[#d97941] text-black font-bold shadow-[2px_2px_0px_0px] shadow-foreground active:translate-y-1 active:shadow-none transition-all">
-          Daftar
-        </Button>
-      </SignUpButton>
-    </Show>
-
-    <Show when="signed-in">
-      <Link href={ROUTES.DASHBOARD.HOME} className={buttonVariants({ className: "flex-1 h-12 !rounded-full !border-2 font-bold !border-foreground shadow-[2px_2px_0px_0px] shadow-foreground active:translate-y-1 active:shadow-none transition-all !bg-[#f68e51] dark:!bg-[#d97941] !text-black" })}>
-        Dashboard
-      </Link>
-    </Show>
-
-    <Button onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP_CHAT("Halo admin CIVITA, saya ingin konsultasi terkait pembuatan CV yang ATS-friendly."), "_blank")} className="flex-none aspect-square p-0 w-12 h-12 rounded-full bg-[#ef3936] dark:bg-[#d9302d] text-white border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground active:translate-y-1 active:shadow-none transition-all">
-      <SiWhatsapp className="w-6 h-6" />
-    </Button>
-  </div>
-);
+// #region Header Navigation / Mobile Bottom Bar / Footer
+// Digunakan komponen bersama dari `components/public-header` dan `components/public-footer` agar seragam di seluruh halaman luar dashboard.
 // #endregion
 
 // #region Hero Section
@@ -651,50 +548,6 @@ const CTA = () => {
 // #endregion
 
 // #region Footer & Popup
-const Footer = () => {
-  return (
-    <footer className="bg-background border-t-4 border-foreground pt-16 pb-32 md:pb-12 px-6">
-      <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-10 md:gap-6">
-        <div className="flex flex-col gap-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#ef3936] dark:bg-[#d9302d] border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground rounded-xl flex items-center justify-center">
-              <Image alt="Logo" src="https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/Icon.svg" className="size-5 [filter:brightness(0)_invert(1)]" width={1} height={1} />
-            </div>
-            <span className="font-black tracking-tight text-2xl uppercase">CIVITA.ID</span>
-          </div>
-
-          <div className="flex flex-col gap-4 text-base font-bold">
-            <a href={APP_CONFIG.LINKS.WHATSAPP} target="_blank" rel="noreferrer" className="flex items-center gap-3 hover:text-[#ef3936] dark:hover:text-[#d9302d] transition-colors bg-muted w-max px-4 py-2 rounded-full border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground">
-              <SiWhatsapp className="w-5 h-5" /> +{APP_CONFIG.WHATSAPP}
-            </a>
-            <a href={APP_CONFIG.LINKS.EMAIL} className="flex items-center gap-3 hover:text-[#f68e51] dark:hover:text-[#d97941] transition-colors bg-muted w-max px-4 py-2 rounded-full border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground">
-              <Mail className="w-5 h-5" /> civitakerja@gmail.com
-            </a>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4 text-base font-black">
-          <a href={APP_CONFIG.LINKS.INSTAGRAM} target="_blank" rel="noreferrer" className="hover:bg-[#ef3936] dark:hover:bg-[#d9302d] hover:text-white bg-background border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground px-5 py-3 rounded-full transition-all flex items-center gap-2">
-            <Instagram className="w-5 h-5" /> Instagram
-          </a>
-          <a href={APP_CONFIG.LINKS.LINKEDIN} target="_blank" rel="noreferrer" className="hover:bg-[#f68e51] dark:hover:bg-[#d97941] hover:text-black bg-background border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground px-5 py-3 rounded-full transition-all flex items-center gap-2">
-            <TfiLinkedin className="w-5 h-5" /> LinkedIn
-          </a>
-        </div>
-      </div>
-
-      <div className="max-w-6xl mx-auto mt-16 pt-8 border-t-4 border-foreground flex flex-col md:flex-row justify-between items-center gap-6 font-bold text-sm">
-        <p>© {new Date().getFullYear()} <a href="https://mohpoe.com/" target="_blank" rel="noopener noreferrer" className="hover:text-[#ef3936] dark:hover:text-[#d9302d] underline decoration-2">Mohpoe</a>. All rights reserved.</p>
-
-        <div className="flex items-center gap-6">
-          <Link href={ROUTES.TERMS} className="hover:text-[#ef3936] dark:hover:text-[#d9302d] underline decoration-2 underline-offset-4">Syarat & Ketentuan</Link>
-          <Link href={ROUTES.POLICY} className="hover:text-[#f68e51] dark:hover:text-[#d97941] underline decoration-2 underline-offset-4">Kebijakan Privasi</Link>
-        </div>
-      </div>
-    </footer>
-  );
-};
-
 const PricingPopup = () => {
   const [isVisible, setIsVisible] = useState(false);
 
@@ -775,8 +628,8 @@ export default function App() {
         }
       `}} />
 
-      <Navigation />
-      <MobileBottomBar />
+      <PublicNavigation />
+      <PublicMobileBottomBar />
 
       <main>
         <Hero />
@@ -787,7 +640,7 @@ export default function App() {
         <CTA />
       </main>
 
-      <Footer />
+      <PublicFooter />
       <PricingPopup />
     </div>
   );
