@@ -22,20 +22,34 @@ export async function getAllUsers() {
       orderBy: "-created_at",
     });
 
-    // 4. Hitung jumlah order per email dari tabel orders (untuk peringatan sebelum hapus)
+    // 4. Hitung jumlah transaksi per email dari tabel orders, dipisah berdasarkan status
+    //    - sukses: success
+    //    - pending: pending, challenge
+    //    - gagal: failed, expired, canceled
     const orderCountsRaw = await sql`
-      SELECT email, COUNT(*)::int as order_count
+      SELECT
+        email,
+        COUNT(*)::int as order_count,
+        COUNT(*) FILTER (WHERE status = 'success')::int as success_count,
+        COUNT(*) FILTER (WHERE status IN ('pending', 'challenge'))::int as pending_count,
+        COUNT(*) FILTER (WHERE status IN ('failed', 'expired', 'canceled'))::int as failed_count
       FROM orders
       GROUP BY email
     `;
-    const orderCountMap = new Map<string, number>();
-    for (const row of orderCountsRaw as Array<{ email: string; order_count: number }>) {
-      orderCountMap.set(row.email, row.order_count);
+    const orderCountMap = new Map<string, { orderCount: number; successCount: number; pendingCount: number; failedCount: number }>();
+    for (const row of orderCountsRaw as Array<{ email: string; order_count: number; success_count: number; pending_count: number; failed_count: number }>) {
+      orderCountMap.set(row.email, {
+        orderCount: row.order_count,
+        successCount: row.success_count,
+        pendingCount: row.pending_count,
+        failedCount: row.failed_count,
+      });
     }
 
     // 5. Petakan (mapping) data agar lebih bersih saat dikirim ke Frontend
     const users = usersResponse.data.map((u) => {
       const email = u.emailAddresses[0]?.emailAddress || "Tidak ada email";
+      const counts = orderCountMap.get(email);
       return {
         id: u.id,
         name: `${u.firstName || ""} ${u.lastName || ""}`.trim() || "[Tanpa_Nama]",
@@ -43,7 +57,10 @@ export async function getAllUsers() {
         role: (u.publicMetadata.role as string) || "user",
         imageUrl: u.imageUrl,
         createdAt: u.createdAt,
-        orderCount: orderCountMap.get(email) ?? 0,
+        orderCount: counts?.orderCount ?? 0,
+        successCount: counts?.successCount ?? 0,
+        pendingCount: counts?.pendingCount ?? 0,
+        failedCount: counts?.failedCount ?? 0,
       };
     });
 

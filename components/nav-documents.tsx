@@ -8,6 +8,7 @@ import {
   SidebarMenuItem,
   useSidebar
 } from "@/components/ui/sidebar"
+import { ExternalLinkIcon } from "lucide-react"
 import Link from "next/link"
 
 export function NavDocuments({
@@ -17,6 +18,7 @@ export function NavDocuments({
     name: string
     url: string
     icon: React.ReactNode
+    external?: boolean
   }[]
 }) {
   const { isMobile, setOpenMobile } = useSidebar()
@@ -27,11 +29,11 @@ export function NavDocuments({
         {items.map((item) => (
           <SidebarMenuItem key={item.name}>
             <SidebarMenuButton
-              render={item.url?.startsWith("/pdf-") || item.url?.startsWith("/image-to-pdf") ? <a href={item.url} target="_blank" rel="noopener noreferrer" /> : <Link href={item.url} />}
+              render={<Link target={item.external ? "_blank" : ""} href={item.url} />}
               onClick={() => { if (isMobile) setOpenMobile(false) }}
             >
               {item.icon}
-              <span>{item.name}</span>
+              <span className="flex gap-1 items-center">{item.name} {item.external && <ExternalLinkIcon className="!size-3 text-muted-foreground" />}</span>
             </SidebarMenuButton>
             {/* <DropdownMenu>
               <DropdownMenuTrigger render={<SidebarMenuAction showOnHover className="aria-expanded:bg-muted" />}>

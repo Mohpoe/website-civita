@@ -29,6 +29,9 @@ import {
   useTable
 } from "@tanstack/react-table";
 import {
+  BadgeAlertIcon,
+  BadgeCheckIcon,
+  BadgeXIcon,
   ChevronDownIcon, ChevronFirstIcon, ChevronLastIcon, ChevronLeftIcon,
   ChevronRightIcon, ChevronsUpDownIcon, ChevronUpIcon,
   GhostIcon, MoreHorizontalIcon, RefreshCcwIcon, Rows3Icon, SearchIcon,
@@ -38,8 +41,8 @@ import {
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
-import { toast } from "./ui/toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle } from "./ui/alert-dialog";
+import { toast } from "./ui/toast";
 
 // Definisikan tipe user (sesuaikan jika Anda sudah punya di types/global)
 interface UserData {
@@ -49,6 +52,9 @@ interface UserData {
   role: string;
   imageUrl: string;
   orderCount: number;
+  successCount: number;
+  pendingCount: number;
+  failedCount: number;
 }
 
 interface DashboardUsersProps {
@@ -177,17 +183,26 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
         },
       }),
 
-      // 4. Kolom Jumlah Transaksi (peringatan sebelum menghapus)
-      columnHelper.accessor("orderCount", {
+      // 4. Kolom Transaksi (ringkasan jumlah per status)
+      columnHelper.display({
         id: "transaksi",
         header: "Transaksi",
-        cell: (row) => {
-          const count = row.getValue();
-          if (count === 0) return <span className="text-xs text-muted-foreground">-</span>;
+        cell: ({ row }) => {
+          const user = row.original;
+          const { orderCount, successCount, pendingCount, failedCount } = user;
+          if (orderCount === 0) return <span className="text-xs text-muted-foreground">-</span>;
           return (
-            <Badge variant="secondary" className="text-xs" title="Memiliki riwayat transaksi. Data order akan dianonimkan (user_id di-NULL-kan) saat akun dihapus.">
-              {count} order
-            </Badge>
+            <div className="flex flex-wrap items-center gap-1.5 min-w-[180px]" title="Ringkasan transaksi berdasarkan status. Data order akan dianonimkan (user_id di-NULL-kan) saat akun dihapus.">
+              <Badge variant="outline" className="text-xs px-1.5 py-0 border-success text-success">
+                <BadgeCheckIcon /> {successCount}
+              </Badge>
+              <Badge variant="outline" className="text-xs px-1.5 py-0 border-warning text-warning">
+                <BadgeAlertIcon /> {pendingCount}
+              </Badge>
+              <Badge variant="outline" className="text-xs px-1.5 py-0 border-destructive text-destructive">
+                <BadgeXIcon /> {failedCount}
+              </Badge>
+            </div>
           );
         },
       }),
