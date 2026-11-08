@@ -3,7 +3,7 @@
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar"
-import { ROUTES } from "@/lib/constants"
+import { APP_CONFIG, ROUTES } from "@/lib/constants"
 import { useUser } from "@clerk/nextjs"
 import { ExternalLinkIcon, FileDownIcon, FileImageIcon, FileTextIcon, GroupIcon, HelpCircleIcon, ImagesIcon, PackageIcon, PackagePlusIcon, ScissorsIcon, ShoppingBagIcon, SquareTextIcon, UsersIcon } from "lucide-react"
 import Image from "next/image"
@@ -81,38 +81,33 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
     documents: [
       {
         name: "PDF Merger",
-        url: "/pdf-merger",
+        url: ROUTES.PDF_TOOLS.PDF_MERGER,
         icon: <FileTextIcon />,
-        badge: <ExternalLinkIcon className="size-3.5" />,
-      } as any,
+        external: true,
+      },
       {
         name: "PDF Splitter",
-        url: "/pdf-splitter",
+        url: ROUTES.PDF_TOOLS.PDF_SPLITTER,
         icon: <ScissorsIcon />,
-        badge: <ExternalLinkIcon className="size-3.5" />,
-      } as any,
+        external: true,
+      },
       {
         name: "PDF Compressor",
-        url: "/pdf-compressor",
+        url: ROUTES.PDF_TOOLS.PDF_COMPRESSOR,
         icon: <FileDownIcon />,
-        badge: <ExternalLinkIcon className="size-3.5" />,
-      } as any,
+        external: true,
+      },
       {
         name: "PDF to Image",
-        url: "/pdf-to-image",
+        url: ROUTES.PDF_TOOLS.PDF_TO_IMAGE,
         icon: <FileImageIcon />,
-        badge: <ExternalLinkIcon className="size-3.5" />,
-      } as any,
+        external: true,
+      },
       {
         name: "Image to PDF",
-        url: "/image-to-pdf",
+        url: ROUTES.PDF_TOOLS.IMAGE_TO_PDF,
         icon: <ImagesIcon />,
-        badge: <ExternalLinkIcon className="size-3.5" />,
-      } as any,
-      {
-        name: "Image to PDF",
-        url: ROUTES.DASHBOARD.IMAGE_TO_PDF,
-        icon: <ImagesIcon />,
+        external: true,
       },
     ],
   }
@@ -128,7 +123,7 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
               onClick={() => setOpenMobile(!isMobile)}
             >
               <Image alt="Logo" src="https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/Icon.svg" className="size-5" width={100} height={100} />
-              <span className="text-base font-bold">CIVITA.ID</span>
+              <span className="text-base font-bold">{APP_CONFIG.NAME_SECOND}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
