@@ -2,7 +2,9 @@
 
 import { PublicFooter } from "@/components/public-footer";
 import { PublicMobileBottomBar, PublicNavigation } from "@/components/public-header";
+import { PdfToolsCrossNav } from "@/components/pdf-tools-cross-nav";
 import DashboardImageToPdf from "@/components/image-to-pdf-tool";
+import { ROUTES } from "@/lib/constants";
 import { ImagesIcon } from "lucide-react";
 
 export default function ImageToPdfPage() {
@@ -31,6 +33,7 @@ export default function ImageToPdfPage() {
           <div className="bg-card border-4 border-foreground rounded-[2rem] shadow-[6px_6px_0px_0px] shadow-foreground p-4 md:p-8">
             <DashboardImageToPdf />
           </div>
+          <PdfToolsCrossNav currentHref={ROUTES.PDF_TOOLS.IMAGE_TO_PDF} />
         </div>
       </main>
       <PublicFooter />

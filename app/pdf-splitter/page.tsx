@@ -2,7 +2,9 @@
 
 import { PublicFooter } from "@/components/public-footer";
 import { PublicMobileBottomBar, PublicNavigation } from "@/components/public-header";
+import { PdfToolsCrossNav } from "@/components/pdf-tools-cross-nav";
 import DashboardPdfSplitter from "@/components/pdf-splitter-tool";
+import { ROUTES } from "@/lib/constants";
 import { ScissorsIcon } from "lucide-react";
 
 export default function PdfSplitterPage() {
@@ -31,6 +33,7 @@ export default function PdfSplitterPage() {
           <div className="bg-card border-4 border-foreground rounded-[2rem] shadow-[6px_6px_0px_0px] shadow-foreground p-4 md:p-8">
             <DashboardPdfSplitter />
           </div>
+          <PdfToolsCrossNav currentHref={ROUTES.PDF_TOOLS.PDF_SPLITTER} />
         </div>
       </main>
       <PublicFooter />

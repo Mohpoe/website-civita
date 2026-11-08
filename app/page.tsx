@@ -6,6 +6,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Separator } from "@/components/ui/separator";
 import { APP_CONFIG, ROUTES } from "@/lib/constants";
+import { PDF_TOOLS } from "@/lib/pdf-tools";
 import { Show, SignInButton, SignUpButton } from "@clerk/nextjs";
 import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, Briefcase, FileText, Layout, MessageCircle, QuoteIcon, Sparkles, XIcon } from "lucide-react";
@@ -239,6 +240,56 @@ const Services = () => {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+// #endregion
+
+// #region PDF Tools Section
+const PdfToolsSection = () => {
+  return (
+    <section id="tools" className="scroll-mt-28 py-32 px-6 bg-background border-b-4 border-foreground">
+      <div className="max-w-6xl mx-auto space-y-14">
+        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+          <div className="max-w-3xl space-y-4">
+            <div className="inline-block px-4 py-1.5 rounded-full bg-[#f68e51] dark:bg-[#d97941] text-black border-2 border-foreground font-black text-sm shadow-[2px_2px_0px_0px] shadow-foreground">
+              ALAT PENDUKUNG
+            </div>
+            <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground">
+              Alat PDF Gratis untuk Melengkapi Berkas Lamaran
+            </h2>
+            <p className="text-foreground/70 font-medium text-lg leading-relaxed">
+              Siapkan dokumen pendukung lamaran kerja dengan lebih efisien. Seluruh alat dapat digunakan gratis dan diproses langsung di peramban Anda untuk menjaga privasi berkas.
+            </p>
+          </div>
+          <div className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-background border-2 border-foreground text-sm font-bold shadow-[2px_2px_0px_0px] shadow-foreground w-max">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#ef3936] dark:bg-[#d9302d]" />
+            Gratis &amp; tanpa unggah ke server
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          {PDF_TOOLS.map((tool) => {
+            const Icon = tool.icon;
+            return (
+              <Link
+                key={tool.id}
+                href={tool.href}
+                className="group relative overflow-hidden rounded-[2rem] bg-background border-4 border-foreground p-6 md:p-7 transition-all hover:-translate-y-2 shadow-[6px_6px_0px_0px] shadow-foreground hover:shadow-[10px_10px_0px_0px] flex flex-col"
+              >
+                <div className={`w-14 h-14 rounded-2xl border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground flex items-center justify-center mb-5 ${tool.accent === "red" ? "bg-[#ef3936] dark:bg-[#d9302d] text-white" : "bg-[#f68e51] dark:bg-[#d97941] text-black"}`}>
+                  <Icon className="w-7 h-7" />
+                </div>
+                <h3 className="text-2xl font-black tracking-tight mb-2">{tool.name}</h3>
+                <p className="text-foreground/70 font-medium leading-relaxed flex-1">{tool.description}</p>
+                <div className="mt-6 inline-flex items-center gap-2 text-sm font-black">
+                  Buka alat <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -634,6 +685,7 @@ export default function App() {
       <main>
         <Hero />
         <Services />
+        <PdfToolsSection />
         <Process />
         <PortfolioShowcase />
         <Testimonials />

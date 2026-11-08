@@ -1,4 +1,5 @@
 import { APP_CONFIG, ROUTES } from "@/lib/constants";
+import { PDF_TOOLS } from "@/lib/pdf-tools";
 import { Mail } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -8,7 +9,7 @@ import { TfiLinkedin } from "react-icons/tfi";
 export function PublicFooter() {
   return (
     <footer className="bg-background border-t-4 border-foreground pt-16 pb-32 md:pb-12 px-6">
-      <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-10 md:gap-6">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1.2fr_auto_auto] items-start gap-10 lg:gap-12">
         <div className="flex flex-col gap-6">
           <Link href={ROUTES.ROOT} className="flex items-center gap-3">
             <div className="w-10 h-10 bg-[#ef3936] dark:bg-[#d9302d] border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground rounded-xl flex items-center justify-center">
@@ -27,7 +28,18 @@ export function PublicFooter() {
           </div>
         </div>
 
-        <div className="flex items-center gap-4 text-base font-black">
+        <div className="flex flex-col gap-3">
+          <h2 className="text-sm font-black uppercase tracking-wider">Alat PDF Gratis</h2>
+          <nav aria-label="Alat PDF" className="flex flex-col gap-2 text-sm font-bold">
+            {PDF_TOOLS.map((tool) => (
+              <Link key={tool.id} href={tool.href} className="hover:text-[#ef3936] dark:hover:text-[#d9302d] underline decoration-2 underline-offset-4 w-max">
+                {tool.name}
+              </Link>
+            ))}
+          </nav>
+        </div>
+
+        <div className="flex items-start md:items-end lg:items-start gap-4 text-base font-black flex-wrap">
           <a href={APP_CONFIG.LINKS.INSTAGRAM} target="_blank" rel="noreferrer" className="hover:bg-[#ef3936] dark:hover:bg-[#d9302d] hover:text-white bg-background border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground px-5 py-3 rounded-full transition-all flex items-center gap-2">
             <Instagram className="w-5 h-5" /> Instagram
           </a>
