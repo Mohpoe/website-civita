@@ -21,7 +21,7 @@ export default function ImageToPdfPage() {
       <main className="pt-32 pb-20 px-4 md:px-6">
         <div className="max-w-4xl mx-auto space-y-8">
           <div className="text-center space-y-4">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#f68e51] dark:bg-[#d97941] border-2 border-foreground text-sm font-black shadow-[2px_2px_0px_0px] shadow-foreground">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-orange border-2 border-foreground text-sm font-black shadow-[2px_2px_0px_0px] shadow-foreground">
               <ImagesIcon className="w-4 h-4" />
               Image to PDF
             </div>

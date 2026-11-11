@@ -20,7 +20,7 @@ interface DocumentMockupProps { className?: string; }
 const DocumentMockupCV = ({ className }: DocumentMockupProps) => (
   <div className={`bg-background backdrop-blur-xl border-4 border-foreground shadow-[6px_6px_0px_0px] shadow-foreground rounded-[2rem] p-5 flex flex-col gap-4 ${className}`}>
     <div className="flex items-center gap-3 border-b-4 border-foreground/10 pb-4">
-      <div className="w-12 h-12 rounded-full bg-[#f68e51] dark:bg-[#d97941] border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground animate-pulse" />
+      <div className="w-12 h-12 rounded-full bg-brand-orange border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground animate-pulse" />
       <div className="flex flex-col gap-2">
         <div className="w-24 h-3 bg-foreground rounded-full" />
         <div className="w-16 h-2 bg-foreground/50 rounded-full" />
@@ -33,7 +33,7 @@ const DocumentMockupCV = ({ className }: DocumentMockupProps) => (
     </div>
     <div className="mt-2 space-y-3">
       <div className="flex gap-3">
-        <div className="w-1/3 h-16 bg-[#ef3936]/10 dark:bg-[#d9302d]/20 rounded-xl border-2 border-[#ef3936] dark:border-[#d9302d]" />
+        <div className="w-1/3 h-16 bg-brand-red/10 dark:bg-brand-red/20 rounded-xl border-2 border-brand-red" />
         <div className="w-2/3 space-y-2.5 pt-1">
           <div className="w-full h-2.5 bg-foreground/20 rounded-full" />
           <div className="w-4/5 h-2.5 bg-foreground/20 rounded-full" />
@@ -44,7 +44,7 @@ const DocumentMockupCV = ({ className }: DocumentMockupProps) => (
 );
 
 const DocumentMockupPortfolio = ({ className }: DocumentMockupProps) => (
-  <div className={`bg-[#f68e51] dark:bg-[#d97941] backdrop-blur-xl border-4 border-foreground shadow-[6px_6px_0px_0px] shadow-foreground rounded-[2rem] p-5 flex flex-col gap-4 ${className}`}>
+  <div className={`bg-brand-orange backdrop-blur-xl border-4 border-foreground shadow-[6px_6px_0px_0px] shadow-foreground rounded-[2rem] p-5 flex flex-col gap-4 ${className}`}>
     <div className="w-32 h-4 bg-background rounded-full mb-2 border-2 border-foreground" />
     <div className="grid grid-cols-2 gap-3">
       <div className="aspect-square bg-background border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground rounded-xl" />
@@ -57,7 +57,7 @@ const DocumentMockupPortfolio = ({ className }: DocumentMockupProps) => (
 
 const DocumentMockupCoverLetter = ({ className }: DocumentMockupProps) => (
   <div className={`bg-background backdrop-blur-xl border-4 border-foreground shadow-[6px_6px_0px_0px] shadow-foreground rounded-[2rem] p-6 flex flex-col gap-3 ${className}`}>
-    <div className="w-14 h-14 bg-[#ef3936] dark:bg-[#d9302d] rounded-2xl mb-4 flex items-center justify-center border-2 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground">
+    <div className="w-14 h-14 bg-brand-red rounded-2xl mb-4 flex items-center justify-center border-2 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground">
       <Sparkles className="text-white w-7 h-7" />
     </div>
     <div className="w-1/2 h-3 bg-foreground rounded-full mb-5" />
@@ -94,8 +94,8 @@ const Hero = () => {
     <section ref={containerRef} className="relative min-h-[95vh] flex items-center justify-center overflow-hidden pt-32 pb-20 px-6 border-b-4 border-foreground bg-[radial-gradient(color-mix(in_srgb,currentColor_30%,transparent)_1px,transparent_1px)] dark:bg-[radial-gradient(color-mix(in_srgb,currentColor_13%,transparent)_1px,transparent_1px)] [background-size:20px_20px]">
       {/* Neo-Pop Background Blobs */}
       <div className="absolute inset-0 bg-background -z-20" />
-      <div className="absolute top-1/4 left-1/4 w-[40vw] h-[40vw] bg-[#ef3936]/20 dark:bg-[#d9302d]/20 rounded-full blur-[100px] -z-10 mix-blend-multiply dark:mix-blend-screen" />
-      <div className="absolute bottom-1/4 right-1/4 w-[30vw] h-[30vw] bg-[#f68e51]/20 dark:bg-[#d97941]/20 rounded-full blur-[80px] -z-10 mix-blend-multiply dark:mix-blend-screen" />
+      <div className="absolute top-1/4 left-1/4 w-[40vw] h-[40vw] bg-brand-red/20 rounded-full blur-[100px] -z-10 mix-blend-multiply dark:mix-blend-screen" />
+      <div className="absolute bottom-1/4 right-1/4 w-[30vw] h-[30vw] bg-brand-orange/20 rounded-full blur-[80px] -z-10 mix-blend-multiply dark:mix-blend-screen" />
 
       {/* Grid Pattern Overlay */}
       <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] dark:bg-[radial-gradient(#374151_1px,transparent_1px)] [background-size:16px_16px] opacity-40 -z-15 pointer-events-none" />
@@ -108,7 +108,7 @@ const Hero = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#f68e51] dark:bg-[#d97941] border-2 border-foreground text-sm font-black shadow-[2px_2px_0px_0px] shadow-foreground">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-orange border-2 border-foreground text-sm font-black shadow-[2px_2px_0px_0px] shadow-foreground">
             <span className="relative flex h-2.5 w-2.5 mr-1">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-foreground opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-foreground"></span>
@@ -118,15 +118,15 @@ const Hero = () => {
 
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tighter leading-[1.05] text-foreground">
             Bantu kamu <br />
-            <span className="text-[#ef3936] dark:text-[#d9302d] drop-shadow-[4px_4px_0px] drop-shadow-foreground">lolos kerja!</span>
+            <span className="text-brand-red drop-shadow-[4px_4px_0px] drop-shadow-foreground">lolos kerja!</span>
           </h1>
 
-          <p className="text-lg text-foreground/80 font-medium max-w-md leading-relaxed border-l-4 border-[#f68e51] dark:border-[#d97941] pl-4">
+          <p className="text-lg text-foreground/80 font-medium max-w-md leading-relaxed border-l-4 border-brand-orange pl-4">
             Tersedia berbagai desain CV (Curriculum Vitae) & resume, mulai dari ATS-friendly, CV Creative, maupun CV basic yang bisa disesuaikan dengan kebutuhanmu.
           </p>
 
           <div className="flex flex-col sm:flex-row flex-wrap items-center gap-4 w-full mt-4">
-            <Button className="rounded-full h-14 px-8 w-full sm:w-auto font-bold text-base bg-[#ef3936] dark:bg-[#d9302d] text-white border-2 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px] transition-all" size="lg" onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP_CHAT("Halo admin CIVITA, saya ingin konsultasi terkait pembuatan CV yang ATS-friendly."), "_blank")}>
+            <Button className="rounded-full h-14 px-8 w-full sm:w-auto font-bold text-base bg-brand-red text-white border-2 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px] transition-all" size="lg" onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP_CHAT("Halo admin CIVITA, saya ingin konsultasi terkait pembuatan CV yang ATS-friendly."), "_blank")}>
               <SiWhatsapp className="w-5 h-5 ml-0 mr-2" />
               Chat via WhatsApp
             </Button>
@@ -174,19 +174,19 @@ const Services = () => {
     <section className="py-32 px-6 bg-muted/40 border-b-4 border-foreground">
       <div className="max-w-6xl mx-auto space-y-16">
         <div className="text-center max-w-2xl mx-auto space-y-4">
-          <div className="inline-block px-4 py-1.5 mb-4 rounded-full bg-[#ef3936] dark:bg-[#d9302d] text-white border-2 border-foreground font-black text-sm shadow-[2px_2px_0px_0px] shadow-foreground">LAYANAN KAMI</div>
+          <div className="inline-block px-4 py-1.5 mb-4 rounded-full bg-brand-red text-white border-2 border-foreground font-black text-sm shadow-[2px_2px_0px_0px] shadow-foreground">LAYANAN KAMI</div>
           <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground">90%+ Desain CV Disukai HRD</h2>
           <p className="text-foreground/70 font-medium text-lg">Telah terbukti disukai dan sangat mudah di-<em>screening</em> oleh para Recruiter.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           {/* Card 1 - Red */}
-          <div className="md:col-span-2 group relative overflow-hidden rounded-[2rem] bg-[#ef3936] dark:bg-[#d9302d] text-white border-4 border-foreground p-8 transition-all hover:-translate-y-2 shadow-[6px_6px_0px_0px] shadow-foreground hover:shadow-[10px_10px_0px_0px]">
+          <div className="md:col-span-2 group relative overflow-hidden rounded-[2rem] bg-brand-red text-white border-4 border-foreground p-8 transition-all hover:-translate-y-2 shadow-[6px_6px_0px_0px] shadow-foreground hover:shadow-[10px_10px_0px_0px]">
             <div className="absolute top-0 right-0 p-8 opacity-20 transition-transform group-hover:scale-110 duration-500 group-hover:rotate-12">
               <FileText className="w-40 h-40" />
             </div>
             <div className="relative z-10 h-full flex flex-col justify-between min-h-[220px]">
-              <div className="w-14 h-14 rounded-2xl bg-white dark:bg-background text-[#ef3936] dark:text-[#d9302d] border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground flex items-center justify-center mb-6">
+              <div className="w-14 h-14 rounded-2xl bg-white dark:bg-background text-brand-red border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground flex items-center justify-center mb-6">
                 <FileText className="w-7 h-7" />
               </div>
               <div>
@@ -197,7 +197,7 @@ const Services = () => {
           </div>
 
           {/* Card 2 - Orange */}
-          <div className="md:col-span-1 group relative overflow-hidden rounded-[2rem] bg-[#f68e51] dark:bg-[#d97941] text-black border-4 border-foreground p-8 transition-all hover:-translate-y-2 shadow-[6px_6px_0px_0px] shadow-foreground hover:shadow-[10px_10px_0px_0px]">
+          <div className="md:col-span-1 group relative overflow-hidden rounded-[2rem] bg-brand-orange text-black border-4 border-foreground p-8 transition-all hover:-translate-y-2 shadow-[6px_6px_0px_0px] shadow-foreground hover:shadow-[10px_10px_0px_0px]">
             <div className="absolute top-0 right-0 p-8 opacity-10 transition-transform group-hover:scale-110 duration-500 group-hover:-rotate-12">
               <MessageCircle className="w-32 h-32" />
             </div>
@@ -215,7 +215,7 @@ const Services = () => {
           {/* Card 3 - White/Bg */}
           <div className="md:col-span-1 group relative overflow-hidden rounded-[2rem] bg-background border-4 border-foreground p-8 transition-all hover:-translate-y-2 shadow-[6px_6px_0px_0px] shadow-foreground hover:shadow-[10px_10px_0px_0px]">
             <div className="relative z-10 h-full flex flex-col justify-between min-h-[220px]">
-              <div className="w-14 h-14 rounded-2xl bg-[#ef3936] dark:bg-[#d9302d] text-white border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground flex items-center justify-center mb-6">
+              <div className="w-14 h-14 rounded-2xl bg-brand-red text-white border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground flex items-center justify-center mb-6">
                 <Layout className="w-7 h-7" />
               </div>
               <div>
@@ -231,7 +231,7 @@ const Services = () => {
               <DocumentMockupPortfolio />
             </div>
             <div className="relative z-10">
-              <div className="w-14 h-14 rounded-2xl bg-[#f68e51] dark:bg-[#d97941] text-black border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground flex items-center justify-center mb-6">
+              <div className="w-14 h-14 rounded-2xl bg-brand-orange text-black border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground flex items-center justify-center mb-6">
                 <Briefcase className="w-7 h-7" />
               </div>
               <div>
@@ -254,7 +254,7 @@ const PdfToolsSection = () => {
       <div className="max-w-6xl mx-auto space-y-14">
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
           <div className="max-w-3xl space-y-4">
-            <div className="inline-block px-4 py-1.5 rounded-full bg-[#f68e51] dark:bg-[#d97941] text-black border-2 border-foreground font-black text-sm shadow-[2px_2px_0px_0px] shadow-foreground">
+            <div className="inline-block px-4 py-1.5 rounded-full bg-brand-orange text-black border-2 border-foreground font-black text-sm shadow-[2px_2px_0px_0px] shadow-foreground">
               ALAT PENDUKUNG
             </div>
             <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground">
@@ -265,7 +265,7 @@ const PdfToolsSection = () => {
             </p>
           </div>
           <div className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-background border-2 border-foreground text-sm font-bold shadow-[2px_2px_0px_0px] shadow-foreground w-max">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#ef3936] dark:bg-[#d9302d]" />
+            <span className="w-2.5 h-2.5 rounded-full bg-brand-red" />
             Gratis &amp; tanpa unggah ke server
           </div>
         </div>
@@ -279,7 +279,7 @@ const PdfToolsSection = () => {
                 href={tool.href}
                 className="group relative overflow-hidden rounded-[2rem] bg-background border-4 border-foreground p-6 md:p-7 transition-all hover:-translate-y-2 shadow-[6px_6px_0px_0px] shadow-foreground hover:shadow-[10px_10px_0px_0px] flex flex-col"
               >
-                <div className={`w-14 h-14 rounded-2xl border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground flex items-center justify-center mb-5 ${tool.accent === "red" ? "bg-[#ef3936] dark:bg-[#d9302d] text-white" : "bg-[#f68e51] dark:bg-[#d97941] text-black"}`}>
+                <div className={`w-14 h-14 rounded-2xl border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground flex items-center justify-center mb-5 ${tool.accent === "red" ? "bg-brand-red text-white" : "bg-brand-orange text-black"}`}>
                   <Icon className="w-7 h-7" />
                 </div>
                 <h3 className="text-2xl font-black tracking-tight mb-2">{tool.name}</h3>
@@ -309,16 +309,16 @@ const Process = () => {
   return (
     <section className="py-32 px-6 bg-background border-b-4 border-foreground relative overflow-hidden">
       {/* Background Pattern */}
-      <div className="absolute right-0 top-0 w-1/2 h-full bg-[radial-gradient(#f68e51_2px,transparent_2px)] dark:bg-[radial-gradient(#d97941_2px,transparent_2px)] [background-size:24px_24px] opacity-20 -z-10" />
+      <div className="absolute right-0 top-0 w-1/2 h-full bg-[radial-gradient(var(--brand-orange)_2px,transparent_2px)] [background-size:24px_24px] opacity-20 -z-10" />
 
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col lg:flex-row gap-16 lg:gap-24">
           <div className="lg:w-5/12">
             <div className="sticky top-32 bg-background p-8 rounded-[2rem] border-4 border-foreground shadow-[6px_6px_0px_0px] shadow-foreground">
-              <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-[#f68e51] dark:bg-[#d97941] text-black border-2 border-foreground font-black text-sm shadow-[2px_2px_0px_0px] shadow-foreground">PROSES CEPAT</div>
+              <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-brand-orange text-black border-2 border-foreground font-black text-sm shadow-[2px_2px_0px_0px] shadow-foreground">PROSES CEPAT</div>
               <h2 className="text-4xl md:text-5xl font-black tracking-tighter mb-6">Murah, Cepat & Profesional.</h2>
               <p className="text-foreground/80 font-medium mb-10 text-lg leading-relaxed">Dirancang oleh profesional untuk kamu yang pusing cari pekerjaan <em>in this economy</em>. Kami tangani dengan cepat!</p>
-              <Button className="h-14 px-8 w-full rounded-full font-bold text-lg bg-[#ef3936] dark:bg-[#d9302d] text-white border-2 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px] shadow-foreground transition-all" onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP_CHAT("Halo admin CIVITA, saya ingin konsultasi terkait pembuatan CV yang ATS-friendly."), "_blank")}>
+              <Button className="h-14 px-8 w-full rounded-full font-bold text-lg bg-brand-red text-white border-2 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px] shadow-foreground transition-all" onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP_CHAT("Halo admin CIVITA, saya ingin konsultasi terkait pembuatan CV yang ATS-friendly."), "_blank")}>
                 Mulai Sekarang!
               </Button>
             </div>
@@ -330,10 +330,10 @@ const Process = () => {
                 <div key={i} className="group relative flex gap-6 md:gap-8 bg-card/50 p-6 rounded-3xl border-2 border-transparent hover:border-foreground hover:bg-background hover:shadow-[4px_4px_0px_0px] shadow-foreground transition-all duration-300">
                   {/* Line connector */}
                   {i !== steps.length - 1 && (
-                    <div className="absolute left-[3rem] md:left-[3.3rem] top-20 bottom-[-8rem] w-1.5 bg-foreground/10 group-hover:bg-[#f68e51] dark:group-hover:bg-[#d97941] transition-colors rounded-full z-5" />
+                    <div className="absolute left-[3rem] md:left-[3.3rem] top-20 bottom-[-8rem] w-1.5 bg-foreground/10 group-hover:bg-brand-orange transition-colors rounded-full z-5" />
                   )}
 
-                  <div className="relative z-10 flex-shrink-0 w-14 h-14 rounded-2xl bg-[#f68e51] dark:bg-[#d97941] border-4 border-foreground flex items-center justify-center text-xl font-black text-black shadow-[4px_4px_0px_0px] shadow-foreground group-hover:scale-110 transition-transform duration-300 group-hover:bg-[#ef3936] dark:group-hover:bg-[#d9302d] group-hover:text-white">
+                  <div className="relative z-10 flex-shrink-0 w-14 h-14 rounded-2xl bg-brand-orange border-4 border-foreground flex items-center justify-center text-xl font-black text-black shadow-[4px_4px_0px_0px] shadow-foreground group-hover:scale-110 transition-transform duration-300 group-hover:bg-brand-red group-hover:text-white">
                     {step.num}
                   </div>
 
@@ -371,7 +371,7 @@ const PortfolioShowcase = () => {
   );
 
   return (
-    <section className="py-32 px-6 bg-[#f68e51]/10 dark:bg-[#d97941]/10 border-b-4 border-foreground">
+    <section className="py-32 px-6 bg-brand-orange/10 border-b-4 border-foreground">
       <div className="max-w-6xl mx-auto">
         <div className="text-center max-w-2xl mx-auto space-y-4 mb-14">
           <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground">Desain Yang Mudah di-<em>Screening</em>.</h2>
@@ -389,7 +389,7 @@ const PortfolioShowcase = () => {
                 className={`relative px-6 py-2.5 rounded-full text-sm font-black transition-all duration-300 whitespace-nowrap ${activeTab === tab ? "text-background bg-foreground" : "text-foreground hover:bg-muted-foreground/50"}`}
               >
                 {activeTab === tab && (
-                  <motion.div layoutId="portfolioTab" className="absolute inset-0 bg-[#ef3936] dark:bg-[#d9302d] border-2 border-foreground rounded-full -z-10 shadow-[2px_2px_0px_0px] shadow-foreground" />
+                  <motion.div layoutId="portfolioTab" className="absolute inset-0 bg-brand-red border-2 border-foreground rounded-full -z-10 shadow-[2px_2px_0px_0px] shadow-foreground" />
                 )}
                 <span className="relative z-10">{tab}</span>
               </button>
@@ -410,7 +410,7 @@ const PortfolioShowcase = () => {
                 className="group flex flex-col gap-5"
               >
                 <div className="relative bg-background rounded-[2rem] p-4 border-4 border-foreground shadow-[6px_6px_0px_0px] shadow-foreground hover:shadow-[10px_10px_0px_0px] transition-all duration-500 hover:-translate-y-2">
-                  <div className="absolute top-6 right-6 bg-[#f68e51] dark:bg-[#d97941] text-black text-xs font-black px-4 py-2 rounded-full uppercase tracking-wider z-10 border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground">
+                  <div className="absolute top-6 right-6 bg-brand-orange text-black text-xs font-black px-4 py-2 rounded-full uppercase tracking-wider z-10 border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground">
                     {item.type}
                   </div>
                   <div className="relative w-full aspect-[1/1.4] rounded-xl overflow-hidden bg-muted group-hover:scale-[1.02] transition-transform duration-500 ease-out border-2 border-foreground">
@@ -455,10 +455,10 @@ const TestimonialTextVariant = () => {
     >
       {reviews.map((review, i) => (
         <div key={i} className="bg-background border-4 border-foreground rounded-[2rem] p-8 shadow-[6px_6px_0px_0px] shadow-foreground hover:shadow-[10px_10px_0px_0px] hover:-translate-y-2 transition-all duration-300">
-          <QuoteIcon className="w-10 h-10 text-[#ef3936] dark:text-[#d9302d] mb-6 fill-current" />
-          <p className="text-foreground font-medium mb-8 text-lg leading-relaxed">"{review.text}"</p>
+          <QuoteIcon className="w-10 h-10 text-brand-red mb-6 fill-current" />
+          <p className="text-foreground font-medium mb-8 text-lg leading-relaxed">&quot;{review.text}&quot;</p>
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-[#f68e51] dark:bg-[#d97941] border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground flex items-center justify-center font-black text-black text-xl">
+            <div className="w-12 h-12 rounded-2xl bg-brand-orange border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground flex items-center justify-center font-black text-black text-xl">
               {review.name.charAt(0)}
             </div>
             <div>
@@ -510,8 +510,8 @@ const TestimonialChatVariant = () => {
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className="hidden md:flex -left-16 w-14 h-14 bg-[#f68e51] dark:bg-[#d97941] text-black border-4 !border-foreground rounded-full shadow-[4px_4px_0px_0px] shadow-foreground hover:bg-[#f68e51] dark:hover:bg-[#d97941] hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px] transition-all" />
-        <CarouselNext className="hidden md:flex -right-16 w-14 h-14 bg-[#f68e51] dark:bg-[#d97941] text-black border-4 !border-foreground rounded-full shadow-[4px_4px_0px_0px] shadow-foreground hover:bg-[#f68e51] dark:hover:bg-[#d97941] hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px] transition-all" />
+        <CarouselPrevious className="hidden md:flex -left-16 w-14 h-14 bg-brand-orange text-black border-4 !border-foreground rounded-full shadow-[4px_4px_0px_0px] shadow-foreground hover:bg-brand-orange hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px] transition-all" />
+        <CarouselNext className="hidden md:flex -right-16 w-14 h-14 bg-brand-orange text-black border-4 !border-foreground rounded-full shadow-[4px_4px_0px_0px] shadow-foreground hover:bg-brand-orange hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px] transition-all" />
       </Carousel>
     </motion.div>
   );
@@ -533,11 +533,11 @@ const Testimonials = () => {
         <div className="flex justify-center mb-14">
           <div className="bg-background border-4 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground p-1.5 rounded-full flex gap-2">
             <button onClick={() => setActiveVariant("text")} className={`relative px-8 py-3 rounded-full text-sm font-black transition-all duration-300 ${activeVariant === "text" ? "text-background bg-foreground" : "text-foreground hover:bg-muted-foreground/50"}`}>
-              {activeVariant === "text" && <motion.div layoutId="testiPill" className="absolute inset-0 bg-[#ef3936] dark:bg-[#d9302d] border-2 border-foreground rounded-full -z-10 shadow-[2px_2px_0px_0px] shadow-foreground" />}
+              {activeVariant === "text" && <motion.div layoutId="testiPill" className="absolute inset-0 bg-brand-red border-2 border-foreground rounded-full -z-10 shadow-[2px_2px_0px_0px] shadow-foreground" />}
               <span className="relative z-10">Review Teks</span>
             </button>
             <button onClick={() => setActiveVariant("chat")} className={`relative px-8 py-3 rounded-full text-sm font-black transition-all duration-300 ${activeVariant === "chat" ? "text-background bg-foreground" : "text-foreground hover:bg-muted-foreground/50"}`}>
-              {activeVariant === "chat" && <motion.div layoutId="testiPill" className="absolute inset-0 bg-[#ef3936] dark:bg-[#d9302d] border-2 border-foreground rounded-full -z-10 shadow-[2px_2px_0px_0px] shadow-foreground" />}
+              {activeVariant === "chat" && <motion.div layoutId="testiPill" className="absolute inset-0 bg-brand-red border-2 border-foreground rounded-full -z-10 shadow-[2px_2px_0px_0px] shadow-foreground" />}
               <span className="relative z-10">Testimoni WA</span>
             </button>
           </div>
@@ -557,7 +557,7 @@ const Testimonials = () => {
 // #region CTA Section
 const CTA = () => {
   return (
-    <section className="relative py-32 px-6 overflow-hidden bg-[#ef3936] dark:bg-[#d9302d]">
+    <section className="relative py-32 px-6 overflow-hidden bg-brand-red">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] bg-white/10 rounded-full blur-[80px] pointer-events-none" />
       <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_20px,rgba(0,0,0,0.05)_20px,rgba(0,0,0,0.05)_40px)] dark:bg-[repeating-linear-gradient(45deg,transparent,transparent_20px,rgba(255,255,255,0.02)_20px,rgba(255,255,255,0.02)_40px)] pointer-events-none" />
 
@@ -573,7 +573,7 @@ const CTA = () => {
           <div className="flex flex-col w-full sm:w-auto gap-6">
             <button
               onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP_CHAT("Halo admin CIVITA, saya ingin konsultasi terkait pembuatan CV yang ATS-friendly."), "_blank")}
-              className="group relative inline-flex items-center justify-center gap-3 h-16 px-10 bg-[#f68e51] dark:bg-[#d97941] text-black border-4 border-foreground rounded-full font-black text-xl shadow-[6px_6px_0px_0px] shadow-foreground hover:shadow-[2px_2px_0px_0px] shadow-foreground hover:translate-y-1 transition-all"
+              className="group relative inline-flex items-center justify-center gap-3 h-16 px-10 bg-brand-orange text-black border-4 border-foreground rounded-full font-black text-xl shadow-[6px_6px_0px_0px] shadow-foreground hover:shadow-[2px_2px_0px_0px] shadow-foreground hover:translate-y-1 transition-all"
             >
               Chat Admin CIVITA
               <ArrowRight className="w-6 h-6 group-hover:translate-x-1.5 transition-transform stroke-[3px]" />
@@ -582,11 +582,11 @@ const CTA = () => {
             <Show when="signed-out">
               <div className="flex items-center justify-center gap-4 text-sm font-bold text-white bg-black/20 dark:bg-black/40 p-4 rounded-full backdrop-blur-sm border-2 border-white/20">
                 <SignInButton mode="modal" fallbackRedirectUrl="/">
-                  <Button variant="link" className="text-white hover:text-[#f68e51] dark:hover:text-[#d97941] transition-colors underline underline-offset-4 font-bold text-base">Masuk ke Akun</Button>
+                  <Button variant="link" className="text-white hover:text-brand-orange transition-colors underline underline-offset-4 font-bold text-base">Masuk ke Akun</Button>
                 </SignInButton>
                 <Separator className="opacity-50 h-5" orientation="vertical" />
                 <SignUpButton mode="modal" fallbackRedirectUrl="/">
-                  <Button variant="link" className="text-white hover:text-[#f68e51] dark:hover:text-[#d97941] transition-colors underline underline-offset-4 font-bold text-base">Daftar Member Baru</Button>
+                  <Button variant="link" className="text-white hover:text-brand-orange transition-colors underline underline-offset-4 font-bold text-base">Daftar Member Baru</Button>
                 </SignUpButton>
               </div>
             </Show>
@@ -617,7 +617,7 @@ const PricingPopup = () => {
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           className="fixed bottom-24 md:bottom-10 left-1/2 -translate-x-1/2 md:translate-x-0 md:left-10 z-[40] flex items-center gap-4 p-3 pr-4 bg-background border-4 border-foreground rounded-full w-max max-w-[90vw]"
         >
-          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#f68e51] dark:bg-[#d97941] text-black border-2 border-foreground shrink-0">
+          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-brand-orange text-black border-2 border-foreground shrink-0">
             <Sparkles className="w-6 h-6" />
           </div>
           <div className="flex flex-col mr-3">
@@ -625,7 +625,7 @@ const PricingPopup = () => {
               Harga Terjangkau
             </span>
             <span className="text-base font-bold text-foreground leading-none">
-              Harga mulai dari <strong className="font-black text-[#ef3936] dark:text-[#d9302d] border-b-2 border-foreground">13K</strong> aja!
+              Harga mulai dari <strong className="font-black text-brand-red border-b-2 border-foreground">13K</strong> aja!
             </span>
           </div>
           <button onClick={() => setIsVisible(false)} className="p-2 bg-muted border-2 border-transparent hover:border-foreground rounded-full transition-all ml-1 active:translate-y-1">
@@ -641,7 +641,7 @@ const PricingPopup = () => {
 // #region App Wrapper
 export default function App() {
   return (
-    <div className="font-mono text-foreground antialiased selection:bg-[#f68e51] dark:selection:bg-[#d97941] selection:text-black min-h-screen bg-background pb-20 md:pb-0 overflow-x-hidden">
+    <div className="font-mono text-foreground antialiased selection:bg-brand-orange selection:text-black min-h-screen bg-background pb-20 md:pb-0 overflow-x-hidden">
       <style dangerouslySetInnerHTML={{
         __html: `
         :root {
@@ -661,21 +661,12 @@ export default function App() {
           border-left: 4px solid hsl(var(--foreground));
         }
         ::-webkit-scrollbar-thumb {
-          background: #ef3936;
+          background: var(--brand-red);
           border-left: 4px solid hsl(var(--foreground));
           border-bottom: 4px solid hsl(var(--foreground));
         }
         ::-webkit-scrollbar-thumb:hover {
-          background: #f68e51;
-        }
-
-        @media (prefers-color-scheme: dark) {
-          ::-webkit-scrollbar-thumb {
-            background: #d9302d;
-          }
-          ::-webkit-scrollbar-thumb:hover {
-            background: #d97941;
-          }
+          background: var(--brand-orange);
         }
       `}} />
 

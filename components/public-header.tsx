@@ -27,7 +27,7 @@ function PdfToolsSheetContent({ onNavigate }: { onNavigate?: () => void }) {
             onClick={onNavigate}
             className="flex items-center gap-3 p-3 rounded-2xl border-2 border-foreground bg-background shadow-[2px_2px_0px_0px] shadow-foreground active:translate-y-[1px] active:shadow-none transition-all"
           >
-            <div className={`w-10 h-10 shrink-0 rounded-xl border-2 border-foreground flex items-center justify-center ${tool.accent === "red" ? "bg-[#ef3936] dark:bg-[#d9302d] text-white" : "bg-[#f68e51] dark:bg-[#d97941] text-black"}`}>
+            <div className={`w-10 h-10 shrink-0 rounded-xl border-2 border-foreground flex items-center justify-center ${tool.accent === "red" ? "bg-brand-red text-white" : "bg-brand-orange text-black"}`}>
               <Icon className="w-5 h-5" />
             </div>
             <div className="min-w-0">
@@ -96,13 +96,13 @@ export function PublicNavigation() {
                 </Button>
               </SignInButton>
               <SignUpButton mode="modal" fallbackRedirectUrl={ROUTES.DASHBOARD.HOME}>
-                <Button className="h-10 px-4 lg:px-5 font-bold rounded-full bg-[#f68e51] dark:bg-[#d97941] text-black border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px] transition-all">
+                <Button className="h-10 px-4 lg:px-5 font-bold rounded-full bg-brand-orange text-black border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px] transition-all">
                   Daftar
                 </Button>
               </SignUpButton>
             </Show>
             <Show when="signed-in">
-              <Link href={ROUTES.DASHBOARD.HOME} className={buttonVariants({ className: "h-10 px-4 lg:px-5 font-bold !rounded-full !border-2 !border-foreground shadow-[2px_2px_0px_0px] shadow-foreground hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px] transition-all !bg-[#f68e51] dark:!bg-[#d97941] !text-black" })}>
+              <Link href={ROUTES.DASHBOARD.HOME} className={buttonVariants({ className: "h-10 px-4 lg:px-5 font-bold !rounded-full !border-2 !border-foreground shadow-[2px_2px_0px_0px] shadow-foreground hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px] transition-all !bg-brand-orange !text-black" })}>
                 Dashboard
               </Link>
             </Show>
@@ -110,7 +110,7 @@ export function PublicNavigation() {
 
           <div className="hidden lg:block w-1.5 h-1.5 rounded-full bg-foreground mx-0.5" />
 
-          <Button onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP_CHAT(CONSULT_MESSAGE), "_blank")} className="hidden md:flex h-10 px-3 lg:px-5 rounded-full font-bold bg-[#ef3936] dark:bg-[#d9302d] text-white border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px] transition-all" aria-label="Konsultasi WhatsApp">
+          <Button onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP_CHAT(CONSULT_MESSAGE), "_blank")} className="hidden md:flex h-10 px-3 lg:px-5 rounded-full font-bold bg-brand-red text-white border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px] transition-all" aria-label="Konsultasi WhatsApp">
             <SiWhatsapp className="w-4 h-4 lg:hidden" />
             <span className="hidden lg:inline-flex items-center">Konsultasi <ArrowRight className="w-4 h-4 ml-2" /></span>
           </Button>
@@ -162,19 +162,19 @@ export function PublicMobileBottomBar() {
             </Button>
           </SignInButton>
           <SignUpButton mode="modal" fallbackRedirectUrl={ROUTES.DASHBOARD.HOME}>
-            <Button className="flex-1 h-12 rounded-2xl border-2 border-foreground bg-[#f68e51] dark:bg-[#d97941] text-black font-bold text-sm shadow-[2px_2px_0px_0px] shadow-foreground active:translate-y-1 active:shadow-none transition-all px-2">
+            <Button className="flex-1 h-12 rounded-2xl border-2 border-foreground bg-brand-orange text-black font-bold text-sm shadow-[2px_2px_0px_0px] shadow-foreground active:translate-y-1 active:shadow-none transition-all px-2">
               Daftar
             </Button>
           </SignUpButton>
         </Show>
 
         <Show when="signed-in">
-          <Link href={ROUTES.DASHBOARD.HOME} className={buttonVariants({ className: "flex-1 h-12 !rounded-2xl !border-2 font-bold text-sm !border-foreground shadow-[2px_2px_0px_0px] shadow-foreground active:translate-y-1 active:shadow-none transition-all !bg-[#f68e51] dark:!bg-[#d97941] !text-black px-2" })}>
+          <Link href={ROUTES.DASHBOARD.HOME} className={buttonVariants({ className: "flex-1 h-12 !rounded-2xl !border-2 font-bold text-sm !border-foreground shadow-[2px_2px_0px_0px] shadow-foreground active:translate-y-1 active:shadow-none transition-all !bg-brand-orange !text-black px-2" })}>
             Dashboard
           </Link>
         </Show>
 
-        <Button onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP_CHAT(CONSULT_MESSAGE), "_blank")} className="flex-none w-14 h-12 rounded-2xl bg-[#ef3936] dark:bg-[#d9302d] text-white border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground active:translate-y-1 active:shadow-none transition-all p-0" aria-label="Konsultasi WhatsApp">
+        <Button onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP_CHAT(CONSULT_MESSAGE), "_blank")} className="flex-none w-14 h-12 rounded-2xl bg-brand-red text-white border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground active:translate-y-1 active:shadow-none transition-all p-0" aria-label="Konsultasi WhatsApp">
           <SiWhatsapp className="w-5 h-5" />
         </Button>
       </div>

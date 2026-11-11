@@ -1,8 +1,7 @@
+import { AppClerkProvider } from "@/components/clerk-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
-import { idID } from "@clerk/localizations";
-import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
@@ -143,22 +142,12 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <ClerkProvider
-          localization={idID}
-          telemetry={false}
-          appearance={{
-            variables: {
-              fontFamily: "var(--font-geist-mono)",
-              colorPrimary: "var(--primary)",
-              fontSize: ".9rem",
-            },
-          }}
-        >
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <AppClerkProvider>
             {children}
             <Toaster />
-          </ThemeProvider>
-        </ClerkProvider>
+          </AppClerkProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -12,7 +12,7 @@ export function PdfToolsCrossNav({ currentHref }: { currentHref: string }) {
     <section aria-label="Alat PDF lainnya" className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-lg md:text-xl font-black tracking-tight">Alat PDF Lainnya</h2>
-        <Link href="/#tools" className="text-sm font-bold underline decoration-2 underline-offset-4 hover:text-[#ef3936] dark:hover:text-[#d9302d]">
+        <Link href="/#tools" className="text-sm font-bold underline decoration-2 underline-offset-4 hover:text-brand-red">
           Lihat semua
         </Link>
       </div>
@@ -25,7 +25,7 @@ export function PdfToolsCrossNav({ currentHref }: { currentHref: string }) {
               href={tool.href}
               className="group flex items-center gap-3 p-4 rounded-2xl border-2 border-foreground bg-background shadow-[3px_3px_0px_0px] shadow-foreground hover:translate-y-[1px] hover:shadow-[2px_2px_0px_0px] transition-all"
             >
-              <div className={`w-10 h-10 shrink-0 rounded-xl border-2 border-foreground flex items-center justify-center shadow-[2px_2px_0px_0px] shadow-foreground ${tool.accent === "red" ? "bg-[#ef3936] dark:bg-[#d9302d] text-white" : "bg-[#f68e51] dark:bg-[#d97941] text-black"}`}>
+              <div className={`w-10 h-10 shrink-0 rounded-xl border-2 border-foreground flex items-center justify-center shadow-[2px_2px_0px_0px] shadow-foreground ${tool.accent === "red" ? "bg-brand-red text-white" : "bg-brand-orange text-black"}`}>
                 <Icon className="w-5 h-5" />
               </div>
               <div className="min-w-0 flex-1">
