@@ -3,10 +3,10 @@
 import { deleteBlobFileAction, deleteProductAction, upsertProductAction } from "@/lib/actions/product";
 import { formatRupiah } from "@/lib/utils";
 import { Category, Order, Product, ProductSnapshot } from "@/types/global";
-import { columnFilteringFeature, ColumnFiltersState, columnVisibilityFeature, ColumnVisibilityState, createColumnHelper, createFilteredRowModel, createPaginatedRowModel, createSortedRowModel, filterFn_includesString, globalFilteringFeature, rowPaginationFeature, rowSortingFeature, sortFn_alphanumeric, sortFn_text, SortingState, tableFeatures, useTable } from "@tanstack/react-table";
+import { columnFilteringFeature, ColumnFiltersState, columnResizingFeature, columnSizingFeature, ColumnSizingState, columnVisibilityFeature, ColumnVisibilityState, createColumnHelper, createFilteredRowModel, createPaginatedRowModel, createSortedRowModel, filterFn_includesString, globalFilteringFeature, rowPaginationFeature, rowSortingFeature, sortFn_alphanumeric, sortFn_text, SortingState, tableFeatures, useTable } from "@tanstack/react-table";
 import { uploadPresigned } from "@vercel/blob/client";
 import { AlertCircleIcon, BadgeAlertIcon, BadgeCheckIcon, BadgeXIcon, ChevronDownIcon, ChevronFirstIcon, ChevronLastIcon, ChevronLeftIcon, ChevronRightIcon, ChevronsUpDownIcon, ChevronUpIcon, Columns3Icon, DownloadIcon, EyeIcon, FileTextIcon, GhostIcon, ImageIcon, MoreHorizontalIcon, PlusIcon, RefreshCcwIcon, Rows3Icon, SearchIcon, SlidersHorizontalIcon, SquarePenIcon, TagsIcon, Trash2Icon, UploadIcon } from "lucide-react";
-import { useActionState, useEffect, useMemo, useState, useTransition } from "react";
+import { useActionState, useEffect, useMemo, useState, useSyncExternalStore, useTransition } from "react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle } from "./ui/alert-dialog";
 import { Attachment, AttachmentContent, AttachmentDescription, AttachmentMedia, AttachmentTitle } from "./ui/attachment";
 import { Badge } from "./ui/badge";
@@ -43,6 +43,51 @@ const formatBytes = (bytes: number, decimals = 2) => {
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+};
+
+const COLUMN_SIZING_STORAGE_KEY = "civit:admin-products:column-sizing:v1";
+
+// Store kecil di luar React agar lebar kolom yang disimpan di localStorage bisa
+// dibaca dengan `useSyncExternalStore` (aman dari hydration mismatch).
+const EMPTY_COLUMN_SIZING: ColumnSizingState = {};
+let columnSizingSnapshot: ColumnSizingState = EMPTY_COLUMN_SIZING;
+let hasLoadedColumnSizing = false;
+const columnSizingListeners = new Set<() => void>();
+
+const readColumnSizing = (): ColumnSizingState => {
+  if (hasLoadedColumnSizing) return columnSizingSnapshot;
+  hasLoadedColumnSizing = true;
+  try {
+    const raw = window.localStorage.getItem(COLUMN_SIZING_STORAGE_KEY);
+    const parsed: unknown = raw ? JSON.parse(raw) : null;
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      columnSizingSnapshot = parsed as ColumnSizingState;
+    }
+  } catch {
+    // Data tersimpan rusak atau localStorage diblokir — pakai lebar default.
+  }
+  return columnSizingSnapshot;
+};
+
+const getColumnSizingSnapshot = () => readColumnSizing();
+const getColumnSizingServerSnapshot = () => EMPTY_COLUMN_SIZING;
+
+const subscribeColumnSizing = (listener: () => void) => {
+  columnSizingListeners.add(listener);
+  return () => {
+    columnSizingListeners.delete(listener);
+  };
+};
+
+const writeColumnSizing = (next: ColumnSizingState) => {
+  columnSizingSnapshot = next;
+  hasLoadedColumnSizing = true;
+  try {
+    window.localStorage.setItem(COLUMN_SIZING_STORAGE_KEY, JSON.stringify(next));
+  } catch {
+    // localStorage bisa diblokir; tabel tetap berfungsi selama sesi ini.
+  }
+  columnSizingListeners.forEach((listener) => listener());
 };
 
 export default function DashboardAdmin({ products, categories, orders, snapshots }: DashboardAdminProps) {
@@ -228,6 +273,8 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
     rowPaginationFeature,
     columnFilteringFeature,
     columnVisibilityFeature,
+    columnSizingFeature,
+    columnResizingFeature,
     globalFilteringFeature,
     sortedRowModel: createSortedRowModel(),
     paginatedRowModel: createPaginatedRowModel(),
@@ -250,9 +297,12 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
         header: () => <div className="text-center">#</div>,
         cell: ({ row }) => <div className="text-center font-mono text-sm text-muted-foreground">{row.index + 1}</div>,
         enableHiding: false,
+        enableResizing: false,
+        size: 40,
+        minSize: 40,
       }),
 
-      // 2. Kolom ID Produk (Opsional, disembunyikan jika memakan tempat)
+      // 2. Kolom ID Produk (Opsional, bisa disembunyikan lewat "Atur Tabel")
       columnHelper.accessor("id", {
         header: "ID Produk",
         cell: (info) => (
@@ -260,13 +310,18 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
             {info.getValue()}
           </span>
         ),
-        enableHiding: false,
+        enableHiding: true,
+        size: 104,
+        minSize: 88,
       }),
 
       // 3. Kolom Nama Produk + Deskripsi Singkat + Thumbnail + Kategori
       columnHelper.accessor("title", {
         id: "informasi_produk",
         header: "Informasi Produk",
+        size: 280,
+        minSize: 200,
+        maxSize: 720,
         cell: ({ row }) => {
           const product = row.original;
           return (
@@ -281,8 +336,8 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                 )}
               </div>
               {/* Teks Informasi */}
-              <div className="flex flex-col min-w-0 flex-1 max-w-[200px] sm:max-w-[280px] lg:max-w-none lg:w-full">
-                <span className="font-semibold text-foreground truncate" title={product.title}>
+              <div className="flex flex-col min-w-0 flex-1">
+                <span className="font-semibold text-foreground line-clamp-2 break-words leading-snug" title={product.title}>
                   {product.title}
                 </span>
                 <span className="text-xs text-muted-foreground truncate" title={product.short_desc}>
@@ -313,6 +368,8 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
       columnHelper.accessor("price", {
         id: "harga",
         header: "Harga",
+        size: 104,
+        minSize: 96,
         cell: (info) => (
           <div className="text-right font-mono text-sm font-medium">
             {formatRupiah(info.getValue())}
@@ -323,6 +380,8 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
       columnHelper.accessor(row => orderStats[row.id]?.success || 0, {
         id: "terjual",
         header: () => <BadgeCheckIcon className="text-success" />,
+        size: 64,
+        minSize: 56,
         cell: (info) => (
           <div className="flex flex-col text-center">
             <span className="text-xs text-muted-foreground">Laku:</span>
@@ -334,6 +393,8 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
       columnHelper.accessor(row => orderStats[row.id]?.pending || 0, {
         id: "menunggu",
         header: () => <BadgeAlertIcon className="text-warning" />,
+        size: 64,
+        minSize: 56,
         cell: (info) => (
           <div className="flex flex-col text-center">
             <span className="text-xs text-muted-foreground">Tunda:</span>
@@ -345,6 +406,8 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
       columnHelper.accessor(row => orderStats[row.id]?.failed || 0, {
         id: "gagal",
         header: () => <BadgeXIcon className="text-destructive" />,
+        size: 64,
+        minSize: 56,
         cell: (info) => (
           <div className="flex flex-col text-center">
             <span className="text-xs text-muted-foreground">Gagal:</span>
@@ -357,6 +420,8 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
       columnHelper.accessor("is_active", {
         id: "status",
         header: "Status",
+        size: 108,
+        minSize: 96,
         cell: (info) => {
           return info.getValue() ? (
             <Badge variant="secondary" className="whitespace-nowrap">
@@ -388,6 +453,9 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
       columnHelper.display({
         id: "actions",
         header: () => <div className="text-center">Aksi</div>,
+        size: 56,
+        minSize: 48,
+        enableResizing: false,
         cell: ({ row, table }) => {
           const product = row.original;
 
@@ -467,6 +535,21 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
     deskripsi: false,
     kategori: false,
   });
+  const columnSizing = useSyncExternalStore(
+    subscribeColumnSizing,
+    getColumnSizingSnapshot,
+    getColumnSizingServerSnapshot
+  );
+
+  const handleColumnSizingChange = (updater: ColumnSizingState | ((old: ColumnSizingState) => ColumnSizingState)) => {
+    // Selalu hitung dari snapshot terbaru agar drag yang beruntun tidak saling menimpa.
+    writeColumnSizing(typeof updater === "function" ? updater(readColumnSizing()) : updater);
+  };
+
+  const handleResetColumnSizing = () => {
+    writeColumnSizing({});
+    toast.add({ type: "success", description: "Lebar kolom dikembalikan ke pengaturan awal." });
+  };
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10,
@@ -491,18 +574,22 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
     columns,
     data: products || [],
     globalFilterFn: "includesString",
+    enableColumnResizing: true,
+    columnResizeMode: "onChange",
     state: {
       sorting,
       pagination,
       globalFilter,
       columnFilters,
       columnVisibility,
+      columnSizing,
     },
     onSortingChange: setSorting,
     onPaginationChange: setPagination,
     onGlobalFilterChange: setGlobalFilter,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
+    onColumnSizingChange: handleColumnSizingChange,
     autoResetPageIndex: true,
   }, (state) => state);
 
@@ -693,6 +780,15 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                           <RefreshCcwIcon />
                           Reset
                         </DropdownMenuItem>
+
+                        <div className="px-2 py-1.5 text-xs leading-snug text-muted-foreground">
+                          Tarik garis di tepi header untuk mengubah lebar kolom.
+                        </div>
+
+                        <DropdownMenuItem onClick={handleResetColumnSizing}>
+                          <Columns3Icon />
+                          Reset lebar kolom
+                        </DropdownMenuItem>
                       </DropdownMenuGroup>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -795,7 +891,10 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
             {
               // #region DATATABLE
               <div className="overflow-x-auto rounded-lg border">
-                <Table className="w-full min-w-[1100px]">
+                <Table
+                  className="w-full"
+                  style={{ minWidth: table.getTotalSize(), tableLayout: "fixed" }}
+                >
                   <TableHeader className="bg-muted">
                     {table.getHeaderGroups().map((headerGroup) => (
                       <TableRow key={headerGroup.id} className="*:border-border [&>:not(:last-child)]:border-r">
@@ -806,7 +905,8 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                             <TableHead
                               key={header.id}
                               onClick={header.column.getToggleSortingHandler()}
-                              className={`relative ${isActions ? "sticky right-0 bg-muted z-10" : "whitespace-nowrap"} ${isInfo ? "min-w-[320px]" : ""}`}
+                              style={{ width: header.getSize() }}
+                              className={`relative ${isActions ? "sticky right-0 bg-muted z-10" : "whitespace-nowrap"} ${isInfo ? "pr-4" : ""}`}
                             >
                               {header.column.getCanSort() ? (
                                 <Button variant="ghost" className="p-0 m-0 flex justify-between w-full">
@@ -833,6 +933,24 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                                 ? null
                                 : <table.FlexRender header={header} />
                               }
+
+                              {header.column.getCanResize() && (
+                                <div
+                                  role="separator"
+                                  aria-orientation="vertical"
+                                  aria-label={`Ubah lebar kolom ${header.column.id.replace(/_/g, " ")}`}
+                                  onMouseDown={(event) => {
+                                    event.stopPropagation();
+                                    header.getResizeHandler()(event);
+                                  }}
+                                  onTouchStart={(event) => {
+                                    event.stopPropagation();
+                                    header.getResizeHandler()(event);
+                                  }}
+                                  onClick={(event) => event.stopPropagation()}
+                                  className={`absolute top-0 right-0 z-20 h-full w-1.5 cursor-col-resize touch-none select-none transition-colors hover:bg-primary/60 ${header.column.getIsResizing() ? "bg-primary" : "bg-transparent"}`}
+                                />
+                              )}
                             </TableHead>
                           );
                         })}
@@ -849,7 +967,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                             return (
                               <TableCell
                                 key={cell.id}
-                                className={isActions ? "sticky right-0 z-10 bg-background" : isInfo ? "min-w-[320px]" : "whitespace-nowrap"}
+                                className={isActions ? "sticky right-0 z-10 bg-background" : isInfo ? "whitespace-normal" : "whitespace-nowrap"}
                               >
                                 <table.FlexRender cell={cell} />
                               </TableCell>
@@ -859,7 +977,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={columns.length} className="text-center">
+                        <TableCell colSpan={table.getVisibleLeafColumns().length} className="text-center">
                           <div className="flex flex-col items-center gap-2 opacity-50 py-10">
                             <GhostIcon className="size-20" />
                             <p className="font-medium italic">Belum ada produk!</p>
