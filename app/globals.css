@@ -168,3 +168,24 @@
 .cl-signUp-start .cl-headerSubtitle {
   display: none !important;
 }
+
+/* Scrollbar tipis untuk area menu di drawer mobile. */
+.civita-menu-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--muted-foreground) transparent;
+}
+
+.civita-menu-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.civita-menu-scroll::-webkit-scrollbar-track {
+  background: transparent;
+  border: 0;
+}
+
+.civita-menu-scroll::-webkit-scrollbar-thumb {
+  background: var(--muted-foreground);
+  border: 0;
+  border-radius: 9999px;
+}

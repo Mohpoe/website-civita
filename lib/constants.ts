@@ -40,3 +40,9 @@ export const ROUTES = {
     IMAGE_TO_PDF: "/image-to-pdf",
   },
 };
+
+/** Menu utama yang dipakai bersama oleh navbar desktop dan drawer mobile. */
+export const PUBLIC_NAV_LINKS = [
+  { label: "Beranda", href: ROUTES.ROOT },
+  { label: "Alat PDF", href: "/#tools" },
+] as const;

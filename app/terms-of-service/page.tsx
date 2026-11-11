@@ -1,7 +1,7 @@
 "use client";
 
 import { PublicFooter } from "@/components/public-footer";
-import { PublicMobileBottomBar, PublicNavigation } from "@/components/public-header";
+import { PublicNavigation } from "@/components/public-header";
 import { Button } from "@/components/ui/button";
 import { APP_CONFIG } from "@/lib/constants";
 import { motion } from "framer-motion";
@@ -9,7 +9,7 @@ import { FileText } from "lucide-react";
 
 export default function TermsOfServicePage() {
   return (
-    <div className="font-mono text-foreground antialiased min-h-screen bg-background pb-20 md:pb-0">
+    <div className="font-mono text-foreground antialiased min-h-screen bg-background">
       <style dangerouslySetInnerHTML={{
         __html: `
         :root { --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
@@ -17,7 +17,6 @@ export default function TermsOfServicePage() {
         `
       }} />
       <PublicNavigation />
-      <PublicMobileBottomBar />
 
       {/* Page Content */}
       <main className="pt-32 pb-24 px-6">

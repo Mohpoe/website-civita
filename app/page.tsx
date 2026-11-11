@@ -1,7 +1,7 @@
 "use client";
 
 import { PublicFooter } from "@/components/public-footer";
-import { PublicMobileBottomBar, PublicNavigation } from "@/components/public-header";
+import { PublicNavigation } from "@/components/public-header";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Separator } from "@/components/ui/separator";
@@ -641,7 +641,7 @@ const PricingPopup = () => {
 // #region App Wrapper
 export default function App() {
   return (
-    <div className="font-mono text-foreground antialiased selection:bg-brand-orange selection:text-black min-h-screen bg-background pb-20 md:pb-0 overflow-x-hidden">
+    <div className="font-mono text-foreground antialiased selection:bg-brand-orange selection:text-black min-h-screen bg-background overflow-x-hidden">
       <style dangerouslySetInnerHTML={{
         __html: `
         :root {
@@ -671,7 +671,6 @@ export default function App() {
       `}} />
 
       <PublicNavigation />
-      <PublicMobileBottomBar />
 
       <main>
         <Hero />

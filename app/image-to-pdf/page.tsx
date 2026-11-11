@@ -1,7 +1,7 @@
 "use client";
 
 import { PublicFooter } from "@/components/public-footer";
-import { PublicMobileBottomBar, PublicNavigation } from "@/components/public-header";
+import { PublicNavigation } from "@/components/public-header";
 import { PdfToolsCrossNav } from "@/components/pdf-tools-cross-nav";
 import DashboardImageToPdf from "@/components/image-to-pdf-tool";
 import { ROUTES } from "@/lib/constants";
@@ -9,7 +9,7 @@ import { ImagesIcon } from "lucide-react";
 
 export default function ImageToPdfPage() {
   return (
-    <div className="font-mono text-foreground antialiased min-h-screen bg-background pb-20 md:pb-0">
+    <div className="font-mono text-foreground antialiased min-h-screen bg-background">
       <style dangerouslySetInnerHTML={{
         __html: `
         :root { --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
@@ -17,7 +17,6 @@ export default function ImageToPdfPage() {
         `
       }} />
       <PublicNavigation />
-      <PublicMobileBottomBar />
       <main className="pt-32 pb-20 px-4 md:px-6">
         <div className="max-w-4xl mx-auto space-y-8">
           <div className="text-center space-y-4">

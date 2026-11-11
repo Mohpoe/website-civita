@@ -1,7 +1,7 @@
 "use client";
 
 import { PublicFooter } from "@/components/public-footer";
-import { PublicMobileBottomBar, PublicNavigation } from "@/components/public-header";
+import { PublicNavigation } from "@/components/public-header";
 import { PdfToolsCrossNav } from "@/components/pdf-tools-cross-nav";
 import DashboardPdfCompressor from "@/components/pdf-compressor-tool";
 import { ROUTES } from "@/lib/constants";
@@ -9,7 +9,7 @@ import { FileDownIcon } from "lucide-react";
 
 export default function PdfCompressorPage() {
   return (
-    <div className="font-mono text-foreground antialiased min-h-screen bg-background pb-20 md:pb-0">
+    <div className="font-mono text-foreground antialiased min-h-screen bg-background">
       <style dangerouslySetInnerHTML={{
         __html: `
         :root { --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
@@ -17,7 +17,6 @@ export default function PdfCompressorPage() {
         `
       }} />
       <PublicNavigation />
-      <PublicMobileBottomBar />
       <main className="pt-32 pb-20 px-4 md:px-6">
         <div className="max-w-4xl mx-auto space-y-8">
           <div className="text-center space-y-4">

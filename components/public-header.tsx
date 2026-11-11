@@ -3,47 +3,176 @@
 import { ModeToggle } from "@/components/theme-toggle-button";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { APP_CONFIG, ROUTES } from "@/lib/constants";
+import { APP_CONFIG, PUBLIC_NAV_LINKS, ROUTES } from "@/lib/constants";
 import { PDF_TOOLS } from "@/lib/pdf-tools";
 import { Show, SignInButton, SignUpButton } from "@clerk/nextjs";
 import { motion } from "framer-motion";
-import { ArrowRight, LayoutGrid } from "lucide-react";
+import { ArrowRight, Menu as MenuIcon, Monitor, Moon, Sun } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { SiWhatsapp } from "react-icons/si";
 
 const CONSULT_MESSAGE = "Halo admin CIVITA, saya ingin konsultasi terkait pembuatan CV yang ATS-friendly.";
 
-function PdfToolsSheetContent({ onNavigate }: { onNavigate?: () => void }) {
+const THEME_OPTIONS = [
+  { value: "light", label: "Terang", icon: Sun },
+  { value: "dark", label: "Gelap", icon: Moon },
+  { value: "system", label: "Sistem", icon: Monitor },
+] as const;
+
+function ThemeSelector() {
+  const { theme, setTheme } = useTheme();
+
   return (
-    <div className="px-4 pb-6 space-y-2 overflow-y-auto">
-      {PDF_TOOLS.map((tool) => {
-        const Icon = tool.icon;
-        return (
-          <Link
-            key={tool.id}
-            href={tool.href}
-            onClick={onNavigate}
-            className="flex items-center gap-3 p-3 rounded-2xl border-2 border-foreground bg-background shadow-[2px_2px_0px_0px] shadow-foreground active:translate-y-[1px] active:shadow-none transition-all"
-          >
-            <div className={`w-10 h-10 shrink-0 rounded-xl border-2 border-foreground flex items-center justify-center ${tool.accent === "red" ? "bg-brand-red text-white" : "bg-brand-orange text-black"}`}>
-              <Icon className="w-5 h-5" />
-            </div>
-            <div className="min-w-0">
-              <div className="font-black text-sm leading-tight">{tool.name}</div>
-              <div className="text-xs font-medium text-foreground/70 leading-snug mt-0.5">{tool.description}</div>
-            </div>
-          </Link>
-        );
-      })}
+    <div>
+      <p className="mb-2 px-1 text-[11px] font-black uppercase tracking-widest text-foreground/60">Tema</p>
+      <div className="grid grid-cols-3 gap-2">
+        {THEME_OPTIONS.map(({ value, label, icon: Icon }) => {
+          const active = theme === value;
+          return (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setTheme(value)}
+              aria-pressed={active}
+              className={`inline-flex h-10 items-center justify-center gap-1.5 rounded-xl border-2 border-foreground text-xs font-black transition-all ${active ? "bg-brand-orange text-black shadow-[2px_2px_0px_0px] shadow-foreground" : "bg-background text-foreground hover:bg-muted"}`}
+            >
+              <Icon className="h-4 w-4" />
+              {label}
+            </button>
+          );
+        })}
+      </div>
     </div>
+  );
+}
+
+function PublicMobileMenu() {
+  const [open, setOpen] = useState(false);
+  const closeMenu = () => setOpen(false);
+
+  useEffect(() => {
+    const desktopQuery = window.matchMedia("(min-width: 768px)");
+    const handleBreakpointChange = () => {
+      if (desktopQuery.matches) setOpen(false);
+    };
+
+    desktopQuery.addEventListener("change", handleBreakpointChange);
+    return () => desktopQuery.removeEventListener("change", handleBreakpointChange);
+  }, []);
+
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger
+        className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-full border-2 border-foreground bg-background shadow-[2px_2px_0px_0px] shadow-foreground active:translate-y-[1px] active:shadow-none transition-all"
+        aria-label="Buka menu navigasi"
+      >
+        <MenuIcon className="h-5 w-5" />
+      </SheetTrigger>
+      <SheetContent
+        side="right"
+        className="!w-[min(21rem,80vw)] gap-0 border-l-4 border-foreground bg-background p-0 shadow-[-6px_0px_0px_0px] shadow-foreground"
+      >
+        <SheetHeader className="border-b-4 border-foreground px-5 py-4 pr-14">
+          <SheetTitle className="text-xl font-black tracking-tight">Menu</SheetTitle>
+          <SheetDescription className="font-medium">Navigasi CIVITA.ID</SheetDescription>
+        </SheetHeader>
+
+        <div className="civita-menu-scroll flex-1 overflow-y-auto px-4 py-5">
+          <nav aria-label="Menu utama" className="space-y-2">
+            {PUBLIC_NAV_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={closeMenu}
+                className="flex items-center justify-between gap-3 rounded-2xl border-2 border-foreground bg-background px-4 py-3 font-black shadow-[2px_2px_0px_0px] shadow-foreground transition-all active:translate-y-[1px] active:shadow-none"
+              >
+                {link.label}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            ))}
+          </nav>
+
+          <div className="mt-6">
+            <p className="mb-2 px-1 text-[11px] font-black uppercase tracking-widest text-foreground/60">Alat PDF Gratis</p>
+            <div className="space-y-2">
+              {PDF_TOOLS.map((tool) => {
+                const Icon = tool.icon;
+                return (
+                  <Link
+                    key={tool.id}
+                    href={tool.href}
+                    onClick={closeMenu}
+                    className="flex items-center gap-3 rounded-2xl border-2 border-foreground bg-background p-2.5 shadow-[2px_2px_0px_0px] shadow-foreground transition-all active:translate-y-[1px] active:shadow-none"
+                  >
+                    <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-foreground ${tool.accent === "red" ? "bg-brand-red text-white" : "bg-brand-orange text-black"}`}>
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-black leading-tight">{tool.name}</div>
+                      <div className="mt-0.5 text-xs font-medium text-foreground/70">{tool.shortName}</div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-3 border-t-4 border-foreground p-4">
+          <Show when="signed-out">
+            <div className="grid grid-cols-2 gap-2">
+              <SignInButton mode="modal" fallbackRedirectUrl={ROUTES.DASHBOARD.HOME}>
+                <Button
+                  variant="outline"
+                  onClick={closeMenu}
+                  className="h-11 rounded-xl border-2 border-foreground font-bold shadow-[2px_2px_0px_0px] shadow-foreground"
+                >
+                  Masuk
+                </Button>
+              </SignInButton>
+              <SignUpButton mode="modal" fallbackRedirectUrl={ROUTES.DASHBOARD.HOME}>
+                <Button
+                  onClick={closeMenu}
+                  className="h-11 rounded-xl bg-brand-orange text-black border-2 border-foreground font-bold shadow-[2px_2px_0px_0px] shadow-foreground"
+                >
+                  Daftar
+                </Button>
+              </SignUpButton>
+            </div>
+          </Show>
+          <Show when="signed-in">
+            <Link
+              href={ROUTES.DASHBOARD.HOME}
+              onClick={closeMenu}
+              className={buttonVariants({ className: "h-11 w-full !rounded-xl !border-2 !border-foreground !bg-brand-orange !text-black font-bold shadow-[2px_2px_0px_0px] shadow-foreground" })}
+            >
+              Dashboard
+            </Link>
+          </Show>
+
+          <Button
+            onClick={() => {
+              closeMenu();
+              window.open(APP_CONFIG.LINKS.WHATSAPP_CHAT(CONSULT_MESSAGE), "_blank");
+            }}
+            className="h-11 w-full rounded-xl bg-brand-red text-white border-2 border-foreground font-bold shadow-[2px_2px_0px_0px] shadow-foreground"
+          >
+            <SiWhatsapp className="mr-2 h-4 w-4" />
+            Konsultasi via WhatsApp
+          </Button>
+
+          <ThemeSelector />
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }
 
 export function PublicNavigation() {
   const [scrolled, setScrolled] = useState(false);
-  const [toolsOpen, setToolsOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -81,12 +210,17 @@ export function PublicNavigation() {
         </Link>
 
         <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 min-w-0">
-          <Link
-            href="/#tools"
-            className="hidden md:inline-flex items-center h-10 px-4 font-bold rounded-full border-2 border-foreground bg-background shadow-[2px_2px_0px_0px] shadow-foreground hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px] transition-all text-sm whitespace-nowrap"
-          >
-            Alat PDF
-          </Link>
+          <nav aria-label="Menu utama" className="hidden md:flex items-center gap-1.5">
+            {PUBLIC_NAV_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="inline-flex items-center h-10 px-4 font-bold rounded-full border-2 border-foreground bg-background shadow-[2px_2px_0px_0px] shadow-foreground hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px] transition-all text-sm whitespace-nowrap"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
 
           <div className="hidden md:flex items-center gap-2 lg:gap-3">
             <Show when="signed-out">
@@ -115,69 +249,13 @@ export function PublicNavigation() {
             <span className="hidden lg:inline-flex items-center">Konsultasi <ArrowRight className="w-4 h-4 ml-2" /></span>
           </Button>
 
-          <Sheet open={toolsOpen} onOpenChange={setToolsOpen}>
-            <SheetTrigger className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-full border-2 border-foreground bg-background shadow-[2px_2px_0px_0px] shadow-foreground active:translate-y-[1px] active:shadow-none transition-all" aria-label="Buka alat PDF">
-              <LayoutGrid className="w-5 h-5" />
-            </SheetTrigger>
-            <SheetContent side="bottom" className="rounded-t-[1.5rem] border-t-4 border-x-4 border-foreground max-h-[85vh]">
-              <SheetHeader className="pr-10">
-                <SheetTitle className="font-black text-xl">Alat PDF Gratis</SheetTitle>
-                <SheetDescription className="font-medium">Lengkapi berkas lamaran kerja Anda. Gratis, diproses langsung di browser.</SheetDescription>
-              </SheetHeader>
-              <PdfToolsSheetContent onNavigate={() => setToolsOpen(false)} />
-            </SheetContent>
-          </Sheet>
+          <div className="hidden md:block">
+            <ModeToggle />
+          </div>
 
-          <ModeToggle />
+          <PublicMobileMenu />
         </div>
       </div>
     </motion.header>
-  );
-}
-
-export function PublicMobileBottomBar() {
-  const [toolsOpen, setToolsOpen] = useState(false);
-
-  return (
-    <>
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[60] bg-background border-t-4 border-foreground p-2.5 flex items-center gap-2 shadow-[0px_-4px_0px_0px] shadow-foreground">
-        <Sheet open={toolsOpen} onOpenChange={setToolsOpen}>
-          <SheetTrigger className="flex-none flex flex-col items-center justify-center w-14 h-12 rounded-2xl border-2 border-foreground bg-muted font-bold shadow-[2px_2px_0px_0px] shadow-foreground active:translate-y-[1px] active:shadow-none transition-all" aria-label="Alat PDF">
-            <LayoutGrid className="w-5 h-5" />
-            <span className="text-[10px] leading-none mt-0.5 font-black">Alat</span>
-          </SheetTrigger>
-          <SheetContent side="bottom" className="rounded-t-[1.5rem] border-t-4 border-x-4 border-foreground max-h-[85vh]">
-            <SheetHeader className="pr-10">
-              <SheetTitle className="font-black text-xl">Alat PDF Gratis</SheetTitle>
-              <SheetDescription className="font-medium">Lengkapi berkas lamaran kerja Anda. Gratis, diproses langsung di browser.</SheetDescription>
-            </SheetHeader>
-            <PdfToolsSheetContent onNavigate={() => setToolsOpen(false)} />
-          </SheetContent>
-        </Sheet>
-
-        <Show when="signed-out">
-          <SignInButton mode="modal" fallbackRedirectUrl={ROUTES.DASHBOARD.HOME}>
-            <Button variant="outline" className="flex-1 h-12 rounded-2xl border-2 border-foreground font-bold text-sm shadow-[2px_2px_0px_0px] shadow-foreground active:translate-y-1 active:shadow-none transition-all px-2">
-              Masuk
-            </Button>
-          </SignInButton>
-          <SignUpButton mode="modal" fallbackRedirectUrl={ROUTES.DASHBOARD.HOME}>
-            <Button className="flex-1 h-12 rounded-2xl border-2 border-foreground bg-brand-orange text-black font-bold text-sm shadow-[2px_2px_0px_0px] shadow-foreground active:translate-y-1 active:shadow-none transition-all px-2">
-              Daftar
-            </Button>
-          </SignUpButton>
-        </Show>
-
-        <Show when="signed-in">
-          <Link href={ROUTES.DASHBOARD.HOME} className={buttonVariants({ className: "flex-1 h-12 !rounded-2xl !border-2 font-bold text-sm !border-foreground shadow-[2px_2px_0px_0px] shadow-foreground active:translate-y-1 active:shadow-none transition-all !bg-brand-orange !text-black px-2" })}>
-            Dashboard
-          </Link>
-        </Show>
-
-        <Button onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP_CHAT(CONSULT_MESSAGE), "_blank")} className="flex-none w-14 h-12 rounded-2xl bg-brand-red text-white border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground active:translate-y-1 active:shadow-none transition-all p-0" aria-label="Konsultasi WhatsApp">
-          <SiWhatsapp className="w-5 h-5" />
-        </Button>
-      </div>
-    </>
   );
 }
