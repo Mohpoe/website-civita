@@ -2,6 +2,7 @@
 
 import { civitaLocalization, getCivitaClerkAppearance } from "@/lib/clerk-appearance";
 import { ClerkProvider } from "@clerk/nextjs";
+import { ui } from "@clerk/ui";
 import { useTheme } from "next-themes";
 import { useMemo } from "react";
 
@@ -21,6 +22,7 @@ export function AppClerkProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <ClerkProvider
+      ui={ui}
       localization={civitaLocalization}
       telemetry={false}
       appearance={appearance}
