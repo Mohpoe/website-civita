@@ -125,6 +125,9 @@ export function getCivitaClerkAppearance(isDark: boolean): ClerkAppearanceTheme 
         border: `3px solid ${border}`,
         borderRadius: "2rem",
         boxShadow: `8px 8px 0px 0px ${border}`,
+        // UserProfile memakai tinggi tetap 44rem dari Clerk; batasi agar kartu
+        // tidak meluber ke bawah dan tetap punya jarak simetris di viewport pendek.
+        maxHeight: "100%",
         overflow: "hidden",
       },
       card: {
@@ -313,6 +316,9 @@ export function getCivitaClerkAppearance(isDark: boolean): ClerkAppearanceTheme 
       navbar: {
         backgroundColor: muted,
         borderRight: `2px solid ${border}`,
+        // Clerk menarik navbar 8px ke kanan sehingga sudut panel konten
+        // menimpa garis pemisah. Hilangkan overlap agar garisnya lurus.
+        marginInlineEnd: 0,
         padding: "0.75rem",
       },
       navbarButton: {

@@ -128,7 +128,7 @@ function PublicMobileMenu() {
                 <Button
                   variant="outline"
                   onClick={closeMenu}
-                  className="h-11 rounded-xl border-2 border-foreground font-bold shadow-[2px_2px_0px_0px] shadow-foreground"
+                  className="h-11 rounded-xl border-2 border-foreground font-bold shadow-[2px_2px_0px_0px] shadow-foreground dark:!border-foreground dark:!bg-background dark:hover:!bg-muted"
                 >
                   Masuk
                 </Button>
@@ -225,7 +225,7 @@ export function PublicNavigation() {
           <div className="hidden md:flex items-center gap-2 lg:gap-3">
             <Show when="signed-out">
               <SignInButton mode="modal" fallbackRedirectUrl={ROUTES.DASHBOARD.HOME}>
-                <Button variant="outline" className="h-10 px-4 lg:px-5 font-bold rounded-full border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px] transition-all">
+                <Button variant="outline" className="h-10 px-4 lg:px-5 font-bold rounded-full border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px] transition-all dark:!border-foreground dark:!bg-background dark:hover:!bg-muted">
                   Masuk
                 </Button>
               </SignInButton>
