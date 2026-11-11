@@ -381,15 +381,17 @@ const PortfolioShowcase = () => {
         </div>
 
         <div className="flex justify-center mb-14">
-          <div className="bg-background border-4 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground p-1.5 rounded-full flex gap-2 overflow-x-auto max-w-full [&::-webkit-scrollbar]:hidden">
+          <div className="bg-background border-4 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground p-1.5 rounded-[2rem] sm:rounded-full flex flex-wrap justify-center gap-2 max-w-full">
             {tabs.map((tab) => (
               <button
                 key={tab}
+                type="button"
+                aria-pressed={activeTab === tab}
                 onClick={() => setActiveTab(tab)}
-                className={`relative px-6 py-2.5 rounded-full text-sm font-black transition-all duration-300 whitespace-nowrap ${activeTab === tab ? "text-background bg-foreground" : "text-foreground hover:bg-muted-foreground/50"}`}
+                className={`relative px-4 sm:px-6 py-2.5 rounded-full text-sm font-black transition-colors duration-300 whitespace-nowrap ${activeTab === tab ? "text-white" : "text-foreground hover:bg-muted"}`}
               >
                 {activeTab === tab && (
-                  <motion.div layoutId="portfolioTab" className="absolute inset-0 bg-brand-red border-2 border-foreground rounded-full -z-10 shadow-[2px_2px_0px_0px] shadow-foreground" />
+                  <motion.div layoutId="portfolioTab" className="absolute inset-0 z-0 bg-brand-red border-2 border-foreground rounded-full shadow-[2px_2px_0px_0px] shadow-foreground" />
                 )}
                 <span className="relative z-10">{tab}</span>
               </button>
@@ -409,11 +411,11 @@ const PortfolioShowcase = () => {
                 transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                 className="group flex flex-col gap-5"
               >
-                <div className="relative bg-background rounded-[2rem] p-4 border-4 border-foreground shadow-[6px_6px_0px_0px] shadow-foreground hover:shadow-[10px_10px_0px_0px] transition-all duration-500 hover:-translate-y-2">
-                  <div className="absolute top-6 right-6 bg-brand-orange text-black text-xs font-black px-4 py-2 rounded-full uppercase tracking-wider z-10 border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground">
+                <div className="relative bg-background rounded-[2rem] p-3 border-4 border-foreground shadow-[6px_6px_0px_0px] shadow-foreground hover:shadow-[10px_10px_0px_0px] transition-all duration-500 hover:-translate-y-2">
+                  <div className="absolute top-5 right-5 bg-brand-orange text-black text-xs font-black px-4 py-2 rounded-full uppercase tracking-wider z-10 shadow-[2px_2px_0px_0px] shadow-foreground">
                     {item.type}
                   </div>
-                  <div className="relative w-full aspect-[1/1.4] rounded-xl overflow-hidden bg-muted group-hover:scale-[1.02] transition-transform duration-500 ease-out border-2 border-foreground">
+                  <div className="relative w-full aspect-[1/1.4] rounded-xl overflow-hidden bg-muted group-hover:scale-[1.02] transition-transform duration-500 ease-out">
                     <img src={item.imageSrc} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
                   </div>
                 </div>
@@ -510,8 +512,8 @@ const TestimonialChatVariant = () => {
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className="hidden md:flex -left-16 w-14 h-14 bg-brand-orange text-black border-4 !border-foreground rounded-full shadow-[4px_4px_0px_0px] shadow-foreground hover:bg-brand-orange hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px] transition-all" />
-        <CarouselNext className="hidden md:flex -right-16 w-14 h-14 bg-brand-orange text-black border-4 !border-foreground rounded-full shadow-[4px_4px_0px_0px] shadow-foreground hover:bg-brand-orange hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px] transition-all" />
+        <CarouselPrevious className="hidden md:flex -left-16 w-14 h-14 bg-brand-orange text-black border-4 !border-foreground rounded-full shadow-[4px_4px_0px_0px] shadow-foreground hover:bg-brand-orange hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px] transition-all dark:!bg-brand-orange dark:!text-black dark:hover:!bg-brand-orange" />
+        <CarouselNext className="hidden md:flex -right-16 w-14 h-14 bg-brand-orange text-black border-4 !border-foreground rounded-full shadow-[4px_4px_0px_0px] shadow-foreground hover:bg-brand-orange hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px] transition-all dark:!bg-brand-orange dark:!text-black dark:hover:!bg-brand-orange" />
       </Carousel>
     </motion.div>
   );
@@ -531,13 +533,13 @@ const Testimonials = () => {
         </div>
 
         <div className="flex justify-center mb-14">
-          <div className="bg-background border-4 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground p-1.5 rounded-full flex gap-2">
-            <button onClick={() => setActiveVariant("text")} className={`relative px-8 py-3 rounded-full text-sm font-black transition-all duration-300 ${activeVariant === "text" ? "text-background bg-foreground" : "text-foreground hover:bg-muted-foreground/50"}`}>
-              {activeVariant === "text" && <motion.div layoutId="testiPill" className="absolute inset-0 bg-brand-red border-2 border-foreground rounded-full -z-10 shadow-[2px_2px_0px_0px] shadow-foreground" />}
+          <div className="bg-background border-4 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground p-1.5 rounded-full flex gap-1.5 sm:gap-2 max-w-full">
+            <button type="button" aria-pressed={activeVariant === "text"} onClick={() => setActiveVariant("text")} className={`relative px-5 sm:px-8 py-3 rounded-full text-xs sm:text-sm font-black transition-colors duration-300 whitespace-nowrap ${activeVariant === "text" ? "text-white" : "text-foreground hover:bg-muted"}`}>
+              {activeVariant === "text" && <motion.div layoutId="testiPill" className="absolute inset-0 z-0 bg-brand-red border-2 border-foreground rounded-full shadow-[2px_2px_0px_0px] shadow-foreground" />}
               <span className="relative z-10">Review Teks</span>
             </button>
-            <button onClick={() => setActiveVariant("chat")} className={`relative px-8 py-3 rounded-full text-sm font-black transition-all duration-300 ${activeVariant === "chat" ? "text-background bg-foreground" : "text-foreground hover:bg-muted-foreground/50"}`}>
-              {activeVariant === "chat" && <motion.div layoutId="testiPill" className="absolute inset-0 bg-brand-red border-2 border-foreground rounded-full -z-10 shadow-[2px_2px_0px_0px] shadow-foreground" />}
+            <button type="button" aria-pressed={activeVariant === "chat"} onClick={() => setActiveVariant("chat")} className={`relative px-5 sm:px-8 py-3 rounded-full text-xs sm:text-sm font-black transition-colors duration-300 whitespace-nowrap ${activeVariant === "chat" ? "text-white" : "text-foreground hover:bg-muted"}`}>
+              {activeVariant === "chat" && <motion.div layoutId="testiPill" className="absolute inset-0 z-0 bg-brand-red border-2 border-foreground rounded-full shadow-[2px_2px_0px_0px] shadow-foreground" />}
               <span className="relative z-10">Testimoni WA</span>
             </button>
           </div>
@@ -615,20 +617,20 @@ const PricingPopup = () => {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 30, scale: 0.95, filter: "blur(5px)" }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="fixed bottom-24 md:bottom-10 left-1/2 -translate-x-1/2 md:translate-x-0 md:left-10 z-[40] flex items-center gap-4 p-3 pr-4 bg-background border-4 border-foreground rounded-full w-max max-w-[90vw]"
+          className="fixed bottom-4 md:bottom-10 left-1/2 -translate-x-1/2 md:translate-x-0 md:left-10 z-[40] flex items-center gap-3 sm:gap-4 p-2.5 pr-3 sm:p-3 sm:pr-4 bg-background border-4 border-foreground rounded-full w-max max-w-[calc(100vw-2rem)]"
         >
-          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-brand-orange text-black border-2 border-foreground shrink-0">
-            <Sparkles className="w-6 h-6" />
+          <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-brand-orange text-black border-2 border-foreground shrink-0">
+            <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
-          <div className="flex flex-col mr-3">
+          <div className="flex flex-col mr-2 sm:mr-3">
             <span className="text-[11px] font-black tracking-wider text-muted-foreground uppercase leading-none mb-1.5">
               Harga Terjangkau
             </span>
-            <span className="text-base font-bold text-foreground leading-none">
+            <span className="text-sm sm:text-base font-bold text-foreground leading-none">
               Harga mulai dari <strong className="font-black text-brand-red border-b-2 border-foreground">13K</strong> aja!
             </span>
           </div>
-          <button onClick={() => setIsVisible(false)} className="p-2 bg-muted border-2 border-transparent hover:border-foreground rounded-full transition-all ml-1 active:translate-y-1">
+          <button type="button" aria-label="Tutup info harga" onClick={() => setIsVisible(false)} className="p-2 bg-muted border-2 border-transparent hover:border-foreground rounded-full transition-all ml-1 active:translate-y-1">
             <XIcon className="w-5 h-5 text-foreground" />
           </button>
         </motion.div>
@@ -657,13 +659,13 @@ export default function App() {
           width: 14px;
         }
         ::-webkit-scrollbar-track {
-          background: hsl(var(--background));
-          border-left: 4px solid hsl(var(--foreground));
+          background: var(--background);
+          border-left: 4px solid var(--foreground);
         }
         ::-webkit-scrollbar-thumb {
           background: var(--brand-red);
-          border-left: 4px solid hsl(var(--foreground));
-          border-bottom: 4px solid hsl(var(--foreground));
+          border-left: 4px solid var(--foreground);
+          border-bottom: 4px solid var(--foreground);
         }
         ::-webkit-scrollbar-thumb:hover {
           background: var(--brand-orange);
