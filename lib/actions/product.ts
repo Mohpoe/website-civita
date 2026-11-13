@@ -1,7 +1,7 @@
 "use server";
 
 import { ROUTES } from "@/lib/constants";
-import { sql } from "@/lib/utils";
+import { isSupportedThumbnail, sanitizeFileName, sql } from "@/lib/utils";
 import { productSchema } from "@/lib/zod-schemas";
 import { Product } from "@/types/global";
 import { auth, currentUser } from "@clerk/nextjs/server";
@@ -69,9 +69,10 @@ export async function upsertProductAction(state: any, formData: FormData) {
   let finalImageUrl = oldImageUrl || "";
 
   if (imageFile && imageFile.size > 0) {
+    if (!isSupportedThumbnail(imageFile)) return { success: false, message: "Format gambar tidak didukung. Gunakan JPG, PNG, WebP, atau AVIF." };
     if (imageFile.size > 4 * 1024 * 1024) return { success: false, message: "Ukuran gambar melebihi 4MB!" };
     try {
-      const blob = await putImage(`thumbnails/${imageFile.name}`, imageFile, {
+      const blob = await putImage(`thumbnails/${sanitizeFileName(imageFile.name)}`, imageFile, {
         access: "public",
         optimizeImage: { width: 500 },
         addRandomSuffix: true,
@@ -85,6 +86,21 @@ export async function upsertProductAction(state: any, formData: FormData) {
     }
   }
   // #endregion
+
+  // Hapus thumbnail baru yang gagal dipakai (validasi gagal / DB error) agar tidak yatim
+  const deleteUnusedThumbnail = async () => {
+    if (!finalImageUrl || finalImageUrl === oldImageUrl) return;
+
+    try {
+      await del(finalImageUrl, {
+        storeId: process.env.PUBLIC_BLOB_STORE_ID,
+        oidcToken: process.env.VERCEL_OIDC_TOKEN,
+      });
+      console.log("Thumbnail yatim berhasil dihapus.");
+    } catch (error) {
+      console.error("Gagal menghapus thumbnail yatim:", error);
+    }
+  };
 
   // #region - File Handler (hanya tentukan finalFileUrl, jangan hapus lama sebelum DB sukses)
   const oldFileUrl = formData.get("oldFileUrl") as string | null;
@@ -106,12 +122,14 @@ export async function upsertProductAction(state: any, formData: FormData) {
   const validated = productSchema.safeParse(rawData);
 
   if (!validated.success) {
+    await deleteUnusedThumbnail();
     const errorMessages = validated.error.issues.map(err => err.message).join(", ");
     return { success: false, message: `Validasi gagal: ${errorMessages}` };
   }
 
   const { title, price, isActive, categoryId, shortDesc, longDesc, imageUrl, fileUrl, features } = validated.data;
   const featuresJson = JSON.stringify(features);
+  let productSaved = false;
 
   try {
     if (id) {
@@ -142,6 +160,8 @@ export async function upsertProductAction(state: any, formData: FormData) {
         )
       `;
     }
+
+    productSaved = true;
 
     // #region - Hapus file lama hanya setelah berhasil disimpan ke database
     // Hapus thumbnail lama jika diganti
@@ -177,6 +197,7 @@ export async function upsertProductAction(state: any, formData: FormData) {
     return { success: true, message: "Data produk berhasil disimpan!" };
   } catch (error: any) {
     console.error("Error upserting product:", error);
+    if (!productSaved) await deleteUnusedThumbnail();
     return { success: false, message: "Gagal menyimpan produk. Hubungi developer." };
   }
 }

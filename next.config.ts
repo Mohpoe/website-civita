@@ -1,6 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    serverActions: {
+      // Thumbnail produk dikirim lewat Server Action (maks. 4MB di UI),
+      // sementara batas default Next.js hanya 1MB.
+      bodySizeLimit: "5mb",
+    },
+  },
   images: {
     remotePatterns: [
       {

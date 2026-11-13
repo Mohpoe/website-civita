@@ -1,7 +1,7 @@
 "use client";
 
 import { deleteBlobFileAction, deleteProductAction, upsertProductAction } from "@/lib/actions/product";
-import { formatRupiah } from "@/lib/utils";
+import { formatRupiah, isSupportedThumbnail, sanitizeFileName } from "@/lib/utils";
 import { Category, Order, Product, ProductSnapshot } from "@/types/global";
 import { columnFilteringFeature, ColumnFiltersState, columnResizingFeature, columnSizingFeature, ColumnSizingState, columnVisibilityFeature, ColumnVisibilityState, createColumnHelper, createFilteredRowModel, createPaginatedRowModel, createSortedRowModel, filterFn_includesString, globalFilteringFeature, rowPaginationFeature, rowSortingFeature, sortFn_alphanumeric, sortFn_text, SortingState, tableFeatures, useTable } from "@tanstack/react-table";
 import { uploadPresigned } from "@vercel/blob/client";
@@ -126,6 +126,12 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
     features: "",
   });
   const [formError, setFormError] = useState<string | null>(null);
+  // Lepaskan object URL preview lama supaya memori tidak bocor saat ganti thumbnail/dialog ditutup
+  useEffect(() => {
+    return () => {
+      if (imagePreview?.startsWith("blob:")) URL.revokeObjectURL(imagePreview);
+    };
+  }, [imagePreview]);
   // 1. Trigger untuk Tambah Produk
   const handleCreate = () => {
     setProductToUpdate(null);
@@ -1181,11 +1187,21 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                               id="imageFile"
                               name="imageFile"
                               type="file"
-                              accept="image/*"
+                              accept="image/jpeg,image/png,image/webp,image/avif"
                               className="sr-only"
                               onChange={(e) => {
                                 const file = e.target.files?.[0];
                                 if (file) {
+                                  if (!isSupportedThumbnail(file)) {
+                                    toast.add({
+                                      type: "error",
+                                      description: "Format gambar tidak didukung. Gunakan JPG, PNG, WebP, atau AVIF.",
+                                      priority: "high",
+                                    });
+                                    e.target.value = "";
+                                    return;
+                                  }
+
                                   if (file.size > 4 * 1024 * 1024) {
                                     toast.add({
                                       type: "error",
@@ -1204,6 +1220,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                           </div>
                           <p className="text-xs text-muted-foreground">
                             Rekomendasi rasio 1:1. <br />
+                            Format JPG, PNG, WebP, atau AVIF. <br />
                             Ukuran maksimal 4MB.
                           </p>
                         </div>
@@ -1427,7 +1444,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
 
                                 try {
                                   // PROSES CLIENT UPLOAD LANGSUNG KE VERCEL
-                                  const newBlob = await uploadPresigned(`products/${file.name}`, file, {
+                                  const newBlob = await uploadPresigned(`products/${sanitizeFileName(file.name)}`, file, {
                                     access: "private",
                                     handleUploadUrl: "/api/upload",
                                     onUploadProgress: (progressEvent) => {

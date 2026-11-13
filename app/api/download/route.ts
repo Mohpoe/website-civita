@@ -13,6 +13,22 @@ export const dynamic = 'force-dynamic';
 const RATE_LIMIT_WINDOW = 60; // 1 menit dalam detik
 const MAX_REQUESTS_PER_WINDOW = 10; // Maksimal 10 download per menit per user
 
+/**
+ * Bangun nama file unduhan dari judul produk + ekstensi asli di pathname blob.
+ * `lastIndexOf('.')` bisa -1 untuk file tanpa ekstensi, jadi ekstensi diambil
+ * dari basename dan hanya dipakai jika bentuknya valid. Ekstensi gabungan
+ * seperti `.tar.gz` tetap dipertahankan.
+ */
+const getDownloadFileName = (fileUrl: string, title: string | null | undefined) => {
+  const pathname = new URL(fileUrl).pathname;
+  const slashIndex = pathname.lastIndexOf('/');
+  const basename = pathname.substring(slashIndex + 1);
+  const extensionMatch = basename.match(/\.(tar\.(gz|bz2|xz)|[a-zA-Z0-9]+)$/i);
+  const safeExtension = extensionMatch ? extensionMatch[0].toLowerCase() : '';
+  const safeProductName = (title || "Produk_Digital_CIVITA").replace(/[^a-zA-Z0-9]/g, '_');
+  return `${safeProductName}${safeExtension}`;
+};
+
 // Inisialisasi Upstash Redis jika variabel lingkungan tersedia
 let redis: any = null;
 try {
@@ -76,10 +92,7 @@ export async function GET(req: Request) {
         return new Response("File produk tidak ditemukan", { status: 404 });
       }
 
-      const originalExtension = new URL(rows[0].file_url).pathname.substring(new URL(rows[0].file_url).pathname.lastIndexOf('.'));
-      const rawTitle = rows[0].title || "Produk_Digital_CIVITA";
-      const safeProductName = rawTitle.replace(/[^a-zA-Z0-9]/g, '_');
-      const fileName = `${safeProductName}${originalExtension}`;
+      const fileName = getDownloadFileName(rows[0].file_url, rows[0].title);
 
       // Gunakan SDK @vercel/blob get() untuk akses private blob yang benar
       // (Sama seperti jalur user, menghindari masalah fetch manual dengan Bearer token)
@@ -153,10 +166,7 @@ export async function GET(req: Request) {
       return new NextResponse("File tidak ditemukan di penyimpanan server", { status: 404 });
     }
 
-    const originalExtension = new URL(fileUrl).pathname.substring(new URL(fileUrl).pathname.lastIndexOf('.'));
-    const rawTitle = order.product?.title || "Produk_Digital_CIVITA";
-    const safeProductName = rawTitle.replace(/[^a-zA-Z0-9]/g, '_');
-    const fileName = `${safeProductName}${originalExtension}`;
+    const fileName = getDownloadFileName(fileUrl, order.product?.title);
 
     return new NextResponse(result.stream as any, {
       headers: {
