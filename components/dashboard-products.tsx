@@ -255,6 +255,17 @@ export default function DashboardProducts({ products, categories, orders }: Dash
     return [];
   }, [selectedProduct?.features]);
 
+  // Pisahkan deskripsi menjadi paragraf berdasarkan baris kosong.
+  // Newline tunggal di dalam paragraf tetap dipertahankan lewat `whitespace-pre-line`.
+  const descriptionParagraphs = useMemo(() => {
+    const raw = selectedProduct?.long_desc ?? "";
+    return raw
+      .replace(/\r\n/g, "\n")
+      .split(/\n{2,}/)
+      .map((paragraph) => paragraph.trim())
+      .filter((paragraph) => paragraph.length > 0);
+  }, [selectedProduct?.long_desc]);
+
   const activeDialogTheme = NEO_COLORS[selectedColorIdx];
   const dialogStyleProps = {
     "--bg-light": activeDialogTheme.light,
@@ -664,13 +675,17 @@ export default function DashboardProducts({ products, categories, orders }: Dash
                 </div>
 
                 {/* Area Deskripsi Panjang */}
-                {selectedProduct?.long_desc && (
+                {descriptionParagraphs.length > 0 && (
                   <div className="p-5 rounded-2xl border-2 border-dashed border-border relative group bg-[var(--bg-light)]/10 dark:bg-[var(--bg-dark)]/10">
                     <div className="absolute top-0 right-0 p-4 opacity-5 transition-transform group-hover:scale-125 group-hover:rotate-6 duration-300">
                       <PackageSearchIcon className="w-24 h-24" />
                     </div>
                     <h4 className="text-sm font-bold uppercase tracking-wider mb-2 text-foreground/70">Deskripsi Lengkap</h4>
-                    <p className="text-foreground/80 text-sm leading-relaxed">{selectedProduct?.long_desc}</p>
+                    <div className="relative space-y-3 text-foreground/80 text-sm leading-relaxed">
+                      {descriptionParagraphs.map((paragraph, index) => (
+                        <p key={index} className="whitespace-pre-line break-words">{paragraph}</p>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
