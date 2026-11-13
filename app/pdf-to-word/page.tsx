@@ -9,14 +9,14 @@ import { APP_CONFIG, ROUTES } from "@/lib/constants";
 export const metadata: Metadata = {
   title: `PDF ke Word — Konversi PDF ke DOCX | ${APP_CONFIG.NAME}`,
   description:
-    "Ubah PDF menjadi dokumen Word (.docx) yang bisa diedit. Cocok untuk CV, surat lamaran, dan dokumen kerja. Gratis untuk tamu, kuota lebih besar untuk anggota dan pembeli.",
+    "Ubah PDF menjadi dokumen Word yang bisa diedit. Cocok untuk CV, surat lamaran, dan dokumen kerja.",
   alternates: {
     canonical: `${APP_CONFIG.URL}${ROUTES.PDF_TOOLS.PDF_TO_WORD}`,
   },
   openGraph: {
     title: `PDF ke Word | ${APP_CONFIG.NAME}`,
     description:
-      "Konversi PDF ke Word yang rapi dan bisa diedit. Didukung Adobe PDF Services.",
+      "Konversi PDF ke Word yang rapi dan bisa diedit.",
     url: `${APP_CONFIG.URL}${ROUTES.PDF_TOOLS.PDF_TO_WORD}`,
     siteName: APP_CONFIG.NAME,
     type: "website",
@@ -47,7 +47,7 @@ export default function PdfToWordPage() {
             </h1>
             <p className="text-foreground/80 font-medium text-lg max-w-2xl mx-auto">
               Ubah PDF menjadi dokumen Word yang bisa diedit. Layout, tabel, dan
-              gambar dipertahankan semaksimal mungkin oleh Adobe PDF Services.
+              gambar dipertahankan semaksimal mungkin.
             </p>
           </div>
           <div className="bg-card border-4 border-foreground rounded-[2rem] shadow-[6px_6px_0px_0px] shadow-foreground p-4 md:p-8">

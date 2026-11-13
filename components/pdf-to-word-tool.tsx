@@ -5,14 +5,12 @@ import { toast } from "@/components/ui/toast";
 import { cn } from "cn";
 import { uploadPresigned } from "@vercel/blob/client";
 import {
-  ArrowRightIcon,
   CheckCircle2Icon,
   DownloadIcon,
   FileTextIcon,
   FileType2Icon,
   InfoIcon,
   Loader2Icon,
-  LockIcon,
   RefreshCwIcon,
   ShieldCheckIcon,
   XIcon,
@@ -20,6 +18,7 @@ import {
 import { SignInButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ROUTES } from "@/lib/constants";
 import { PDF_TO_WORD_CONFIG } from "@/lib/pdf-to-word/config";
 import type { PdfToWordQuotaInfo } from "@/lib/pdf-to-word/types";
 
@@ -284,7 +283,7 @@ export default function PdfToWordTool() {
     }
 
     if (!TURNSTILE_SITE_KEY) {
-      setError("Verifikasi keamanan belum dikonfigurasi. Hubungi admin CIVITA.");
+      setError("Layanan konversi sedang tidak tersedia. Coba lagi beberapa saat lagi.");
       return;
     }
 
@@ -438,7 +437,7 @@ export default function PdfToWordTool() {
         <div>
           <h1 className="text-xl sm:text-2xl font-bold">PDF to Word</h1>
           <p className="text-sm text-muted-foreground">
-            Ubah PDF menjadi dokumen Word (.docx) yang bisa diedit. Maksimal{" "}
+            Ubah PDF menjadi dokumen Word yang bisa diedit. Maksimal{" "}
             {PDF_TO_WORD_CONFIG.maxFileMb} MB dan{" "}
             {PDF_TO_WORD_CONFIG.maxPages} halaman.
           </p>
@@ -454,8 +453,6 @@ export default function PdfToWordTool() {
           Reset
         </Button>
       </div>
-
-      <QuotaBadge quota={quota} />
 
       {!file && !result && (
         <div
@@ -520,8 +517,8 @@ export default function PdfToWordTool() {
             <p className="font-bold">Konversi berhasil</p>
           </div>
           <p className="text-sm text-muted-foreground">
-            File Word sudah siap. Tautan unduhan berlaku sekitar 2 jam dan file
-            akan dihapus otomatis dari server.
+            File Word sudah siap. Unduh sekarang karena file akan dihapus
+            otomatis.
           </p>
           <div className="flex flex-col gap-2 sm:flex-row">
             <a href={result.downloadUrl} download className="sm:flex-1">
@@ -560,8 +557,8 @@ export default function PdfToWordTool() {
             </div>
           ) : (
             <div className="rounded-xl border-2 border-amber-500 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-900">
-              Verifikasi keamanan belum dikonfigurasi. Hubungi admin CIVITA
-              sebelum memakai tool ini.
+              Layanan konversi sedang tidak tersedia. Coba lagi beberapa saat
+              lagi.
             </div>
           )}
 
@@ -623,92 +620,33 @@ export default function PdfToWordTool() {
             )}
           </Button>
 
-          {quotaBlocked && (
-            <QuotaLimitCta quota={quota} />
-          )}
+          {quotaBlocked && <QuotaLimitCta />}
         </div>
       )}
 
       <div className="flex items-start gap-2 rounded-xl bg-muted/50 px-4 py-3 text-xs text-muted-foreground">
         <InfoIcon className="mt-0.5 h-4 w-4 shrink-0" />
         <p>
-          PDF diproses oleh Adobe PDF Services. File input dihapus dari
-          penyimpanan CIVITA segera setelah dikirim, dan file hasil dihapus
-          otomatis maksimal 24 jam. Jangan unggah dokumen yang bersifat sangat
-          rahasia.
+          File hanya dipakai untuk konversi ini dan dihapus otomatis.{" "}
+          <Link
+            href={ROUTES.POLICY}
+            className="font-bold underline underline-offset-2 hover:text-foreground"
+          >
+            Kebijakan Privasi
+          </Link>
         </p>
       </div>
-
-      {quota?.kind === "guest" && (
-        <div className="flex flex-col items-start gap-2 rounded-xl border-2 border-foreground bg-brand-orange/20 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm font-medium">
-            Butuh kuota lebih besar? Masuk dengan akun CIVITA untuk 5 konversi
-            per bulan.
-          </p>
-          <SignInButton mode="modal">
-            <Button type="button" variant="outline" size="sm">
-              Masuk <ArrowRightIcon className="w-3 h-3" />
-            </Button>
-          </SignInButton>
-        </div>
-      )}
-
-      <p className="flex items-center gap-2 text-xs text-muted-foreground">
-        <LockIcon className="w-3.5 h-3.5" />
-        File disimpan di penyimpanan privat dan hanya bisa diakses lewat sesi
-        Anda.
-      </p>
     </div>
   );
 }
 
-function QuotaBadge({ quota }: { quota: PdfToWordQuotaInfo | null }) {
-  if (!quota) {
-    return (
-      <div className="rounded-xl border-2 border-foreground/20 bg-muted/30 px-4 py-2 text-xs font-medium text-muted-foreground">
-        Memuat kuota…
-      </div>
-    );
-  }
-
-  if (quota.unlimited) {
-    return (
-      <div className="rounded-xl border-2 border-foreground bg-green-100 px-4 py-2 text-xs font-bold text-green-900">
-        Admin • konversi tanpa batas
-      </div>
-    );
-  }
-
-  const label =
-    quota.kind === "buyer"
-      ? "Pembeli"
-      : quota.kind === "user"
-        ? "Anggota"
-        : "Tamu";
-
-  return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border-2 border-foreground bg-muted/30 px-4 py-2 text-xs font-medium">
-      <span className="font-black">{label}</span>
-      <span>
-        Sisa {quota.remaining} dari {quota.limit} konversi bulan ini
-      </span>
-      {quota.daily && (
-        <span className="text-muted-foreground">
-          • Hari ini: {quota.daily.remaining} dari {quota.daily.limit}
-        </span>
-      )}
-    </div>
-  );
-}
-
-function QuotaLimitCta({ quota }: { quota: PdfToWordQuotaInfo | null }) {
+function QuotaLimitCta() {
   return (
     <div className="space-y-2 rounded-xl border-2 border-foreground bg-background px-4 py-3">
-      <p className="text-sm font-bold">Kuota konversi habis</p>
+      <p className="text-sm font-bold">Kuota gratis Anda sudah habis</p>
       <p className="text-xs text-muted-foreground">
-        {quota?.kind === "guest"
-          ? "Tamu mendapat 1 konversi per hari (maksimal 2 per bulan). Masuk untuk 5 konversi per bulan, atau beli produk digital untuk 30 konversi per bulan."
-          : "Kuota bulan ini sudah habis. Beli produk digital CIVITA untuk mendapatkan 30 konversi per bulan."}
+        Masuk dengan akun CIVITA atau lihat produk digital untuk mendapatkan
+        kuota tambahan.
       </p>
       <div className="flex flex-col gap-2 pt-1 sm:flex-row">
         <SignInButton mode="modal">

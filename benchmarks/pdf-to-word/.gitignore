@@ -1,5 +1,0 @@
-.env
-samples/*
-!samples/.gitkeep
-out/*
-!out/.gitkeep
