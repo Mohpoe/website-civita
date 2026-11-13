@@ -58,9 +58,10 @@ export default function PrivacyPolicyPage() {
                   <a href="#informasi-dikumpulkan" className="block text-sm text-zinc-500 hover:text-foreground transition-colors">1. Informasi yang Dikumpulkan</a>
                   <a href="#penggunaan-informasi" className="block text-sm text-zinc-500 hover:text-foreground transition-colors">2. Penggunaan Informasi</a>
                   <a href="#perlindungan-data" className="block text-sm text-zinc-500 hover:text-foreground transition-colors">3. Perlindungan & Berbagi Data</a>
-                  <a href="#penggunaan-portofolio" className="block text-sm text-zinc-500 hover:text-foreground transition-colors">4. Penggunaan Portofolio</a>
-                  <a href="#penghapusan-data" className="block text-sm text-zinc-500 hover:text-foreground transition-colors">5. Penghapusan Data</a>
-                  <a href="#persetujuan" className="block text-sm text-zinc-500 hover:text-foreground transition-colors">6. Persetujuan</a>
+                  <a href="#alat-pdf" className="block text-sm text-zinc-500 hover:text-foreground transition-colors">4. Alat PDF & Pihak Ketiga</a>
+                  <a href="#penggunaan-portofolio" className="block text-sm text-zinc-500 hover:text-foreground transition-colors">5. Penggunaan Portofolio</a>
+                  <a href="#penghapusan-data" className="block text-sm text-zinc-500 hover:text-foreground transition-colors">6. Penghapusan Data</a>
+                  <a href="#persetujuan" className="block text-sm text-zinc-500 hover:text-foreground transition-colors">7. Persetujuan</a>
                 </nav>
               </div>
             </div>
@@ -96,26 +97,42 @@ export default function PrivacyPolicyPage() {
                 <section id="perlindungan-data" className="scroll-mt-32">
                   <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4 tracking-tight">3. Perlindungan dan Berbagi Data</h2>
                   <p className="text-muted-foreground leading-relaxed">
-                    Kami berjanji menjaga kerahasiaan Anda. <strong>Kami tidak akan pernah menjual, menyewakan, atau mendistribusikan data pribadi Anda, termasuk isi CV Anda, kepada pihak ketiga atau perusahaan mana pun.</strong> Data Anda hanya diakses oleh tim desain internal CIVITA yang bertugas mengerjakan dokumen Anda.
+                    Kami berjanji menjaga kerahasiaan Anda. <strong>Kami tidak akan pernah menjual, menyewakan, atau mendistribusikan data pribadi Anda, termasuk isi CV Anda, kepada pihak ketiga atau perusahaan mana pun.</strong> Data Anda hanya diakses oleh tim desain internal CIVITA yang bertugas mengerjakan dokumen Anda, kecuali untuk alat PDF yang secara teknis memerlukan penyedia layanan pemrosesan dokumen seperti dijelaskan pada poin 4.
+                  </p>
+                </section>
+
+                <section id="alat-pdf" className="scroll-mt-32">
+                  <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4 tracking-tight">4. Alat PDF dan Pemrosesan oleh Pihak Ketiga</h2>
+                  <p className="text-muted-foreground leading-relaxed mb-3">
+                    Beberapa alat PDF di CIVITA, termasuk <strong>PDF to Word</strong>, memerlukan pemrosesan di server dan menggunakan penyedia layanan dokumen pihak ketiga, yaitu <strong>Adobe PDF Services</strong>. File yang Anda unggah dikirim ke Adobe hanya untuk melakukan konversi yang Anda minta.
+                  </p>
+                  <ul className="list-disc pl-5 space-y-3 text-muted-foreground leading-relaxed marker:text-zinc-300">
+                    <li>File input disimpan sementara di penyimpanan privat CIVITA dan dihapus segera setelah dikirim ke Adobe.</li>
+                    <li>File hasil konversi disimpan sementara dan dihapus otomatis maksimal 24 jam setelah dibuat.</li>
+                    <li>Kami tidak menggunakan isi dokumen Anda untuk pelatihan model, pemasaran, atau tujuan lain.</li>
+                    <li>Kami membatasi jumlah konversi per pengguna untuk mencegah penyalahgunaan layanan.</li>
+                  </ul>
+                  <p className="text-muted-foreground leading-relaxed mt-3">
+                    Karena file diproses oleh pihak ketiga, kami menyarankan Anda tidak mengunggah dokumen yang bersifat sangat rahasia (misalnya data keuangan, dokumen medis, atau dokumen berisi data pribadi orang lain tanpa izin).
                   </p>
                 </section>
 
                 <section id="penggunaan-portofolio" className="scroll-mt-32">
-                  <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4 tracking-tight">4. Penggunaan Hasil Desain sebagai Portofolio</h2>
+                  <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4 tracking-tight">5. Penggunaan Hasil Desain sebagai Portofolio</h2>
                   <p className="text-muted-foreground leading-relaxed">
                     Terkadang kami ingin menampilkan hasil desain yang kami buat di media sosial (Instagram) atau website kami sebagai contoh portofolio. Jika kami melakukannya, kami akan <strong>selalu</strong> menyensor, memburamkan (blur), atau menggunakan nama samaran (dummy text) pada informasi sensitif seperti nomor telepon, email, alamat lengkap, dan nama perusahaan spesifik, kecuali kami telah meminta dan mendapatkan izin langsung dari Anda.
                   </p>
                 </section>
 
                 <section id="penghapusan-data" className="scroll-mt-32">
-                  <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4 tracking-tight">5. Penghapusan Data</h2>
+                  <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4 tracking-tight">6. Penghapusan Data</h2>
                   <p className="text-muted-foreground leading-relaxed">
                     Anda memiliki hak untuk meminta kami menghapus seluruh informasi karir dan file CV Anda dari <em>database</em> kami setelah pesanan selesai. Silakan hubungi admin kami melalui WhatsApp atau Email untuk mengajukan penghapusan data, dan kami akan segera melakukannya.
                   </p>
                 </section>
 
                 <section id="persetujuan" className="scroll-mt-32">
-                  <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4 tracking-tight">6. Persetujuan</h2>
+                  <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4 tracking-tight">7. Persetujuan</h2>
                   <p className="text-muted-foreground leading-relaxed">
                     Dengan menggunakan layanan CIVITA, Anda secara otomatis menyetujui Kebijakan Privasi ini beserta syarat pengumpulan dan penggunaan data seperti yang telah diuraikan di atas.
                   </p>

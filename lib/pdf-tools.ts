@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { FileDown, FileImage, FileText, Images, Scissors } from "lucide-react";
+import { FileDown, FileImage, FileText, FileType2, Images, Scissors } from "lucide-react";
 import { ROUTES } from "@/lib/constants";
 
 export type PdfTool = {
@@ -57,5 +57,14 @@ export const PDF_TOOLS: PdfTool[] = [
     href: ROUTES.PDF_TOOLS.PDF_TO_IMAGE,
     icon: FileImage,
     accent: "orange",
+  },
+  {
+    id: "pdf-to-word",
+    name: "PDF to Word",
+    shortName: "PDF ke Word",
+    description: "Ubah PDF menjadi dokumen Word yang bisa diedit, cocok untuk CV dan surat lamaran.",
+    href: ROUTES.PDF_TOOLS.PDF_TO_WORD,
+    icon: FileType2,
+    accent: "red",
   },
 ];

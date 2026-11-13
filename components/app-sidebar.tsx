@@ -5,7 +5,7 @@ import { NavUser } from "@/components/nav-user"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar"
 import { APP_CONFIG, ROUTES } from "@/lib/constants"
 import { useUser } from "@clerk/nextjs"
-import { ExternalLinkIcon, FileDownIcon, FileImageIcon, FileTextIcon, GroupIcon, HelpCircleIcon, ImagesIcon, PackageIcon, PackagePlusIcon, ScissorsIcon, ShoppingBagIcon, SquareTextIcon, UsersIcon } from "lucide-react"
+import { FileDownIcon, FileImageIcon, FileTextIcon, FileType2Icon, GroupIcon, HelpCircleIcon, ImagesIcon, PackageIcon, PackagePlusIcon, ScissorsIcon, ShoppingBagIcon, SquareTextIcon, UsersIcon } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import * as React from "react"
@@ -101,6 +101,12 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
         name: "PDF to Image",
         url: ROUTES.PDF_TOOLS.PDF_TO_IMAGE,
         icon: <FileImageIcon />,
+        external: true,
+      },
+      {
+        name: "PDF to Word",
+        url: ROUTES.PDF_TOOLS.PDF_TO_WORD,
+        icon: <FileType2Icon />,
         external: true,
       },
       {

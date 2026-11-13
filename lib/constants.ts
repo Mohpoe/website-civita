@@ -66,6 +66,7 @@ export const ROUTES = {
     PDF_SPLITTER: "/pdf-splitter",
     PDF_COMPRESSOR: "/pdf-compressor",
     PDF_TO_IMAGE: "/pdf-to-image",
+    PDF_TO_WORD: "/pdf-to-word",
     IMAGE_TO_PDF: "/image-to-pdf",
   },
 };

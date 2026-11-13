@@ -277,7 +277,7 @@ const PdfToolsSection = () => {
           </div>
           <div className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-background border-2 border-foreground text-sm font-bold shadow-[2px_2px_0px_0px] shadow-foreground w-max">
             <span className="w-2.5 h-2.5 rounded-full bg-brand-red" />
-            Gratis &amp; tanpa unggah ke server
+            Gratis &amp; tanpa instalasi
           </div>
         </div>
 
