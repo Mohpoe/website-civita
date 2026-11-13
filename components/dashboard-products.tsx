@@ -10,7 +10,7 @@ import { Category, Order, Product } from "@/types/global";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowDownUpIcon, AwardIcon, CheckCircle2Icon, ChevronLeftIcon, ChevronRightIcon, FileTextIcon, MoveRightIcon, PackageSearchIcon, SearchIcon, ShoppingBagIcon, TagIcon, TagsIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "./ui/input-group";
 import { Separator } from "./ui/separator";
 import { Spinner } from "./ui/spinner";
@@ -32,6 +32,14 @@ const NEO_COLORS = [
   { light: '#B2F0B2', dark: '#1E3E26', textLight: '#151722', textDark: '#F0FDF4' }, // Sage / Forest Green
 ];
 
+// Batasi nomor halaman yang dirender agar tidak meluber di layar kecil
+const getVisiblePages = (current: number, total: number): (number | "ellipsis")[] => {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  if (current <= 4) return [1, 2, 3, 4, 5, "ellipsis", total];
+  if (current >= total - 3) return [1, "ellipsis", total - 4, total - 3, total - 2, total - 1, total];
+  return [1, "ellipsis", current - 1, current, current + 1, "ellipsis", total];
+};
+
 export default function DashboardProducts({ products, categories, orders }: DashboardProductsProps) {
   const router = useRouter();
 
@@ -46,23 +54,22 @@ export default function DashboardProducts({ products, categories, orders }: Dash
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("newest");
 
-  // Reset pagination ke halaman 1 setiap kali user mengubah pencarian, filter, atau sort
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, selectedCategory, sortBy]);
-
   // Ekstrak daftar kategori unik dari data produk untuk tombol filter
   const activeCategories = useMemo(() => {
     if (!categories || !products) return [];
     return categories
       .map((cat) => {
-        // Hitung produk yang memakai nama kategori ini
-        const count = products.filter((p) => p.category?.name === cat.name).length;
+        // Hitung produk yang memakai kategori ini berdasarkan ID
+        const count = products.filter((p) => p.category_id === cat.id).length;
         return { ...cat, count };
       })
       // Saring agar hanya merender kategori yang memiliki 1 produk atau lebih
       .filter((cat) => cat.count > 0);
   }, [categories, products]);
+
+  const selectedCategoryName = selectedCategory === "all"
+    ? null
+    : activeCategories.find((cat) => cat.id === selectedCategory)?.name ?? null;
 
   // Logika Filter dan Sortir (Pre-compute)
   const processedProducts = useMemo(() => {
@@ -79,7 +86,7 @@ export default function DashboardProducts({ products, categories, orders }: Dash
 
     // 2. Jalankan Filter Kategori
     if (selectedCategory !== "all") {
-      result = result.filter(p => p.category?.name === selectedCategory);
+      result = result.filter(p => p.category_id === selectedCategory);
     }
 
     // 3. Jalankan Sortir Harga
@@ -97,16 +104,22 @@ export default function DashboardProducts({ products, categories, orders }: Dash
   // Pagination Logic (Diarahkan ke processedProducts, BUKAN products mentah)
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
-  const totalPages = Math.ceil((processedProducts?.length ?? 0) / itemsPerPage);
-  const indexOfLastItem = currentPage * itemsPerPage;
+  const totalPages = Math.max(1, Math.ceil((processedProducts?.length ?? 0) / itemsPerPage));
+  // Clamp saat data menyusut agar grid tidak kosong karena halaman melebihi total
+  const safePage = Math.min(currentPage, totalPages);
+  const indexOfLastItem = safePage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = (processedProducts ?? []).slice(indexOfFirstItem, indexOfLastItem);
 
+  // Reset pagination ke halaman 1 setiap kali user mengubah pencarian, filter, atau sort.
+  // Dilakukan langsung di handler (bukan useEffect) agar tidak memicu render berantai.
+  const resetPage = () => setCurrentPage(1);
+
   const handleNextPage = () => {
-    if (currentPage < totalPages) setCurrentPage(prev => prev + 1);
+    if (safePage < totalPages) setCurrentPage(safePage + 1);
   };
   const handlePrevPage = () => {
-    if (currentPage > 1) setCurrentPage(prev => prev - 1);
+    if (safePage > 1) setCurrentPage(safePage - 1);
   };
 
   const openProductModal = (product: Product, idx: number) => {
@@ -153,6 +166,21 @@ export default function DashboardProducts({ products, categories, orders }: Dash
       if (!response.ok) throw new Error(data.error);
 
       setDetailDialog(false);
+
+      // Script Midtrans dimuat dengan `lazyOnload`, jadi belum tentu siap saat tombol diklik.
+      // Pesanan sudah dibuat di server, jadi arahkan user ke halaman Pesanan Saya.
+      if (!window.snap) {
+        toast.add({
+          title: "Pembayaran Belum Siap",
+          description: "Sistem pembayaran belum selesai dimuat. Pesanan Anda sudah dibuat, silakan buka 'Pesanan Saya' untuk melanjutkan pembayaran.",
+          type: "info",
+          priority: "high",
+        });
+        setIsProcessing(false);
+        router.push(ROUTES.DASHBOARD.INVENTORY);
+        router.refresh();
+        return;
+      }
 
       window.snap.pay(data.token, {
         onSuccess: function (result: any) {
@@ -204,9 +232,28 @@ export default function DashboardProducts({ products, categories, orders }: Dash
   };
   // #endregion
 
-  const featureList = typeof selectedProduct?.features === "string"
-    ? JSON.parse(selectedProduct.features || "[]")
-    : (selectedProduct?.features || []);
+  // Data lama bisa menyimpan features sebagai string JSON yang tidak valid.
+  // Parse dengan aman agar satu produk bermasalah tidak membuat halaman crash.
+  const featureList = useMemo<string[]>(() => {
+    const raw: unknown = selectedProduct?.features;
+
+    if (Array.isArray(raw)) {
+      return raw.filter((item): item is string => typeof item === "string");
+    }
+
+    if (typeof raw === "string") {
+      try {
+        const parsed: unknown = JSON.parse(raw || "[]");
+        return Array.isArray(parsed)
+          ? parsed.filter((item): item is string => typeof item === "string")
+          : [];
+      } catch {
+        return [];
+      }
+    }
+
+    return [];
+  }, [selectedProduct?.features]);
 
   const activeDialogTheme = NEO_COLORS[selectedColorIdx];
   const dialogStyleProps = {
@@ -218,7 +265,7 @@ export default function DashboardProducts({ products, categories, orders }: Dash
 
   const categoryItems = [
     { value: "all", label: `Semua Kategori (${products?.length || 0})` },
-    ...(activeCategories || []).map(cat => ({ value: cat.name, label: `${cat.name} (${cat.count})` }))
+    ...(activeCategories || []).map(cat => ({ value: cat.id, label: `${cat.name} (${cat.count})` }))
   ];
 
   return (
@@ -242,7 +289,10 @@ export default function DashboardProducts({ products, categories, orders }: Dash
                 type="search"
                 placeholder="Cari nama produk..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  resetPage();
+                }}
               />
               <InputGroupAddon align="inline-start">
                 <SearchIcon />
@@ -261,7 +311,10 @@ export default function DashboardProducts({ products, categories, orders }: Dash
               activeCategories.length <= 6 ? (
                 <div className="flex w-full md:w-auto overflow-x-auto no-scrollbar gap-2 pb-1 md:pb-0">
                   <Button
-                    onClick={() => setSelectedCategory("all")}
+                    onClick={() => {
+                      setSelectedCategory("all");
+                      resetPage();
+                    }}
                     variant={selectedCategory === "all" ? "default" : "outline"}
                     className={`rounded-none border-2 font-bold px-5 shrink-0 transition-all ${selectedCategory === "all"
                       ? "border-foreground"
@@ -274,9 +327,12 @@ export default function DashboardProducts({ products, categories, orders }: Dash
                   {activeCategories.map((cat) => (
                     <Button
                       key={cat.id}
-                      onClick={() => setSelectedCategory(cat.name)}
-                      variant={selectedCategory === cat.name ? "default" : "outline"}
-                      className={`rounded-none border-2 font-bold px-5 shrink-0 transition-all ${selectedCategory === cat.name
+                      onClick={() => {
+                        setSelectedCategory(cat.id);
+                        resetPage();
+                      }}
+                      variant={selectedCategory === cat.id ? "default" : "outline"}
+                      className={`rounded-none border-2 font-bold px-5 shrink-0 transition-all ${selectedCategory === cat.id
                         ? "border-foreground"
                         : "border-transparent bg-muted/40 text-muted-foreground hover:bg-muted"
                         }`}
@@ -290,7 +346,10 @@ export default function DashboardProducts({ products, categories, orders }: Dash
                 <div className="w-full md:w-64">
                   <Select
                     value={selectedCategory}
-                    onValueChange={(val) => setSelectedCategory(val || "all")}
+                    onValueChange={(val) => {
+                      setSelectedCategory(val || "all");
+                      resetPage();
+                    }}
                     items={categoryItems}
                   >
                     <SelectTrigger className="w-full rounded-none border-2 border-foreground font-bold bg-background h-10">
@@ -303,7 +362,7 @@ export default function DashboardProducts({ products, categories, orders }: Dash
                       <SelectItem value="all">Semua Kategori ({products?.length || 0})</SelectItem>
                       {/* Looping langsung dari database (categories) */}
                       {activeCategories.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.name}>
+                        <SelectItem key={cat.id} value={cat.id}>
                           {cat.name} ({cat.count})
                         </SelectItem>
                       ))}
@@ -318,7 +377,10 @@ export default function DashboardProducts({ products, categories, orders }: Dash
               <div className="w-full md:w-56 shrink-0">
                 <Select
                   value={sortBy}
-                  onValueChange={(val) => setSortBy(val || "newest")}
+                  onValueChange={(val) => {
+                    setSortBy(val || "newest");
+                    resetPage();
+                  }}
                   items={[
                     { value: "newest", label: "Terbaru" },
                     { value: "price_asc", label: "Harga Terendah" },
@@ -363,7 +425,9 @@ export default function DashboardProducts({ products, categories, orders }: Dash
               {searchQuery.trim() !== ""
                 ? `Tidak ada produk yang cocok dengan kata kunci "${searchQuery}". Coba gunakan kata kunci lain.`
                 : products.length > 0
-                  ? `Tidak ada produk yang cocok dengan kategori "${selectedCategory}". Silakan pilih kategori lain.`
+                  ? selectedCategoryName
+                    ? `Tidak ada produk yang cocok dengan kategori "${selectedCategoryName}". Silakan pilih kategori lain.`
+                    : "Tidak ada produk yang cocok dengan filter saat ini. Coba ubah pilihan kategori."
                   : "Saat ini belum ada produk yang tersedia di katalog ini, silakan kembali lagi nanti."}
             </p>
           </div>
@@ -393,15 +457,28 @@ export default function DashboardProducts({ products, categories, orders }: Dash
                         exit={{ opacity: 0, scale: 0.95 }}
                         transition={{ duration: 0.5, delay: (idx % itemsPerPage) * 0.09, ease: [0.16, 1, 0.3, 1] }}
                         onClick={() => openProductModal(product, idx)}
-                        className="group relative flex flex-col justify-between overflow-hidden rounded-[2.2rem] p-6 shadow-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-xl cursor-pointer border-2 border-transparent hover:border-foreground/10 dark:hover:border-white/10 bg-[var(--bg-light)] dark:bg-[var(--bg-dark)] text-[var(--text-light)] dark:text-[var(--text-dark)]"
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            openProductModal(product, idx);
+                          }
+                        }}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`Lihat detail ${product.title}`}
+                        className="@container group relative flex flex-col justify-between overflow-hidden rounded-[2.2rem] p-6 shadow-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-xl cursor-pointer border-2 border-transparent hover:border-foreground/10 dark:hover:border-white/10 bg-[var(--bg-light)] dark:bg-[var(--bg-dark)] text-[var(--text-light)] dark:text-[var(--text-dark)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-foreground/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                       >
                         <div>
                           {/* Header Kartu */}
-                          <div className="flex items-center justify-between">
-                            <span className="flex items-center gap-1 rounded-full bg-foreground/90 px-3 py-1 text-xs font-bold tracking-wider text-background">
-                              <TagIcon className="w-3.5 h-3.5" /> {product.category?.name || "Digital"}
+                          <div className="flex flex-col items-start gap-1 @min-[240px]:flex-row @min-[240px]:items-center @min-[240px]:justify-between @min-[240px]:gap-x-3 @min-[240px]:gap-y-0">
+                            <span
+                              className="flex min-w-0 max-w-full items-center gap-1 overflow-hidden rounded-full bg-foreground/90 px-3 py-1 text-xs font-bold tracking-wider text-background"
+                              title={product.category?.name || "Digital"}
+                            >
+                              <TagIcon className="w-3.5 h-3.5 shrink-0" />
+                              <span className="min-w-0 truncate">{product.category?.name || "Digital"}</span>
                             </span>
-                            <span className="text-lg font-bold">
+                            <span className="shrink-0 whitespace-nowrap text-lg font-bold tabular-nums @min-[240px]:ml-auto">
                               {formatRupiah(product.price)}
                             </span>
                           </div>
@@ -460,24 +537,37 @@ export default function DashboardProducts({ products, categories, orders }: Dash
                       size="icon"
                       className="rounded-full w-9 h-9 hover:bg-background shadow-sm disabled:opacity-30"
                       onClick={handlePrevPage}
-                      disabled={currentPage === 1}
+                      disabled={safePage === 1}
                     >
                       <ChevronLeftIcon className="w-4 h-4" />
                     </Button>
 
-                    <div className="flex items-center px-2 gap-1">
-                      {[...Array(totalPages)].map((_, i) => (
-                        <button
-                          key={i}
-                          onClick={() => setCurrentPage(i + 1)}
-                          className={`w-8 h-8 rounded-full text-sm font-bold transition-all duration-200 ${currentPage === i + 1
-                            ? "bg-foreground text-background shadow-md scale-105"
-                            : "text-muted-foreground hover:bg-background hover:text-foreground"
-                            }`}
-                        >
-                          {i + 1}
-                        </button>
-                      ))}
+                    <div className="flex max-w-full items-center gap-1 overflow-x-auto px-2">
+                      {getVisiblePages(safePage, totalPages).map((page, index) =>
+                        page === "ellipsis" ? (
+                          <span
+                            key={`ellipsis-${index}`}
+                            aria-hidden="true"
+                            className="select-none px-1 text-sm font-bold text-muted-foreground"
+                          >
+                            …
+                          </span>
+                        ) : (
+                          <button
+                            key={page}
+                            type="button"
+                            onClick={() => setCurrentPage(page)}
+                            aria-current={safePage === page ? "page" : undefined}
+                            aria-label={`Halaman ${page}`}
+                            className={`h-8 w-8 shrink-0 rounded-full text-sm font-bold transition-all duration-200 ${safePage === page
+                              ? "bg-foreground text-background shadow-md scale-105"
+                              : "text-muted-foreground hover:bg-background hover:text-foreground"
+                              }`}
+                          >
+                            {page}
+                          </button>
+                        )
+                      )}
                     </div>
 
                     <Button
@@ -485,7 +575,7 @@ export default function DashboardProducts({ products, categories, orders }: Dash
                       size="icon"
                       className="rounded-full w-9 h-9 hover:bg-background shadow-sm disabled:opacity-30"
                       onClick={handleNextPage}
-                      disabled={currentPage === totalPages}
+                      disabled={safePage === totalPages}
                     >
                       <ChevronRightIcon className="w-4 h-4" />
                     </Button>
@@ -530,13 +620,17 @@ export default function DashboardProducts({ products, categories, orders }: Dash
 
               {/* Konten Scrollable */}
               <div className="flex flex-col gap-5 px-6">
-                <div className="flex flex-row justify-between items-center">
-                  <div className="font-extrabold text-2xl text-foreground">
+                <div className="flex flex-row flex-wrap justify-between items-center gap-3">
+                  <div className="shrink-0 font-extrabold text-2xl text-foreground tabular-nums">
                     {formatRupiah(selectedProduct?.price || 0)}
                   </div>
 
-                  <Badge className="bg-foreground/90 text-background border-none px-3 py-3">
-                    <TagsIcon className="w-3.5 h-3.5 mr-2" /> {selectedProduct?.category?.name || "Digital"}
+                  <Badge
+                    className="bg-foreground/90 text-background border-none px-3 py-3 max-w-full"
+                    title={selectedProduct?.category?.name || "Digital"}
+                  >
+                    <TagsIcon className="w-3.5 h-3.5 mr-2 shrink-0" />
+                    <span className="min-w-0 truncate">{selectedProduct?.category?.name || "Digital"}</span>
                   </Badge>
                 </div>
 
