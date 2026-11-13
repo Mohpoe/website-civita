@@ -45,7 +45,7 @@ const formatBytes = (bytes: number, decimals = 2) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 };
 
-const COLUMN_SIZING_STORAGE_KEY = "civit:admin-products:column-sizing:v1";
+const COLUMN_SIZING_STORAGE_KEY = "civit:admin-products:column-sizing:v2";
 
 // Store kecil di luar React agar lebar kolom yang disimpan di localStorage bisa
 // dibaca dengan `useSyncExternalStore` (aman dari hydration mismatch).
@@ -312,13 +312,16 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
       columnHelper.accessor("id", {
         header: "ID Produk",
         cell: (info) => (
-          <span className="font-mono text-xs text-muted-foreground bg-muted px-2 py-1 rounded-md">
+          <span
+            className="inline-block max-w-full truncate align-middle font-mono text-xs text-muted-foreground bg-muted px-2 py-1 rounded-md"
+            title={info.getValue()}
+          >
             {info.getValue()}
           </span>
         ),
         enableHiding: true,
-        size: 104,
-        minSize: 88,
+        size: 132,
+        minSize: 112,
       }),
 
       // 3. Kolom Nama Produk + Deskripsi Singkat + Thumbnail + Kategori
@@ -374,10 +377,10 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
       columnHelper.accessor("price", {
         id: "harga",
         header: "Harga",
-        size: 104,
-        minSize: 96,
+        size: 128,
+        minSize: 104,
         cell: (info) => (
-          <div className="text-right font-mono text-sm font-medium">
+          <div className="truncate text-right font-mono text-sm font-medium" title={formatRupiah(info.getValue())}>
             {formatRupiah(info.getValue())}
           </div>
         ),
