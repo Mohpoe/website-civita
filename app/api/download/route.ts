@@ -1,3 +1,4 @@
+import { APP_CONFIG } from '@/lib/constants';
 import { sql } from '@/lib/utils';
 import { Order, Product } from '@/types/global';
 import { currentUser } from '@clerk/nextjs/server';
@@ -25,7 +26,7 @@ const getDownloadFileName = (fileUrl: string, title: string | null | undefined) 
   const basename = pathname.substring(slashIndex + 1);
   const extensionMatch = basename.match(/\.(tar\.(gz|bz2|xz)|[a-zA-Z0-9]+)$/i);
   const safeExtension = extensionMatch ? extensionMatch[0].toLowerCase() : '';
-  const safeProductName = (title || "Produk_Digital_CIVITA").replace(/[^a-zA-Z0-9]/g, '_');
+  const safeProductName = (title || `Produk_Digital_${APP_CONFIG.NAME}`).replace(/[^a-zA-Z0-9]/g, '_');
   return `${safeProductName}${safeExtension}`;
 };
 

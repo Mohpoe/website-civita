@@ -2,9 +2,6 @@ import { idID } from "@clerk/localizations";
 import type { ClerkAppearanceTheme } from "@clerk/nextjs/types";
 import { APP_CONFIG, ROUTES } from "@/lib/constants";
 
-const CIVITA_LOGO_URL =
-  "https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/Icon.svg";
-
 /**
  * Beberapa placeholder formulir belum diterjemahkan oleh locale `idID`
  * bawaan Clerk, sehingga jatuh kembali ke bahasa Inggris.
@@ -59,7 +56,7 @@ export function getCivitaClerkAppearance(isDark: boolean): ClerkAppearanceTheme 
 
   return {
     options: {
-      logoImageUrl: CIVITA_LOGO_URL,
+      logoImageUrl: APP_CONFIG.ASSETS.LOGO,
       logoPlacement: "inside",
       logoLinkUrl: APP_CONFIG.LINKS.HOMEPAGE,
       socialButtonsVariant: "blockButton",

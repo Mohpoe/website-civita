@@ -14,8 +14,6 @@ import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { SiWhatsapp } from "react-icons/si";
 
-const CONSULT_MESSAGE = "Halo admin CIVITA, saya ingin konsultasi terkait pembuatan CV yang ATS-friendly.";
-
 const THEME_OPTIONS = [
   { value: "light", label: "Terang", icon: Sun },
   { value: "dark", label: "Gelap", icon: Moon },
@@ -77,7 +75,7 @@ function PublicMobileMenu() {
       >
         <SheetHeader className="border-b-4 border-foreground px-5 py-4 pr-14">
           <SheetTitle className="text-xl font-black tracking-tight">Menu</SheetTitle>
-          <SheetDescription className="font-medium">Navigasi CIVITA</SheetDescription>
+          <SheetDescription className="font-medium">Navigasi {APP_CONFIG.NAME}</SheetDescription>
         </SheetHeader>
 
         <div className="civita-menu-scroll flex-1 overflow-y-auto px-4 py-5">
@@ -156,7 +154,7 @@ function PublicMobileMenu() {
           <Button
             onClick={() => {
               closeMenu();
-              window.open(APP_CONFIG.LINKS.WHATSAPP_CHAT(CONSULT_MESSAGE), "_blank");
+              window.open(APP_CONFIG.LINKS.WHATSAPP_CHAT(APP_CONFIG.CONSULT_MESSAGE), "_blank");
             }}
             className="h-11 w-full rounded-xl bg-brand-red text-white border-2 border-foreground font-bold shadow-[2px_2px_0px_0px] shadow-foreground"
           >
@@ -200,13 +198,13 @@ export function PublicNavigation() {
           <div className="w-8 h-8 bg-foreground rounded-xl flex items-center justify-center shadow-inner">
             <Image
               alt="Logo"
-              src="https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/Icon.svg"
+              src={APP_CONFIG.ASSETS.LOGO}
               className="size-4 [filter:brightness(0)_invert(1)] dark:[filter:brightness(0)]"
               width={1}
               height={1}
             />
           </div>
-          <span className="font-black tracking-tight text-lg sm:text-xl">CIVITA</span>
+          <span className="font-black tracking-tight text-lg sm:text-xl">{APP_CONFIG.NAME}</span>
         </Link>
 
         <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 min-w-0">
@@ -244,7 +242,7 @@ export function PublicNavigation() {
 
           <div className="hidden lg:block w-1.5 h-1.5 rounded-full bg-foreground mx-0.5" />
 
-          <Button onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP_CHAT(CONSULT_MESSAGE), "_blank")} className="hidden md:flex h-10 px-3 lg:px-5 rounded-full font-bold bg-brand-red text-white border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px] transition-all" aria-label="Konsultasi WhatsApp">
+          <Button onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP_CHAT(APP_CONFIG.CONSULT_MESSAGE), "_blank")} className="hidden md:flex h-10 px-3 lg:px-5 rounded-full font-bold bg-brand-red text-white border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px] transition-all" aria-label="Konsultasi WhatsApp">
             <SiWhatsapp className="w-4 h-4 lg:hidden" />
             <span className="hidden lg:inline-flex items-center">Konsultasi <ArrowRight className="w-4 h-4 ml-2" /></span>
           </Button>

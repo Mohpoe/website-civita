@@ -1,3 +1,4 @@
+import { APP_CONFIG } from '@/lib/constants';
 import { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
@@ -8,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
       // Cegah bot mengindeks halaman admin dan endpoint API
       disallow: ['/dashboard/', '/api/', '/_next/'],
     },
-    sitemap: 'https://www.civita.id/sitemap.xml',
+    sitemap: `${APP_CONFIG.URL}/sitemap.xml`,
   }
 }

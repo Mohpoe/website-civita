@@ -16,7 +16,7 @@ import { formatRupiah } from '@/lib/utils';
 import { Order } from '@/types/global';
 import { toast } from './ui/toast';
 import { useRouter } from 'next/navigation';
-import { ROUTES } from "@/lib/constants";
+import { APP_CONFIG, ROUTES } from "@/lib/constants";
 
 interface DashboardInventoryProps {
   orders: Order[]
@@ -219,7 +219,7 @@ export default function DashboardInventory({ orders: initialOrders }: DashboardI
                 ? `Tidak ada pesanan yang cocok dengan kata kunci "${searchQuery}".`
                 : activeTab !== "all"
                   ? `Kamu belum memiliki pesanan dengan status terpilih.`
-                  : "Sepertinya kamu belum pernah membeli produk digital apapun dari CIVITA."}
+                  : `Sepertinya kamu belum pernah membeli produk digital apapun dari ${APP_CONFIG.NAME}.`}
             </p>
           </CardContent>
         </Card>

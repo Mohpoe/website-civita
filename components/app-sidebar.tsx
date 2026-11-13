@@ -122,7 +122,7 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
               render={<Link href={ROUTES.ROOT} />}
               onClick={() => setOpenMobile(!isMobile)}
             >
-              <Image alt="Logo" src="https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/Icon.svg" className="size-5" width={100} height={100} />
+              <Image alt="Logo" src={APP_CONFIG.ASSETS.LOGO} className="size-5" width={100} height={100} />
               <span className="text-base font-bold">{APP_CONFIG.NAME}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>

@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ROUTES } from "@/lib/constants";
+import { APP_CONFIG, ROUTES } from "@/lib/constants";
 import { formatRupiah } from "@/lib/utils";
 import { Category, Order, Product } from "@/types/global";
 import { AnimatePresence, motion } from "framer-motion";
@@ -289,7 +289,7 @@ export default function DashboardProducts({ products, categories, orders }: Dash
               Katalog Produk
             </h2>
             <p className="text-muted-foreground max-w-2xl">
-              Akselerasikan karirmu dengan berbagai produk digital dari CIVITA!
+              Akselerasikan karirmu dengan berbagai produk digital dari {APP_CONFIG.NAME}!
             </p>
           </div>
 

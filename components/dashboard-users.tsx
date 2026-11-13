@@ -9,6 +9,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/in
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { deleteUserAction, demoteToUser, promoteToAdmin } from "@/lib/actions/users";
+import { APP_CONFIG } from "@/lib/constants";
 import {
   columnFilteringFeature,
   ColumnFiltersState,
@@ -147,7 +148,7 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
           return (
             <div className="flex items-center gap-3">
               <Image
-                src={user.imageUrl || "https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/no-profile.svg"}
+                src={user.imageUrl || APP_CONFIG.ASSETS.NO_PROFILE}
                 alt={user.name}
                 width={40}
                 height={40}

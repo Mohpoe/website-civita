@@ -18,10 +18,12 @@ import { SiInstagram as Instagram, SiWhatsapp } from "react-icons/si";
 const WEBSITE_JSON_LD = {
   "@context": "https://schema.org",
   "@type": "WebSite",
-  name: "CIVITA",
-  alternateName: ["CIVITA.ID", "Civita"],
-  url: "https://civita.id",
+  name: APP_CONFIG.NAME,
+  alternateName: APP_CONFIG.ALTERNATE_NAMES,
+  url: APP_CONFIG.LINKS.HOMEPAGE_NON_WWW,
 };
+
+const assetUrl = (path: string) => `${APP_CONFIG.ASSETS.BASE}${path}`;
 
 // #region Document Mockups (Neo-Pop Styled)
 interface DocumentMockupProps { className?: string; }
@@ -135,7 +137,7 @@ const Hero = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row flex-wrap items-center gap-4 w-full mt-4">
-            <Button className="rounded-full h-14 px-8 w-full sm:w-auto font-bold text-base bg-brand-red text-white border-2 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px] transition-all" size="lg" onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP_CHAT("Halo admin CIVITA, saya ingin konsultasi terkait pembuatan CV yang ATS-friendly."), "_blank")}>
+            <Button className="rounded-full h-14 px-8 w-full sm:w-auto font-bold text-base bg-brand-red text-white border-2 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px] transition-all" size="lg" onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP_CHAT(APP_CONFIG.CONSULT_MESSAGE), "_blank")}>
               <SiWhatsapp className="w-5 h-5 ml-0 mr-2" />
               Chat via WhatsApp
             </Button>
@@ -149,7 +151,7 @@ const Hero = () => {
             <div className="flex -space-x-3">
               {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="w-10 h-10 rounded-full border-2 border-foreground bg-muted flex items-center justify-center overflow-hidden shadow-[2px_2px_0px_0px] shadow-foreground">
-                  <img src={`https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/people/people${i}.jpg`} alt="client" className="w-full h-full object-cover" />
+                  <img src={assetUrl(`/people/people${i}.jpg`)} alt="client" className="w-full h-full object-cover" />
                 </div>
               ))}
             </div>
@@ -327,7 +329,7 @@ const Process = () => {
               <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-brand-orange text-black border-2 border-foreground font-black text-sm shadow-[2px_2px_0px_0px] shadow-foreground">PROSES CEPAT</div>
               <h2 className="text-4xl md:text-5xl font-black tracking-tighter mb-6">Murah, Cepat & Profesional.</h2>
               <p className="text-foreground/80 font-medium mb-10 text-lg leading-relaxed">Dirancang oleh profesional untuk kamu yang pusing cari pekerjaan <em>in this economy</em>. Kami tangani dengan cepat!</p>
-              <Button className="h-14 px-8 w-full rounded-full font-bold text-lg bg-brand-red text-white border-2 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px] shadow-foreground transition-all" onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP_CHAT("Halo admin CIVITA, saya ingin konsultasi terkait pembuatan CV yang ATS-friendly."), "_blank")}>
+              <Button className="h-14 px-8 w-full rounded-full font-bold text-lg bg-brand-red text-white border-2 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px] shadow-foreground transition-all" onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP_CHAT(APP_CONFIG.CONSULT_MESSAGE), "_blank")}>
                 Mulai Sekarang!
               </Button>
             </div>
@@ -367,12 +369,12 @@ const PortfolioShowcase = () => {
   const tabs = ["Semua", "ATS", "Resume", "Surat Lamaran"];
 
   const portfolioItems = [
-    { id: 1, type: "ATS", title: "Jasa Pembuatan CV ATS Friendly Corporate", desc: "CV ATS friendly standar HRD untuk melamar lowongan kerja di BUMN, Corporate, dan Tech Company.", imageSrc: "https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/portofolio/cv-ats-1.webp" },
-    { id: 2, type: "Resume", title: "Desain CV Kreatif Estetik Gen-Z", desc: "Contoh CV kreatif dengan desain visual menonjol, sangat cocok untuk apply ke Agensi Kreatif dan Startup.", imageSrc: "https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/portofolio/resume-1.webp" },
-    { id: 3, type: "Surat Lamaran", title: "Jasa Surat Lamaran Kerja Profesional", desc: "Format Cover Letter formal yang sopan, terstruktur, dan ditulis custom (bukan template pasaran).", imageSrc: "https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/portofolio/surat-lamaran-1.webp" },
-    { id: 4, type: "ATS", title: "Template CV ATS Friendly Minimalis", desc: "Desain CV lamaran kerja yang fokus penuh pada bobot pengalaman kerja, pencapaian, dan skill profesional Anda.", imageSrc: "https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/portofolio/cv-ats-2.webp" },
-    { id: 5, type: "Resume", title: "Pembuatan CV Modern Layout 2 Kolom", desc: "Rekomendasi CV modern dengan perpaduan warna subtle dan layout efisien untuk merangkum riwayat hidup.", imageSrc: "https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/portofolio/resume-2.webp" },
-    { id: 6, type: "Surat Lamaran", title: "Jasa Pembuatan Cover Letter", desc: "Surat lamaran kerja profesional yang rapi dan tone profesional.", imageSrc: "https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/portofolio/surat-lamaran-2.webp" },
+    { id: 1, type: "ATS", title: "Jasa Pembuatan CV ATS Friendly Corporate", desc: "CV ATS friendly standar HRD untuk melamar lowongan kerja di BUMN, Corporate, dan Tech Company.", imageSrc: assetUrl("/portofolio/cv-ats-1.webp") },
+    { id: 2, type: "Resume", title: "Desain CV Kreatif Estetik Gen-Z", desc: "Contoh CV kreatif dengan desain visual menonjol, sangat cocok untuk apply ke Agensi Kreatif dan Startup.", imageSrc: assetUrl("/portofolio/resume-1.webp") },
+    { id: 3, type: "Surat Lamaran", title: "Jasa Surat Lamaran Kerja Profesional", desc: "Format Cover Letter formal yang sopan, terstruktur, dan ditulis custom (bukan template pasaran).", imageSrc: assetUrl("/portofolio/surat-lamaran-1.webp") },
+    { id: 4, type: "ATS", title: "Template CV ATS Friendly Minimalis", desc: "Desain CV lamaran kerja yang fokus penuh pada bobot pengalaman kerja, pencapaian, dan skill profesional Anda.", imageSrc: assetUrl("/portofolio/cv-ats-2.webp") },
+    { id: 5, type: "Resume", title: "Pembuatan CV Modern Layout 2 Kolom", desc: "Rekomendasi CV modern dengan perpaduan warna subtle dan layout efisien untuk merangkum riwayat hidup.", imageSrc: assetUrl("/portofolio/resume-2.webp") },
+    { id: 6, type: "Surat Lamaran", title: "Jasa Pembuatan Cover Letter", desc: "Surat lamaran kerja profesional yang rapi dan tone profesional.", imageSrc: assetUrl("/portofolio/surat-lamaran-2.webp") },
   ];
 
   const filteredItems = portfolioItems.filter(
@@ -485,11 +487,11 @@ const TestimonialTextVariant = () => {
 
 const TestimonialChatVariant = () => {
   const screenshots = [
-    "https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/testimoni/testimoni1.webp",
-    "https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/testimoni/testimoni2.webp",
-    "https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/testimoni/testimoni3.webp",
-    "https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/testimoni/testimoni4.webp",
-    "https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/testimoni/testimoni5.webp",
+    assetUrl("/testimoni/testimoni1.webp"),
+    assetUrl("/testimoni/testimoni2.webp"),
+    assetUrl("/testimoni/testimoni3.webp"),
+    assetUrl("/testimoni/testimoni4.webp"),
+    assetUrl("/testimoni/testimoni5.webp"),
   ];
 
   return (
@@ -583,10 +585,10 @@ const CTA = () => {
         <div className="flex justify-center pt-8">
           <div className="flex flex-col w-full sm:w-auto gap-6">
             <button
-              onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP_CHAT("Halo admin CIVITA, saya ingin konsultasi terkait pembuatan CV yang ATS-friendly."), "_blank")}
+              onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP_CHAT(APP_CONFIG.CONSULT_MESSAGE), "_blank")}
               className="group relative inline-flex items-center justify-center gap-3 h-16 px-10 bg-brand-orange text-black border-4 border-foreground rounded-full font-black text-xl shadow-[6px_6px_0px_0px] shadow-foreground hover:shadow-[2px_2px_0px_0px] shadow-foreground hover:translate-y-1 transition-all"
             >
-              Chat Admin CIVITA
+              Chat Admin {APP_CONFIG.NAME}
               <ArrowRight className="w-6 h-6 group-hover:translate-x-1.5 transition-transform stroke-[3px]" />
             </button>
 

@@ -2,6 +2,7 @@ import { sql } from "@/lib/utils";
 import crypto from "crypto";
 import { NextResponse } from "next/server";
 import { clerkClient } from "@clerk/nextjs/server";
+import { APP_CONFIG } from "@/lib/constants";
 import { sendOrderSuccessEmail } from "@/lib/email";
 
 export async function POST(req: Request) {
@@ -83,14 +84,14 @@ export async function POST(req: Request) {
     if (newStatus === "success" && orderData.status !== "success") {
       try {
         // a. Nama produk sudah didapatkan dari query JOIN sebelumnya
-        const productName = orderData.product_title || "Produk Digital CIVITA";
+        const productName = orderData.product_title || `Produk Digital ${APP_CONFIG.NAME}`;
 
         // b. Ambil detail user dari Clerk menggunakan user_id dari tabel orders
         const client = await clerkClient();
         const user = await client.users.getUser(orderData.user_id);
 
         const userEmail = user.emailAddresses[0]?.emailAddress;
-        const userName = `${user.firstName || ""} ${user.lastName || ""}`.trim() || "Pelanggan Setia CIVITA";
+        const userName = `${user.firstName || ""} ${user.lastName || ""}`.trim() || `Pelanggan Setia ${APP_CONFIG.NAME}`;
 
         // c. Kirim email
         if (userEmail) {

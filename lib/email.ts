@@ -21,14 +21,14 @@ export async function sendOrderSuccessEmail({
 }: SendOrderEmailParams) {
   // URL ini mengarah ke endpoint download yang sudah Anda buat.
   // Sesuaikan domain dasar ('https://civita.id') jika sedang testing di localhost ('http://localhost:3000')
-  const appUrl = APP_CONFIG.LINKS.HOMEPAGE || 'https://www.civita.id';
+  const appUrl = APP_CONFIG.URL;
   const downloadLink = `${appUrl}/api/download?orderId=${orderId}`;
 
   try {
     const { data, error } = await resend.emails.send({
-      from: `CIVITA <${APP_CONFIG.EMAIL_SENDER}>`,
+      from: `${APP_CONFIG.NAME} <${APP_CONFIG.EMAIL_SENDER}>`,
       to: [userEmail],
-      subject: `[CIVITA] Pesanan Berhasil: ${productName}`,
+      subject: `[${APP_CONFIG.NAME}] Pesanan Berhasil: ${productName}`,
       // Di bawah ini adalah HTML murni. Anda juga bisa menggunakan pustaka 'react-email' jika ingin desain yang lebih kompleks.
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaec; border-radius: 8px; overflow: hidden;">
@@ -57,7 +57,7 @@ export async function sendOrderSuccessEmail({
             </p>
           </div>
           <div style="background-color: #f8fafc; padding: 16px; text-align: center; color: #64748b; font-size: 14px;">
-             &copy; ${new Date().getFullYear()} CIVITA.id - Semua Hak Dilindungi.
+             &copy; ${new Date().getFullYear()} ${APP_CONFIG.NAME}.id - Semua Hak Dilindungi.
           </div>
         </div>
       `,

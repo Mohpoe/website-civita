@@ -1,6 +1,7 @@
 import { AppClerkProvider } from "@/components/clerk-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toast";
+import { APP_CONFIG } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
@@ -19,12 +20,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.civita.id"),
+  metadataBase: new URL(APP_CONFIG.URL),
   title: {
-    default: "CIVITA | Jasa Pembuatan CV, Resume & Portfolio Profesional",
-    template: "%s | CIVITA",
+    default: `${APP_CONFIG.NAME} | Jasa Pembuatan CV, Resume & Portfolio Profesional`,
+    template: `%s | ${APP_CONFIG.NAME}`,
   },
-  description: "CIVITA adalah jasa pembuatan CV ATS-friendly, CV Kreatif, surat lamaran (cover letter), dan portfolio dengan desain rapi & profesional. Mulai dari 13K, siap bantu kamu lolos kerja!",
+  description: `${APP_CONFIG.NAME} adalah jasa pembuatan CV ATS-friendly, CV Kreatif, surat lamaran (cover letter), dan portfolio dengan desain rapi & profesional. Mulai dari 13K, siap bantu kamu lolos kerja!`,
   keywords: [
     "jasa bikin cv",
     "jasa buat cv",
@@ -57,10 +58,10 @@ export const metadata: Metadata = {
     "desain brosur",
     "bikin cv profesional"
   ],
-  authors: [{ name: "CIVITA" }],
-  creator: "CIVITA",
-  publisher: "CIVITA",
-  applicationName: "CIVITA",
+  authors: [{ name: APP_CONFIG.NAME }],
+  creator: APP_CONFIG.NAME,
+  publisher: APP_CONFIG.NAME,
+  applicationName: APP_CONFIG.NAME,
   robots: {
     index: true,
     follow: true,
@@ -75,30 +76,30 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "id_ID",
-    url: "https://www.civita.id",
-    title: "CIVITA | Jasa Pembuatan CV & Portfolio Profesional",
+    url: APP_CONFIG.URL,
+    title: `${APP_CONFIG.NAME} | Jasa Pembuatan CV & Portfolio Profesional`,
     description: "Bantu kamu lolos kerja! Buat CV ATS-friendly, cover letter, dan portfolio dengan tampilan rapi, elegan, dan disukai HRD.",
-    siteName: "CIVITA",
+    siteName: APP_CONFIG.NAME,
     images: [
       {
         // Sesuaikan nama file ini jika Anda menggunakan aset OG image profesional yang dibuat sebelumnya
-        url: "https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/og-image.webp",
+        url: APP_CONFIG.ASSETS.OG_IMAGE,
         width: 1200,
         height: 630,
-        alt: "CIVITA - Jasa Pembuatan CV, Portfolio & Desain Karir",
+        alt: `${APP_CONFIG.NAME} - Jasa Pembuatan CV, Portfolio & Desain Karir`,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "CIVITA | Jasa Pembuatan CV & Portfolio Profesional",
+    title: `${APP_CONFIG.NAME} | Jasa Pembuatan CV & Portfolio Profesional`,
     description: "Bantu kamu lolos kerja! Buat CV ATS-friendly, cover letter, dan portfolio dengan tampilan rapi, elegan, dan disukai HRD.",
     // Samakan dengan URL gambar di OpenGraph
-    images: ["https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/og-image.webp"],
-    creator: "@bikincivita",
+    images: [APP_CONFIG.ASSETS.OG_IMAGE],
+    creator: APP_CONFIG.SOCIAL.TWITTER,
   },
   alternates: {
-    canonical: "https://www.civita.id",
+    canonical: APP_CONFIG.URL,
   },
   icons: {
     icon: [
@@ -109,7 +110,7 @@ export const metadata: Metadata = {
       { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }
     ],
   },
-  manifest: "/site.webmanifest",
+  manifest: "/manifest.webmanifest",
   verification: {
     other: {
       'msvalidate.01': ['CDDE2B01EA602551E1D0F695AA83222B'],
@@ -122,13 +123,13 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "name": "CIVITA",
-    "url": "https://www.civita.id",
-    "logo": "https://www.civita.id/favicon-32x32.png",
+    "name": APP_CONFIG.NAME,
+    "url": APP_CONFIG.URL,
+    "logo": `${APP_CONFIG.URL}/favicon-32x32.png`,
     "description": "Jasa pembuatan CV ATS-friendly, CV Kreatif, dan portfolio profesional.",
     "sameAs": [
-      "https://www.instagram.com/bikincivita/",
-      "https://www.linkedin.com/company/bikin-civita/",
+      APP_CONFIG.SOCIAL.INSTAGRAM,
+      APP_CONFIG.SOCIAL.LINKEDIN,
     ]
   };
 

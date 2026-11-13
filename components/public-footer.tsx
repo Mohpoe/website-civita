@@ -13,17 +13,17 @@ export function PublicFooter() {
         <div className="flex flex-col gap-6">
           <Link href={ROUTES.ROOT} className="flex items-center gap-3">
             <div className="w-10 h-10 bg-brand-red border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground rounded-xl flex items-center justify-center">
-              <Image alt="Logo" src="https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/Icon.svg" className="size-5 [filter:brightness(0)_invert(1)]" width={1} height={1} />
+              <Image alt="Logo" src={APP_CONFIG.ASSETS.LOGO} className="size-5 [filter:brightness(0)_invert(1)]" width={1} height={1} />
             </div>
-            <span className="font-black tracking-tight text-2xl uppercase">CIVITA</span>
+            <span className="font-black tracking-tight text-2xl uppercase">{APP_CONFIG.NAME}</span>
           </Link>
 
           <div className="flex flex-col gap-4 text-base font-bold">
             <a href={APP_CONFIG.LINKS.WHATSAPP} target="_blank" rel="noreferrer" className="flex items-center gap-3 hover:text-brand-red transition-colors bg-muted w-max px-4 py-2 rounded-full border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground">
               <SiWhatsapp className="w-5 h-5" /> +{APP_CONFIG.WHATSAPP}
             </a>
-            <a href={APP_CONFIG.LINKS.EMAIL} className="flex items-center gap-3 hover:text-brand-orange transition-colors bg-muted w-max px-4 py-2 rounded-full border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground">
-              <Mail className="w-5 h-5" /> civitakerja@gmail.com
+            <a href={APP_CONFIG.LINKS.EMAIL_GMAIL} className="flex items-center gap-3 hover:text-brand-orange transition-colors bg-muted w-max px-4 py-2 rounded-full border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground">
+              <Mail className="w-5 h-5" /> {APP_CONFIG.EMAIL_GMAIL}
             </a>
           </div>
         </div>

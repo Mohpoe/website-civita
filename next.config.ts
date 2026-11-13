@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { APP_CONFIG } from "./lib/constants";
 
 const nextConfig: NextConfig = {
   experimental: {
@@ -17,7 +18,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'qaupjj2m3j2vqts9.public.blob.vercel-storage.com',
+        hostname: APP_CONFIG.ASSETS.HOST,
         pathname: '/**',
       },
     ],

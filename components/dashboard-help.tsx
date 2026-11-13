@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { APP_CONFIG } from "@/lib/constants";
 import { Separator } from "@/components/ui/separator";
 import {
   ArrowRight,
@@ -24,9 +25,9 @@ export default function DashboardHelp() {
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 font-bold text-sm">
             <HelpCircle className="w-4 h-4" /> Panduan Pengguna
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Cara Membeli Produk Digital di CIVITA</h1>
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Cara Membeli Produk Digital di {APP_CONFIG.NAME}</h1>
           <p className="text-muted-foreground">
-            Panduan lengkap untuk pemula dalam memilih, membeli, dan mengunduh produk digital dari CIVITA.id.
+            Panduan lengkap untuk pemula dalam memilih, membeli, dan mengunduh produk digital dari {APP_CONFIG.NAME}.id.
           </p>
         </div>
         <Card className="p-4">
