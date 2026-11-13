@@ -660,16 +660,16 @@ export default function DashboardProducts({ products, categories, orders }: Dash
                   <h4 className="text-sm font-black uppercase tracking-wider flex items-center gap-2 mb-3">
                     <AwardIcon className="w-5 h-5" /> Yang Anda Dapatkan
                   </h4>
-                  <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <ul className="columns-1 gap-x-6 md:columns-2">
                     {featureList.length > 0 ? (
                       featureList.map((feature: string, idx: number) => (
-                        <li key={idx} className="flex items-start gap-2.5 text-xs font-semibold">
+                        <li key={idx} className="mb-2 flex break-inside-avoid items-start gap-2.5 text-xs font-semibold">
                           <CheckCircle2Icon className="w-4 h-4 shrink-0 mt-0.5" />
                           <span className="leading-snug">{feature}</span>
                         </li>
                       ))
                     ) : (
-                      <li className="text-sm opacity-70 col-span-2 italic font-medium">Detail fitur tidak tersedia.</li>
+                      <li className="text-sm opacity-70 italic font-medium">Detail fitur tidak tersedia.</li>
                     )}
                   </ul>
                 </div>
