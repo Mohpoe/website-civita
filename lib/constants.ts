@@ -28,7 +28,6 @@ export const APP_CONFIG = {
     HOST: ASSET_HOST,
     BASE: ASSET_BASE_URL,
     LOGO: `${ASSET_BASE_URL}/Icon.svg`,
-    OG_IMAGE: `${ASSET_BASE_URL}/og-image.webp`,
     NO_PROFILE: `${ASSET_BASE_URL}/no-profile.svg`,
   },
   SOCIAL: {

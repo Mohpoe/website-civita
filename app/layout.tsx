@@ -80,22 +80,11 @@ export const metadata: Metadata = {
     title: `${APP_CONFIG.NAME} | Jasa Pembuatan CV & Portfolio Profesional`,
     description: "Bantu kamu lolos kerja! Buat CV ATS-friendly, cover letter, dan portfolio dengan tampilan rapi, elegan, dan disukai HRD.",
     siteName: APP_CONFIG.NAME,
-    images: [
-      {
-        // Sesuaikan nama file ini jika Anda menggunakan aset OG image profesional yang dibuat sebelumnya
-        url: APP_CONFIG.ASSETS.OG_IMAGE,
-        width: 1200,
-        height: 630,
-        alt: `${APP_CONFIG.NAME} - Jasa Pembuatan CV, Portfolio & Desain Karir`,
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: `${APP_CONFIG.NAME} | Jasa Pembuatan CV & Portfolio Profesional`,
     description: "Bantu kamu lolos kerja! Buat CV ATS-friendly, cover letter, dan portfolio dengan tampilan rapi, elegan, dan disukai HRD.",
-    // Samakan dengan URL gambar di OpenGraph
-    images: [APP_CONFIG.ASSETS.OG_IMAGE],
     creator: APP_CONFIG.SOCIAL.TWITTER,
   },
   alternates: {
