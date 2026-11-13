@@ -46,8 +46,8 @@ export default function PdfToWordPage() {
               Konversi PDF ke Word
             </h1>
             <p className="text-foreground/80 font-medium text-lg max-w-2xl mx-auto">
-              Ubah PDF menjadi dokumen Word yang bisa diedit. Layout, tabel, dan
-              gambar dipertahankan semaksimal mungkin.
+              Ubah PDF menjadi dokumen Word yang bisa diedit. Tata letak, tabel,
+              dan gambar dipertahankan sebisa mungkin.
             </p>
           </div>
           <div className="bg-card border-4 border-foreground rounded-[2rem] shadow-[6px_6px_0px_0px] shadow-foreground p-4 md:p-8">

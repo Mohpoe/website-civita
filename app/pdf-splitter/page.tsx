@@ -26,7 +26,7 @@ export default function PdfSplitterPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-black tracking-tighter">Pisahkan File PDF Online</h1>
             <p className="text-foreground/80 font-medium text-lg max-w-2xl mx-auto">
-              Pisahkan PDF menjadi file terpisah per halaman, rentang halaman, atau halaman pilihan. Proses 100% di browser.
+              Pisahkan PDF menjadi file terpisah per halaman, rentang halaman, atau halaman pilihan. Semua diproses di perangkat Anda.
             </p>
           </div>
           <div className="bg-card border-4 border-foreground rounded-[2rem] shadow-[6px_6px_0px_0px] shadow-foreground p-4 md:p-8">

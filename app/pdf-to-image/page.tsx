@@ -26,7 +26,7 @@ export default function PdfToImagePage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-black tracking-tighter">Konversi PDF ke JPG/PNG</h1>
             <p className="text-foreground/80 font-medium text-lg max-w-2xl mx-auto">
-              Ubah setiap halaman PDF menjadi gambar JPG atau PNG berkualitas tinggi. Proses 100% di browser.
+              Ubah setiap halaman PDF menjadi gambar JPG atau PNG berkualitas tinggi. Semua diproses di perangkat Anda.
             </p>
           </div>
           <div className="bg-card border-4 border-foreground rounded-[2rem] shadow-[6px_6px_0px_0px] shadow-foreground p-4 md:p-8">

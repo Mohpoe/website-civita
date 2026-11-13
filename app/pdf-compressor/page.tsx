@@ -26,7 +26,7 @@ export default function PdfCompressorPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-black tracking-tighter">Kompres File PDF Online</h1>
             <p className="text-foreground/80 font-medium text-lg max-w-2xl mx-auto">
-              Kurangi ukuran file PDF tanpa mengunggah ke server. Proses 100% di browser Anda.
+              Perkecil ukuran file PDF tanpa mengunggahnya ke mana pun. Semua diproses di perangkat Anda.
             </p>
           </div>
           <div className="bg-card border-4 border-foreground rounded-[2rem] shadow-[6px_6px_0px_0px] shadow-foreground p-4 md:p-8">

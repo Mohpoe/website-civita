@@ -176,7 +176,7 @@ export default function PdfToWordTool() {
           "error-callback": () => {
             setTurnstileToken(null);
             setTurnstileError(
-              "Verifikasi keamanan gagal dimuat. Muat ulang halaman.",
+              "Cek keamanan gagal dimuat. Muat ulang halaman.",
             );
           },
         });
@@ -288,7 +288,7 @@ export default function PdfToWordTool() {
     }
 
     if (!turnstileToken) {
-      setError("Selesaikan verifikasi keamanan terlebih dahulu.");
+      setError("Selesaikan cek keamanan terlebih dahulu.");
       return;
     }
 
@@ -310,7 +310,7 @@ export default function PdfToWordTool() {
 
       if (ticket.quota) setQuota(ticket.quota);
       if (!ticketRes.ok || !ticket.pathname) {
-        throw new Error(ticket.error || "Gagal menyiapkan unggahan.");
+        throw new Error(ticket.error || "Gagal menyiapkan file.");
       }
 
       const blob = await uploadPresigned(ticket.pathname, file, {
@@ -393,7 +393,7 @@ export default function PdfToWordTool() {
         }
 
         if (!res.ok && res.status === 404) {
-          throw new Error(data.error || "Sesi konversi tidak ditemukan.");
+          throw new Error(data.error || "Proses konversi tidak ditemukan. Silakan coba lagi.");
         }
       } catch (pollError) {
         const message = (pollError as Error).message;
@@ -433,15 +433,11 @@ export default function PdfToWordTool() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold">PDF to Word</h1>
-          <p className="text-sm text-muted-foreground">
-            Ubah PDF menjadi dokumen Word yang bisa diedit. Maksimal{" "}
-            {PDF_TO_WORD_CONFIG.maxFileMb} MB dan{" "}
-            {PDF_TO_WORD_CONFIG.maxPages} halaman.
-          </p>
-        </div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-muted-foreground">
+          Maksimal {PDF_TO_WORD_CONFIG.maxFileMb} MB dan{" "}
+          {PDF_TO_WORD_CONFIG.maxPages} halaman per konversi.
+        </p>
         <Button
           type="button"
           variant="outline"
@@ -546,7 +542,7 @@ export default function PdfToWordTool() {
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
                 <ShieldCheckIcon className="w-4 h-4" />
-                Verifikasi keamanan
+                Cek keamanan
               </div>
               <div ref={turnstileRef} className="min-h-[65px]" />
               {turnstileError && (

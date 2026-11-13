@@ -225,7 +225,7 @@ export default function DashboardPdfToImage() {
     setConvertedImages([]);
     toast.add({
       type: "info",
-      description: "Sedang mengkonversi PDF ke gambar...",
+      description: "Sedang mengonversi PDF ke gambar...",
     });
 
     try {
@@ -285,13 +285,13 @@ export default function DashboardPdfToImage() {
 
       toast.add({
         type: "success",
-        description: `Berhasil mengkonversi ${images.length} halaman!`,
+        description: `Berhasil mengonversi ${images.length} halaman!`,
       });
     } catch (error) {
       console.error(error);
       toast.add({
         type: "error",
-        description: "Gagal mengkonversi PDF. Silakan coba lagi.",
+        description: "Gagal mengonversi PDF. Silakan coba lagi.",
         priority: "high",
       });
     } finally {
@@ -362,12 +362,9 @@ export default function DashboardPdfToImage() {
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold">PDF to Image</h1>
-          <p className="text-sm text-muted-foreground">
-            Konversi halaman PDF menjadi gambar JPG atau PNG dengan berbagai pengaturan resolusi. Proses dilakukan di browser.
-          </p>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          Maksimal {MAX_FILE_SIZE_MB} MB per file.
+        </p>
         <div className="flex items-center gap-2">
           <Button
             type="button"
@@ -566,7 +563,7 @@ export default function DashboardPdfToImage() {
             <CardHeader>
               <CardTitle className="text-sm font-normal">Pengaturan Konversi</CardTitle>
               <CardDescription>
-                Atur format, kualitas, dan resolusi gambar hasil konversi
+                Atur format, kualitas, dan ukuran gambar hasil
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -631,28 +628,27 @@ export default function DashboardPdfToImage() {
               )}
 
               <div className="space-y-3">
-                <Label className="text-sm font-medium">Resolusi/Skala</Label>
+                <Label className="text-sm font-medium">Ukuran Gambar</Label>
                 <Select value={String(scale)} onValueChange={(value) => setScale(Number(value) as ScaleOption)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1">1x (Normal) - Ukuran lebih kecil</SelectItem>
-                    <SelectItem value="1.5">1.5x (Standar) - Seimbang</SelectItem>
-                    <SelectItem value="2">2x (Tinggi) - Rekomendasi</SelectItem>
-                    <SelectItem value="2.5">2.5x (Sangat Tinggi)</SelectItem>
-                    <SelectItem value="3">3x (Maksimal) - File besar</SelectItem>
+                    <SelectItem value="1">1x (Kecil)</SelectItem>
+                    <SelectItem value="1.5">1.5x (Sedang)</SelectItem>
+                    <SelectItem value="2">2x (Tajam) — disarankan</SelectItem>
+                    <SelectItem value="2.5">2.5x (Sangat tajam)</SelectItem>
+                    <SelectItem value="3">3x (Maksimal)</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  Skala lebih tinggi menghasilkan gambar lebih tajam namun ukuran file lebih besar
+                  Semakin besar ukuran, gambar makin tajam tapi file makin besar.
                 </p>
               </div>
 
               <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg text-xs text-muted-foreground">
                 <InfoIcon className="w-4 h-4 shrink-0" />
                 <p>
-                  Akan dikonversi{" "}
                   {(() => {
                     if (pageSelectionMode === "all") return `${totalPages} halaman`;
                     if (pageSelectionMode === "range") {
@@ -667,7 +663,7 @@ export default function DashboardPdfToImage() {
                     if (pages.length > 0) return `${pages.length} halaman`;
                     return "halaman yang dipilih";
                   })()}{" "}
-                  PDF menjadi {format.toUpperCase()}. Proses ini sepenuhnya dilakukan di browser Anda.
+                  PDF akan diubah menjadi {format.toUpperCase()}. File diproses di perangkat Anda.
                 </p>
               </div>
 
@@ -696,7 +692,7 @@ export default function DashboardPdfToImage() {
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       />
                     </svg>
-                    Sedang Mengkonversi...
+                    Sedang Mengonversi...
                   </span>
                 ) : (
                   <span className="flex items-center gap-2">
@@ -732,7 +728,7 @@ export default function DashboardPdfToImage() {
               Konversi Berhasil
             </CardTitle>
             <CardDescription>
-              Berhasil mengkonversi {convertedImages.length} halaman menjadi {format.toUpperCase()}
+              Berhasil mengonversi {convertedImages.length} halaman menjadi {format.toUpperCase()}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

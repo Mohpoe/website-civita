@@ -342,13 +342,10 @@ export default function DashboardPdfMerger() {
     <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold">PDF Merger</h1>
-          <p className="text-sm text-muted-foreground">
-            Gabungkan beberapa file PDF menjadi satu dokumen. Urutkan file dengan
-            tombol panah atau dengan menyeret handle di samping kiri.
-          </p>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          Maksimal {MAX_FILES} file, {MAX_FILE_SIZE_MB} MB per file. Urutkan
+          dengan tombol panah atau seret ikon di sisi kiri.
+        </p>
         <div className="flex items-center gap-2">
           <Button
             type="button"

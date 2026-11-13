@@ -301,7 +301,7 @@ export default function DashboardImageToPdf() {
     setIsConverting(true);
     toast.add({
       type: "info",
-      description: "Sedang mengkonversi gambar ke PDF...",
+      description: "Sedang mengonversi gambar ke PDF...",
     });
 
     try {
@@ -369,13 +369,13 @@ export default function DashboardImageToPdf() {
 
       toast.add({
         type: "success",
-        description: "Berhasil mengkonversi gambar ke PDF!",
+        description: "Berhasil mengonversi gambar ke PDF!",
       });
     } catch (error) {
       console.error(error);
       toast.add({
         type: "error",
-        description: "Gagal mengkonversi gambar ke PDF. Silakan coba lagi.",
+        description: "Gagal mengonversi gambar ke PDF. Silakan coba lagi.",
         priority: "high",
       });
     } finally {
@@ -423,12 +423,9 @@ export default function DashboardImageToPdf() {
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold">Image to PDF</h1>
-          <p className="text-sm text-muted-foreground">
-            Konversi gambar JPG, JPEG, atau PNG menjadi file PDF. Atur urutan halaman sesuai kebutuhan Anda.
-          </p>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          Maksimal {MAX_FILES} gambar, {MAX_FILE_SIZE_MB} MB per file.
+        </p>
         <div className="flex items-center gap-2">
           <Button
             type="button"
@@ -626,7 +623,7 @@ export default function DashboardImageToPdf() {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     />
                   </svg>
-                  Sedang Mengkonversi...
+                  Sedang Mengonversi...
                 </span>
               ) : (
                 <span className="flex items-center gap-2">
@@ -647,7 +644,7 @@ export default function DashboardImageToPdf() {
               Konversi Berhasil
             </CardTitle>
             <CardDescription>
-              Berhasil mengkonversi {images.length} gambar menjadi file PDF
+              Berhasil mengonversi {images.length} gambar menjadi file PDF
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

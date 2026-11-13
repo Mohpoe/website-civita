@@ -26,7 +26,7 @@ export default function ImageToPdfPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-black tracking-tighter">Konversi Gambar ke PDF</h1>
             <p className="text-foreground/80 font-medium text-lg max-w-2xl mx-auto">
-              Gabungkan beberapa gambar JPG, JPEG, PNG menjadi satu file PDF. Atur urutan sesuai kebutuhan.
+              Gabungkan beberapa gambar JPG, JPEG, PNG menjadi satu file PDF. Atur urutan sesuai kebutuhan. Semua diproses di perangkat Anda.
             </p>
           </div>
           <div className="bg-card border-4 border-foreground rounded-[2rem] shadow-[6px_6px_0px_0px] shadow-foreground p-4 md:p-8">

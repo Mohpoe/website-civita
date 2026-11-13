@@ -206,12 +206,9 @@ export default function DashboardPdfCompressor() {
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold">PDF Compressor</h1>
-          <p className="text-sm text-muted-foreground">
-            Kurangi ukuran file PDF dengan berbagai pilihan kompresi. Proses dilakukan di browser.
-          </p>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          Maksimal {MAX_FILE_SIZE_MB} MB per file.
+        </p>
         <div className="flex items-center gap-2">
           <Button
             type="button"
@@ -396,7 +393,7 @@ export default function DashboardPdfCompressor() {
               Kompresi Berhasil
             </CardTitle>
             <CardDescription>
-              File berhasil dikompresi dengan preset {currentPreset.name}
+              File berhasil dikompresi dengan pilihan {currentPreset.name}.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -420,7 +417,7 @@ export default function DashboardPdfCompressor() {
             <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg text-xs text-muted-foreground">
               <InfoIcon className="w-4 h-4 shrink-0" />
               <p>
-                Kompresi ini menghilangkan metadata tidak penting dan mengoptimalkan struktur PDF.
+                Data yang tidak diperlukan dibuang agar file lebih kecil. Tampilan PDF tetap sama.
               </p>
             </div>
 

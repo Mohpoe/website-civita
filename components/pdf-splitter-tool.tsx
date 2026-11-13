@@ -148,7 +148,7 @@ export default function DashboardPdfSplitter() {
       setRangeTo(String(pdf.numPages));
       toast.add({
         type: "success",
-        description: "PDF berhasil dimuat!",
+        description: "PDF siap diproses!",
       });
     } catch (error) {
       console.error(error);
@@ -347,12 +347,9 @@ export default function DashboardPdfSplitter() {
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold">PDF Splitter</h1>
-          <p className="text-sm text-muted-foreground">
-            Pisahkan file PDF menjadi beberapa file terpisah. Proses dilakukan di browser.
-          </p>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          Maksimal {MAX_FILE_SIZE_MB} MB per file.
+        </p>
         <div className="flex items-center gap-2">
           <Button
             type="button"
@@ -387,7 +384,7 @@ export default function DashboardPdfSplitter() {
                 Klik untuk memilih file PDF
               </span>
               <span className="text-xs text-muted-foreground">
-                File akan diproses langsung di browser Anda
+                File diproses langsung di perangkat Anda
               </span>
               <Input
                 ref={fileInputRef}
@@ -440,7 +437,7 @@ export default function DashboardPdfSplitter() {
       {file && splitResults.length === 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-normal">Mode Pemisahan</CardTitle>
+            <CardTitle className="text-sm font-normal">Cara Memisahkan</CardTitle>
             <CardDescription>
               Pilih cara memisahkan file PDF Anda
             </CardDescription>
@@ -480,9 +477,9 @@ export default function DashboardPdfSplitter() {
               >
                 <RadioGroupItem value="range" id="mode-range" className="mt-0.5" />
                 <div className="flex-1">
-                  <div className="text-sm font-medium">Ekstrak Rentang Halaman</div>
+                  <div className="text-sm font-medium">Ambil Rentang Halaman</div>
                   <p className="text-xs text-muted-foreground mt-0.5 sm:mt-1">
-                    Ekstrak beberapa halaman berurutan menjadi satu file
+                    Ambil beberapa halaman berurutan menjadi satu file
                   </p>
                 </div>
               </Label>
@@ -500,7 +497,7 @@ export default function DashboardPdfSplitter() {
                 <div className="flex-1">
                   <div className="text-sm font-medium">Pilih Halaman Tertentu</div>
                   <p className="text-xs text-muted-foreground mt-0.5 sm:mt-1">
-                    Ekstrak halaman/rentang pilihan, lalu gabung jadi 1 PDF atau pisah per halaman
+                    Ambil halaman atau rentang tertentu, lalu gabung jadi satu PDF atau pisah per halaman
                   </p>
                 </div>
               </Label>
@@ -546,11 +543,11 @@ export default function DashboardPdfSplitter() {
                     onChange={(e) => setCustomPages(e.target.value)}
                   />
                   <p className="text-xs text-muted-foreground">
-                    Pisahkan dengan koma/titik koma/spasi. Gunakan tanda hubung untuk rentang (contoh: 3-6).
+                    Pisahkan dengan koma atau spasi. Gunakan tanda hubung untuk rentang (contoh: 3-6).
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-sm">Hasil Output</Label>
+                  <Label className="text-sm">Hasil</Label>
                   <RadioGroup
                     value={customMerge ? "merge" : "separate"}
                     onValueChange={(value) => setCustomMerge(value === "merge")}
