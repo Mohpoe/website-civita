@@ -123,7 +123,7 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
               onClick={() => setOpenMobile(!isMobile)}
             >
               <Image alt="Logo" src="https://qaupjj2m3j2vqts9.public.blob.vercel-storage.com/assets/Icon.svg" className="size-5" width={100} height={100} />
-              <span className="text-base font-bold">{APP_CONFIG.NAME_SECOND}</span>
+              <span className="text-base font-bold">{APP_CONFIG.NAME}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

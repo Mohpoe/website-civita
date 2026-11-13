@@ -77,7 +77,7 @@ function PublicMobileMenu() {
       >
         <SheetHeader className="border-b-4 border-foreground px-5 py-4 pr-14">
           <SheetTitle className="text-xl font-black tracking-tight">Menu</SheetTitle>
-          <SheetDescription className="font-medium">Navigasi CIVITA.ID</SheetDescription>
+          <SheetDescription className="font-medium">Navigasi CIVITA</SheetDescription>
         </SheetHeader>
 
         <div className="civita-menu-scroll flex-1 overflow-y-auto px-4 py-5">
@@ -206,7 +206,7 @@ export function PublicNavigation() {
               height={1}
             />
           </div>
-          <span className="font-black tracking-tight text-lg sm:text-xl">CIVITA.ID</span>
+          <span className="font-black tracking-tight text-lg sm:text-xl">CIVITA</span>
         </Link>
 
         <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 min-w-0">

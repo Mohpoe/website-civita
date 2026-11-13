@@ -60,6 +60,7 @@ export const metadata: Metadata = {
   authors: [{ name: "CIVITA" }],
   creator: "CIVITA",
   publisher: "CIVITA",
+  applicationName: "CIVITA",
   robots: {
     index: true,
     follow: true,

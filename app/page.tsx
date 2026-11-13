@@ -14,6 +14,15 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { SiInstagram as Instagram, SiWhatsapp } from "react-icons/si";
 
+// Structured data WebSite khusus homepage, dirender di HTML awal agar terbaca crawler.
+const WEBSITE_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "CIVITA",
+  alternateName: ["CIVITA.ID", "Civita"],
+  url: "https://civita.id",
+};
+
 // #region Document Mockups (Neo-Pop Styled)
 interface DocumentMockupProps { className?: string; }
 
@@ -671,6 +680,11 @@ export default function App() {
           background: var(--brand-orange);
         }
       `}} />
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(WEBSITE_JSON_LD) }}
+      />
 
       <PublicNavigation />
 
