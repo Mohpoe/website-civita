@@ -4,6 +4,7 @@ import { PublicFooter } from "@/components/public-footer";
 import { PublicNavigation } from "@/components/public-header";
 import { PdfToolsCrossNav } from "@/components/pdf-tools-cross-nav";
 import DashboardPdfToImage from "@/components/pdf-to-image-tool";
+import { PdfToolGuide } from "@/components/pdf-tool-guide";
 import { ROUTES } from "@/lib/constants";
 import { FileImageIcon } from "lucide-react";
 
@@ -32,6 +33,42 @@ export default function PdfToImagePage() {
           <div className="bg-card border-4 border-foreground rounded-[2rem] shadow-[6px_6px_0px_0px] shadow-foreground p-4 md:p-8">
             <DashboardPdfToImage />
           </div>
+          <PdfToolGuide
+            toolName="PDF to Image"
+            steps={[
+              "Klik area unggah lalu pilih satu file PDF. Ukuran maksimal 100 MB.",
+              "Pilih halaman yang ingin diubah: semua halaman, rentang halaman, atau halaman tertentu.",
+              "Tentukan format gambar (JPG atau PNG), kualitas JPG, dan skala resolusi 1x sampai 3x.",
+              "Klik tombol konversi, lalu unduh gambar satu per satu atau sekaligus dalam file ZIP.",
+            ]}
+            faqs={[
+              {
+                question: "Format gambar apa saja yang dihasilkan?",
+                answer:
+                  "JPG dan PNG. JPG cocok untuk foto dan ukuran file lebih kecil, sedangkan PNG lebih baik untuk teks dan grafik yang butuh ketajaman.",
+              },
+              {
+                question: "Bagaimana cara mendapatkan hasil yang lebih tajam?",
+                answer:
+                  "Naikkan skala ke 2x atau 3x. Semakin besar skala, semakin tinggi resolusi gambar dan semakin besar pula ukuran filenya.",
+              },
+              {
+                question: "Apakah kualitas JPG bisa diatur?",
+                answer:
+                  "Bisa. Gunakan slider kualitas JPG. Nilai lebih rendah menghasilkan file lebih kecil, nilai lebih tinggi menjaga detail gambar.",
+              },
+              {
+                question: "Apakah file PDF saya diunggah ke server?",
+                answer:
+                  "Tidak. Konversi berjalan sepenuhnya di browser, jadi isi dokumen tidak dikirim ke server CIVITA.",
+              },
+              {
+                question: "Bagaimana cara mengunduh semua gambar sekaligus?",
+                answer:
+                  "Gunakan tombol unduh semua. Semua gambar akan dikemas dalam satu file ZIP.",
+              },
+            ]}
+          />
           <PdfToolsCrossNav currentHref={ROUTES.PDF_TOOLS.PDF_TO_IMAGE} />
         </div>
       </main>

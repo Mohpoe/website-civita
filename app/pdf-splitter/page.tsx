@@ -4,6 +4,7 @@ import { PublicFooter } from "@/components/public-footer";
 import { PublicNavigation } from "@/components/public-header";
 import { PdfToolsCrossNav } from "@/components/pdf-tools-cross-nav";
 import DashboardPdfSplitter from "@/components/pdf-splitter-tool";
+import { PdfToolGuide } from "@/components/pdf-tool-guide";
 import { ROUTES } from "@/lib/constants";
 import { ScissorsIcon } from "lucide-react";
 
@@ -32,6 +33,41 @@ export default function PdfSplitterPage() {
           <div className="bg-card border-4 border-foreground rounded-[2rem] shadow-[6px_6px_0px_0px] shadow-foreground p-4 md:p-8">
             <DashboardPdfSplitter />
           </div>
+          <PdfToolGuide
+            toolName="PDF Splitter"
+            steps={[
+              "Klik area unggah lalu pilih satu file PDF. Ukuran maksimal 100 MB.",
+              "Pilih mode pemisahan: semua halaman, rentang halaman, atau halaman tertentu.",
+              "Untuk halaman tertentu, tulis nomor halaman dengan format seperti 2, 3-6, 8, lalu pilih gabung jadi satu PDF atau pisah per halaman.",
+              "Klik tombol Pisahkan PDF, lalu unduh hasilnya satu per satu atau sekaligus dalam file ZIP.",
+            ]}
+            faqs={[
+              {
+                question: "Berapa ukuran file PDF maksimal yang bisa dipisah?",
+                answer: "Maksimal 100 MB per file.",
+              },
+              {
+                question: "Bagaimana cara memilih halaman tertentu?",
+                answer:
+                  "Gunakan mode halaman tertentu, lalu tulis nomornya dengan format seperti 2, 3-6, 8. Artinya halaman 2, halaman 3 sampai 6, dan halaman 8.",
+              },
+              {
+                question: "Apa bedanya gabung jadi 1 PDF dan pisah per halaman?",
+                answer:
+                  "Gabung jadi 1 PDF menyatukan semua halaman pilihan Anda ke satu file. Pisah per halaman membuat satu file PDF untuk setiap halaman yang dipilih.",
+              },
+              {
+                question: "Apakah file saya diunggah ke server?",
+                answer:
+                  "Tidak. Pemisahan berjalan sepenuhnya di browser, jadi isi dokumen tidak dikirim ke server CIVITA.",
+              },
+              {
+                question: "Bagaimana cara mengunduh semua hasil sekaligus?",
+                answer:
+                  "Gunakan tombol unduh semua. Hasil akan dikemas dalam satu file ZIP agar tidak perlu mengunduh satu per satu.",
+              },
+            ]}
+          />
           <PdfToolsCrossNav currentHref={ROUTES.PDF_TOOLS.PDF_SPLITTER} />
         </div>
       </main>

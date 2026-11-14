@@ -133,6 +133,9 @@ const Hero = () => {
           </div>
 
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tighter leading-[1.05] text-foreground">
+            <span className="mb-3 block text-lg font-black tracking-tight text-foreground/70 sm:text-xl lg:text-2xl">
+              Jasa Bikin CV ATS-Friendly
+            </span>
             Bantu kamu <br />
             <span className="text-brand-red drop-shadow-[4px_4px_0px] drop-shadow-foreground">lolos kerja!</span>
           </h1>
