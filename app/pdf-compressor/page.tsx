@@ -37,8 +37,8 @@ export default function PdfCompressorPage() {
             toolName="PDF Compressor"
             steps={[
               "Klik area unggah lalu pilih satu file PDF. Ukuran maksimal 100 MB per file.",
-              "Pilih preset kompresi yang tersedia, atau gunakan Kustom untuk mengatur sendiri tingkat kompresinya.",
-              "Klik tombol Kompres PDF dan tunggu sampai proses selesai. Semua berjalan di browser Anda.",
+              "Pilih preset kompresi: Ekstrim untuk file paling kecil, Direkomendasikan untuk keseimbangan, atau Kustom untuk mengatur kualitas sendiri.",
+              "Klik tombol Kompres PDF dan tunggu proses selesai. Semua berjalan di browser Anda.",
               "Bandingkan ukuran sebelum dan sesudah, lalu unduh file PDF hasil kompresi.",
             ]}
             faqs={[
@@ -53,14 +53,19 @@ export default function PdfCompressorPage() {
                   "Tidak. Kompresi berjalan sepenuhnya di perangkat Anda, jadi isi dokumen tidak pernah dikirim ke server CIVITA.",
               },
               {
+                question: "Apa pengaruh pilihan preset terhadap hasil?",
+                answer:
+                  "Preset menentukan kualitas gambar JPEG saat halaman dirender ulang. Ekstrim menghasilkan file paling kecil, sedangkan Rendah Kompresi mempertahankan detail paling tajam.",
+              },
+              {
                 question: "Mengapa ukuran file tidak banyak berkurang?",
                 answer:
-                  "Kompresor membersihkan metadata dan mengoptimalkan struktur PDF. Jika isi dokumen didominasi gambar beresolusi tinggi, penghematannya bisa kecil karena gambar tidak diubah.",
+                  "Jika PDF berbasis teks atau vektor sudah efisien, hasil render gambar bisa lebih besar daripada versi aslinya. Tool lalu memilih hasil terkecil, yaitu optimasi struktur tanpa mengubah halaman.",
               },
               {
                 question: "Apakah kualitas isi PDF berubah?",
                 answer:
-                  "Tidak. Teks, gambar, dan tata letak tetap sama. Yang dihapus hanya metadata seperti judul, penulis, dan nama pembuat dokumen.",
+                  "Tampilan halaman tetap sama. Pada dokumen yang dirender sebagai gambar, detail halus bisa sedikit berkurang sesuai preset. Lapisan teks tetap disertakan agar PDF masih bisa dicari dan dibaca mesin ATS.",
               },
               {
                 question: "Apakah file hasil kompresi disimpan di server?",

@@ -24,7 +24,7 @@ import {
   RefreshCwIcon,
   XIcon
 } from "lucide-react";
-import { PDFDocument } from "pdf-lib";
+import { compressPdf, type CompressionMethod } from "@/lib/pdf-compressor";
 import { useRef, useState } from "react";
 import { toast } from "@/components/ui/toast";
 
@@ -83,6 +83,12 @@ export default function DashboardPdfCompressor() {
   const [file, setFile] = useState<File | null>(null);
   const [isCompressing, setIsCompressing] = useState(false);
   const [compressedBlob, setCompressedBlob] = useState<Blob | null>(null);
+  const [compressionMethod, setCompressionMethod] =
+    useState<CompressionMethod | null>(null);
+  const [progress, setProgress] = useState<{
+    done: number;
+    total: number;
+  } | null>(null);
   const [selectedPreset, setSelectedPreset] = useState<CompressionPreset["id"]>("recommended");
   const [customQuality, setCustomQuality] = useState([60]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -116,12 +122,16 @@ export default function DashboardPdfCompressor() {
 
     setFile(selectedFile);
     setCompressedBlob(null);
+    setCompressionMethod(null);
+    setProgress(null);
     e.target.value = "";
   };
 
   const handleRemoveFile = () => {
     setFile(null);
     setCompressedBlob(null);
+    setCompressionMethod(null);
+    setProgress(null);
   };
 
   const handleCompress = async () => {
@@ -135,35 +145,29 @@ export default function DashboardPdfCompressor() {
     }
 
     setIsCompressing(true);
+    setProgress(null);
     toast.add({
       type: "info",
       description: "Sedang mengompresi PDF...",
     });
 
     try {
-      const arrayBuffer = await file.arrayBuffer();
-      const pdfDoc = await PDFDocument.load(arrayBuffer);
+      const { bytes, method } = await compressPdf(file, quality, (done, total) =>
+        setProgress({ done, total }),
+      );
 
-      pdfDoc.setTitle("");
-      pdfDoc.setAuthor("");
-      pdfDoc.setSubject("");
-      pdfDoc.setKeywords([]);
-      pdfDoc.setProducer("");
-      pdfDoc.setCreator("");
-
-      const pdfBytes = await pdfDoc.save({
-        useObjectStreams: true,
-        addDefaultPage: false,
-      });
-
-      const blob = new Blob([pdfBytes as unknown as BlobPart], {
-        type: "application/pdf",
-      });
-
-      setCompressedBlob(blob);
+      setCompressionMethod(method);
+      setCompressedBlob(
+        new Blob([bytes as unknown as BlobPart], {
+          type: "application/pdf",
+        }),
+      );
       toast.add({
         type: "success",
-        description: "PDF berhasil dikompresi!",
+        description:
+          method === "raster"
+            ? "PDF berhasil dikompresi!"
+            : "PDF berhasil dioptimalkan!",
       });
     } catch (error) {
       console.error(error);
@@ -174,6 +178,7 @@ export default function DashboardPdfCompressor() {
       });
     } finally {
       setIsCompressing(false);
+      setProgress(null);
     }
   };
 
@@ -193,6 +198,8 @@ export default function DashboardPdfCompressor() {
   const handleReset = () => {
     setFile(null);
     setCompressedBlob(null);
+    setCompressionMethod(null);
+    setProgress(null);
     setSelectedPreset("recommended");
     setCustomQuality([60]);
   };
@@ -372,7 +379,9 @@ export default function DashboardPdfCompressor() {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     />
                   </svg>
-                  Sedang Mengompresi...
+                  {progress
+                    ? `Mengompresi ${progress.done}/${progress.total}...`
+                    : "Sedang Mengompresi..."}
                 </span>
               ) : (
                 <span className="flex items-center gap-2">
@@ -393,7 +402,9 @@ export default function DashboardPdfCompressor() {
               Kompresi Berhasil
             </CardTitle>
             <CardDescription>
-              File berhasil dikompresi dengan pilihan {currentPreset.name}.
+              {compressionMethod === "raster"
+                ? `File dirender ulang dengan pilihan ${currentPreset.name}.`
+                : `Dokumen sudah efisien dan dioptimalkan dengan pilihan ${currentPreset.name}.`}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -417,7 +428,9 @@ export default function DashboardPdfCompressor() {
             <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg text-xs text-muted-foreground">
               <InfoIcon className="w-4 h-4 shrink-0" />
               <p>
-                Data yang tidak diperlukan dibuang agar file lebih kecil. Tampilan PDF tetap sama.
+                {compressionMethod === "raster"
+                  ? "Halaman dirender ulang sebagai gambar agar ukuran turun. Lapisan teks tetap disertakan sehingga PDF masih bisa dicari."
+                  : "Dokumen ini sudah efisien. Metadata dan struktur PDF dioptimalkan tanpa mengubah tampilan maupun teks."}
               </p>
             </div>
 
