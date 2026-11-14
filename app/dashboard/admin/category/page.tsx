@@ -11,18 +11,14 @@ export const metadata: Metadata = {
 }
 
 export default async function CategoryPage() {
-  try {
-    const [categories] = await Promise.all([
-      getCategories() as Promise<Category[]>,
-    ]);
+  const [categories] = await Promise.all([
+    getCategories() as Promise<Category[]>,
+  ]);
 
-    return (
-      <>
-        <PageTitle title={mainTitle} />
-        <DashboardCategory categories={categories} />
-      </>
-    )
-  } catch (error) {
-    throw error;
-  }
+  return (
+    <>
+      <PageTitle title={mainTitle} />
+      <DashboardCategory categories={categories} />
+    </>
+  );
 }

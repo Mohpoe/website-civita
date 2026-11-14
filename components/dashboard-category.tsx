@@ -62,6 +62,7 @@ export default function DashboardCategory({ categories }: DashboardCategoryProps
   useEffect(() => {
     if (!upsertState) return;
     if (upsertState.success) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- menutup dialog setelah Server Action sukses
       setIsDialogOpen(false);
       setCategoryToUpdate(null);
       toast.add({ type: "success", description: upsertState.message });

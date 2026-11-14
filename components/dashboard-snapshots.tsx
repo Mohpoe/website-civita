@@ -47,6 +47,7 @@ import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "@/components/ui/toast";
 import { restoreSnapshotAction } from "@/lib/actions/snapshots";
+import { getErrorMessage } from "@/lib/errors";
 import { ProductSnapshot } from "@/types/global";
 import { Field } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
@@ -79,8 +80,12 @@ export default function DashboardSnapshots({ snapshots: initialSnapshots }: Dash
         } else {
           toast.add({ type: "error", description: res.message || "Gagal memulihkan produk.", priority: "high" });
         }
-      } catch (error: any) {
-        toast.add({ type: "error", description: error.message || "Gagal memulihkan produk.", priority: "high" });
+      } catch (error) {
+        toast.add({
+          type: "error",
+          description: getErrorMessage(error, "Gagal memulihkan produk."),
+          priority: "high",
+        });
       }
     });
   };

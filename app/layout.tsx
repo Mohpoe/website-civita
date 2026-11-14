@@ -2,6 +2,7 @@ import { AppClerkProvider } from "@/components/clerk-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toast";
 import { APP_CONFIG } from "@/lib/constants";
+import { OG_IMAGE, SITE_DESCRIPTION, SITE_TITLE } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
@@ -22,10 +23,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(APP_CONFIG.URL),
   title: {
-    default: `${APP_CONFIG.NAME} | Jasa Pembuatan CV, Resume & Portfolio Profesional`,
+    default: SITE_TITLE,
     template: `%s | ${APP_CONFIG.NAME}`,
   },
-  description: `${APP_CONFIG.NAME} adalah jasa pembuatan CV ATS-friendly, CV Kreatif, surat lamaran (cover letter), dan portfolio dengan desain rapi & profesional. Mulai dari 13K, siap bantu kamu lolos kerja!`,
+  description: SITE_DESCRIPTION,
   keywords: [
     "jasa bikin cv",
     "jasa buat cv",
@@ -77,15 +78,18 @@ export const metadata: Metadata = {
     type: "website",
     locale: "id_ID",
     url: APP_CONFIG.URL,
-    title: `${APP_CONFIG.NAME} | Jasa Pembuatan CV & Portfolio Profesional`,
-    description: "Bantu kamu lolos kerja! Buat CV ATS-friendly, cover letter, dan portfolio dengan tampilan rapi, elegan, dan disukai HRD.",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
     siteName: APP_CONFIG.NAME,
+    images: [OG_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
-    title: `${APP_CONFIG.NAME} | Jasa Pembuatan CV & Portfolio Profesional`,
-    description: "Bantu kamu lolos kerja! Buat CV ATS-friendly, cover letter, dan portfolio dengan tampilan rapi, elegan, dan disukai HRD.",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
     creator: APP_CONFIG.SOCIAL.TWITTER,
+    site: APP_CONFIG.SOCIAL.TWITTER,
+    images: [OG_IMAGE.url],
   },
   alternates: {
     canonical: APP_CONFIG.URL,
@@ -101,6 +105,7 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.webmanifest",
   verification: {
+    google: "ybO7cOgjxOwANLDR0eVEhyW2c8w4Dq4WF3FKn3EKjg4",
     other: {
       'msvalidate.01': ['CDDE2B01EA602551E1D0F695AA83222B'],
     },
@@ -108,18 +113,42 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  // Skema JSON-LD untuk Web Bisnis
+  // Skema JSON-LD untuk badan usaha. `@id` dipakai ulang oleh schema lain
+  // (mis. WebSite di homepage) supaya crawler mengenali entitas yang sama.
+  const organizationId = `${APP_CONFIG.URL}/#organization`;
+  const logoUrl = `${APP_CONFIG.URL}/android-chrome-512x512.png`;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
+    "@id": organizationId,
     "name": APP_CONFIG.NAME,
+    "alternateName": APP_CONFIG.ALTERNATE_NAMES,
     "url": APP_CONFIG.URL,
-    "logo": `${APP_CONFIG.URL}/favicon-32x32.png`,
-    "description": "Jasa pembuatan CV ATS-friendly, CV Kreatif, dan portfolio profesional.",
+    "logo": {
+      "@type": "ImageObject",
+      "url": logoUrl,
+      "width": 512,
+      "height": 512,
+    },
+    "image": logoUrl,
+    "description":
+      "Jasa pembuatan CV ATS-friendly, CV kreatif, surat lamaran, dan portfolio profesional.",
+    "email": APP_CONFIG.EMAIL,
+    "telephone": `+${APP_CONFIG.WHATSAPP}`,
     "sameAs": [
       APP_CONFIG.SOCIAL.INSTAGRAM,
       APP_CONFIG.SOCIAL.LINKEDIN,
-    ]
+    ],
+    "contactPoint": [
+      {
+        "@type": "ContactPoint",
+        "telephone": `+${APP_CONFIG.WHATSAPP}`,
+        "contactType": "customer service",
+        "email": APP_CONFIG.EMAIL,
+        "areaServed": "ID",
+        "availableLanguage": ["id"],
+      },
+    ],
   };
 
   return (
@@ -131,7 +160,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+          }}
         />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <AppClerkProvider>

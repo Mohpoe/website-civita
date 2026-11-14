@@ -14,24 +14,19 @@ interface ReportPageProps {
 }
 
 export default async function ReportPage({ searchParams }: ReportPageProps) {
-  try {
-    const resolvedParams = await searchParams;
-    const range = resolvedParams.range || "30d";
+  const resolvedParams = await searchParams;
+  const range = resolvedParams.range || "30d";
 
-    // Destructure orderHistory di sini
-    const { kpi, chart, orderHistory } = await getReportData(range);
+  const { kpi, chart, orderHistory } = await getReportData(range);
 
-    return (
-      <>
-        <PageTitle title={mainTitle} />
-        <DashboardReport
-          kpi={kpi}
-          chartData={chart}
-          orderHistory={orderHistory}
-        />
-      </>
-    );
-  } catch (error) {
-    throw error;
-  }
+  return (
+    <>
+      <PageTitle title={mainTitle} />
+      <DashboardReport
+        kpi={kpi}
+        chartData={chart}
+        orderHistory={orderHistory}
+      />
+    </>
+  );
 }

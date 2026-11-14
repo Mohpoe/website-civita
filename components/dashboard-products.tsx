@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { APP_CONFIG, ROUTES } from "@/lib/constants";
+import { getErrorMessage } from "@/lib/errors";
 import { formatRupiah } from "@/lib/utils";
 import { Category, Order, Product } from "@/types/global";
 import { AnimatePresence, motion } from "framer-motion";
@@ -183,7 +184,7 @@ export default function DashboardProducts({ products, categories, orders }: Dash
       }
 
       window.snap.pay(data.token, {
-        onSuccess: function (result: any) {
+        onSuccess: function (result: SnapResult) {
           console.log("Pembayaran Berhasil!", result);
           toast.add({
             title: "Pembayaran Berhasil! 🎉",
@@ -194,7 +195,7 @@ export default function DashboardProducts({ products, categories, orders }: Dash
           router.push(ROUTES.DASHBOARD.INVENTORY);
           router.refresh();
         },
-        onPending: function (result: any) {
+        onPending: function (result: SnapResult) {
           console.log("Menunggu Pembayaran", result);
           toast.add({
             title: "Pesanan Dibuat",
@@ -205,7 +206,7 @@ export default function DashboardProducts({ products, categories, orders }: Dash
           router.push(ROUTES.DASHBOARD.INVENTORY);
           router.refresh();
         },
-        onError: function (result: any) {
+        onError: function (result: SnapResult) {
           console.error("Pembayaran Gagal", result);
           toast.add({
             title: "Pembayaran Gagal",
@@ -219,11 +220,14 @@ export default function DashboardProducts({ products, categories, orders }: Dash
           setIsProcessing(false);
         }
       });
-    } catch (error: any) {
+    } catch (error) {
       console.error("Gagal memproses checkout:", error);
       toast.add({
         title: "Sistem Sibuk",
-        description: error.message || "Gagal menghubungi server. Periksa koneksi internet Anda.",
+        description: getErrorMessage(
+          error,
+          "Gagal menghubungi server. Periksa koneksi internet Anda.",
+        ),
         type: "error",
         priority: "high"
       });

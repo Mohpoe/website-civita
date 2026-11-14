@@ -13,6 +13,7 @@ import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, Pagi
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { formatRupiah } from '@/lib/utils';
+import { getErrorMessage } from '@/lib/errors';
 import { Order } from '@/types/global';
 import { toast } from './ui/toast';
 import { useRouter } from 'next/navigation';
@@ -50,10 +51,16 @@ export default function DashboardInventory({ orders: initialOrders }: DashboardI
   }, [initialOrders]);
   // #endregion
 
-  // Reset pagination ketika tab atau pencarian berubah
-  useEffect(() => {
+  // Reset pagination ketika tab atau pencarian berubah. Disesuaikan saat
+  // render (bukan di effect) agar tidak memicu render tambahan.
+  const [prevFilters, setPrevFilters] = useState({ searchQuery, activeTab });
+  if (
+    prevFilters.searchQuery !== searchQuery ||
+    prevFilters.activeTab !== activeTab
+  ) {
+    setPrevFilters({ searchQuery, activeTab });
     setCurrentPage(1);
-  }, [searchQuery, activeTab]);
+  }
 
   // #region FILTERING LOGIC
   const filteredOrders = orders.filter(order => {
@@ -132,8 +139,8 @@ export default function DashboardInventory({ orders: initialOrders }: DashboardI
           router.refresh();
         }
 
-      } catch (error: any) {
-        toast.add({ type: "error", description: error.message, priority: "high" });
+      } catch (error) {
+        toast.add({ type: "error", description: getErrorMessage(error), priority: "high" });
       } finally {
         setIsLoadingCheckout(null);
       }
@@ -162,8 +169,8 @@ export default function DashboardInventory({ orders: initialOrders }: DashboardI
       toast.add({ type: "success", description: "Pesanan berhasil dibatalkan." });
       router.refresh();
 
-    } catch (error: any) {
-      toast.add({ type: "error", description: error.message, priority: "high" });
+    } catch (error) {
+      toast.add({ type: "error", description: getErrorMessage(error), priority: "high" });
     } finally {
       setCancelingId(null); // Matikan loading setelah selesai atau gagal
     }

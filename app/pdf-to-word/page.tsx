@@ -4,24 +4,17 @@ import PdfToWordTool from "@/components/pdf-to-word-tool";
 import { PdfToolsCrossNav } from "@/components/pdf-tools-cross-nav";
 import { PublicFooter } from "@/components/public-footer";
 import { PublicNavigation } from "@/components/public-header";
-import { APP_CONFIG, ROUTES } from "@/lib/constants";
+import { ROUTES } from "@/lib/constants";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: `PDF ke Word — Konversi PDF ke DOCX | ${APP_CONFIG.NAME}`,
+export const metadata: Metadata = createPageMetadata({
+  title: "PDF ke Word — Konversi PDF ke DOCX",
   description:
     "Ubah PDF menjadi dokumen Word yang bisa diedit. Cocok untuk CV, surat lamaran, dan dokumen kerja.",
-  alternates: {
-    canonical: `${APP_CONFIG.URL}${ROUTES.PDF_TOOLS.PDF_TO_WORD}`,
-  },
-  openGraph: {
-    title: `PDF ke Word | ${APP_CONFIG.NAME}`,
-    description:
-      "Konversi PDF ke Word yang rapi dan bisa diedit.",
-    url: `${APP_CONFIG.URL}${ROUTES.PDF_TOOLS.PDF_TO_WORD}`,
-    siteName: APP_CONFIG.NAME,
-    type: "website",
-  },
-};
+  path: ROUTES.PDF_TOOLS.PDF_TO_WORD,
+  ogTitle: "PDF ke Word | CIVITA",
+  ogDescription: "Konversi PDF ke Word yang rapi dan bisa diedit.",
+});
 
 export default function PdfToWordPage() {
   return (

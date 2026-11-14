@@ -1,3 +1,4 @@
+import { getErrorMessage } from "@/lib/errors";
 import { sql } from "@/lib/utils";
 import { Product } from "@/types/global";
 import { currentUser } from "@clerk/nextjs/server";
@@ -106,8 +107,11 @@ export async function POST(req: Request) {
     `;
 
     return NextResponse.json({ token: snapToken, orderId });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Checkout error:", error);
-    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: getErrorMessage(error, "Internal Server Error") },
+      { status: 500 },
+    );
   }
 }

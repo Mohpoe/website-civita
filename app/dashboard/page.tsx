@@ -14,23 +14,19 @@ export const metadata: Metadata = {
 }
 
 export default async function DashboardPage() {
-  try {
-    const user = await currentUser();
-    const userEmail = user?.emailAddresses[0]?.emailAddress;
+  const user = await currentUser();
+  const userEmail = user?.emailAddresses[0]?.emailAddress;
 
-    const [products, categories, orders] = await Promise.all([
-      getProducts(true) as Promise<Product[]>,
-      getCategories() as Promise<Category[]>,
-      getOrders(userEmail) as Promise<Order[]>,
-    ]);
+  const [products, categories, orders] = await Promise.all([
+    getProducts(true) as Promise<Product[]>,
+    getCategories() as Promise<Category[]>,
+    getOrders(userEmail) as Promise<Order[]>,
+  ]);
 
-    return (
-      <>
-        <PageTitle title={mainTitle} />
-        <DashboardProducs products={products} categories={categories} orders={orders} />
-      </>
-    );
-  } catch (error) {
-    throw error;
-  }
+  return (
+    <>
+      <PageTitle title={mainTitle} />
+      <DashboardProducs products={products} categories={categories} orders={orders} />
+    </>
+  );
 }

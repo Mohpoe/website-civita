@@ -1,14 +1,16 @@
 import { APP_CONFIG } from '@/lib/constants';
-import { MetadataRoute } from 'next';
+import type { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: '*',
       allow: '/',
-      // Cegah bot mengindeks halaman admin dan endpoint API
-      disallow: ['/dashboard/', '/api/', '/_next/'],
+      // Halaman privat dan endpoint API tidak perlu dirayapi. Aset `/_next/`
+      // sengaja dibiarkan terbuka agar crawler bisa mengambil CSS/JS halaman.
+      disallow: ['/api/', '/dashboard'],
     },
     sitemap: `${APP_CONFIG.URL}/sitemap.xml`,
-  }
+    host: APP_CONFIG.URL,
+  };
 }

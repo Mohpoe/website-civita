@@ -3,10 +3,26 @@ import { PageTitleProvider } from "@/components/context/dashboard-page-title";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { auth } from "@clerk/nextjs/server";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import Script from "next/script";
 import { getProducts } from "@/lib/actions/product";
 import { Product } from "@/types/global";
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+  // Seluruh area dashboard bersifat privat, jadi jangan pernah diindeks.
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
+/** Produk dianggap baru jika dibuat dalam 14 hari terakhir. */
+function isNewProduct(createdAt: string) {
+  const twoWeeksAgo = Date.now() - 14 * 24 * 60 * 60 * 1000;
+  return new Date(createdAt).getTime() >= twoWeeksAgo;
+}
 
 export default async function DashBoardLayout({ children }: LayoutProps<"/dashboard">) {
   const { isAuthenticated } = await auth();
@@ -16,8 +32,7 @@ export default async function DashBoardLayout({ children }: LayoutProps<"/dashbo
   }
 
   const products = (await getProducts(true)) as Product[];
-  const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
-  const hasNewProducts = products.some((p) => new Date(p.created_at) >= twoWeeksAgo);
+  const hasNewProducts = products.some((p) => isNewProduct(p.created_at));
 
   return (
     <SidebarProvider

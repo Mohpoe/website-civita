@@ -142,21 +142,18 @@ const chartConfig = {
 
 export function ChartAreaInteractive() {
   const isMobile = useIsMobile()
-  const [timeRange, setTimeRange] = React.useState("90d")
-
-  React.useEffect(() => {
-    if (isMobile) {
-      setTimeRange("7d")
-    }
-  }, [isMobile])
+  // `null` berarti pengguna belum memilih rentang, jadi default mengikuti
+  // ukuran layar tanpa perlu effect yang memicu render tambahan.
+  const [timeRange, setTimeRange] = React.useState<string | null>(null)
+  const selectedRange = timeRange ?? (isMobile ? "7d" : "90d")
 
   const filteredData = chartData.filter((item) => {
     const date = new Date(item.date)
     const referenceDate = new Date("2024-06-30")
     let daysToSubtract = 90
-    if (timeRange === "30d") {
+    if (selectedRange === "30d") {
       daysToSubtract = 30
-    } else if (timeRange === "7d") {
+    } else if (selectedRange === "7d") {
       daysToSubtract = 7
     }
     const startDate = new Date(referenceDate)
@@ -177,7 +174,7 @@ export function ChartAreaInteractive() {
         <CardAction>
           <ToggleGroup
             multiple={false}
-            value={timeRange ? [timeRange] : []}
+            value={[selectedRange]}
             onValueChange={(value) => {
               setTimeRange(value[0] ?? "90d")
             }}
@@ -189,7 +186,7 @@ export function ChartAreaInteractive() {
             <ToggleGroupItem value="7d">Last 7 days</ToggleGroupItem>
           </ToggleGroup>
           <Select
-            value={timeRange}
+            value={selectedRange}
             onValueChange={(value) => {
               if (value !== null) {
                 setTimeRange(value)

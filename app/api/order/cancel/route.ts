@@ -1,3 +1,4 @@
+import { getErrorMessage } from "@/lib/errors";
 import { sql } from "@/lib/utils";
 import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
@@ -43,8 +44,11 @@ export async function POST(req: Request) {
     `;
 
     return NextResponse.json({ success: true, message: "Pesanan berhasil dibatalkan." });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Cancel Error:", error);
-    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: getErrorMessage(error, "Internal Server Error") },
+      { status: 500 },
+    );
   }
 }

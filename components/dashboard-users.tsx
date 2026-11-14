@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { deleteUserAction, demoteToUser, promoteToAdmin } from "@/lib/actions/users";
 import { APP_CONFIG } from "@/lib/constants";
+import { getErrorMessage } from "@/lib/errors";
 import {
   columnFilteringFeature,
   ColumnFiltersState,
@@ -107,8 +108,12 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
           setAlertAction(null);
           router.refresh();
         }
-      } catch (error: any) {
-        toast.add({ type: "error", description: error.message || "Gagal memproses aksi", priority: "high" });
+      } catch (error) {
+        toast.add({
+          type: "error",
+          description: getErrorMessage(error, "Gagal memproses aksi"),
+          priority: "high",
+        });
       }
     });
   };

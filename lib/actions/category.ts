@@ -1,8 +1,9 @@
 "use server";
 
 import { ROUTES } from "@/lib/constants";
+import { getErrorCode, getErrorMessage } from "@/lib/errors";
 import { sql } from "@/lib/utils";
-import { Category } from "@/types/global";
+import { ActionState, Category } from "@/types/global";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
@@ -30,7 +31,7 @@ export async function getCategories(): Promise<Category[]> {
 // #endregion
 
 // #region 2. CREATE/UPDATE CATEGORY
-export async function upsertCategoryAction(state: any, formData: FormData) {
+export async function upsertCategoryAction(state: ActionState | null, formData: FormData) {
   await auth.protect();
   const user = await currentUser();
   if (!user || !allowedRoles.includes(user.publicMetadata.role as string)) return { success: false, message: "Akses tidak valid!" };
@@ -69,9 +70,12 @@ export async function upsertCategoryAction(state: any, formData: FormData) {
     revalidatePath(ROUTES.DASHBOARD.ADMIN);
 
     return { success: true, message: "Kategori berhasil disimpan!" };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error upserting category:", error);
-    if (error.code === "23505" || error.message?.includes("categories_slug_key")) {
+    if (
+      getErrorCode(error) === "23505" ||
+      getErrorMessage(error, "").includes("categories_slug_key")
+    ) {
       return { success: false, message: "Gagal: Nama kategori (slug) sudah digunakan!" };
     }
 
@@ -95,11 +99,14 @@ export async function deleteCategoryAction(formData: FormData) {
     revalidatePath(ROUTES.DASHBOARD.HOME);
     revalidatePath(ROUTES.DASHBOARD.ADMIN);
     return { success: true, message: "Kategori berhasil dihapus!" };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error deleting category:", error);
 
     // Proteksi Foreign Key: Jika kategori ini sedang dipakai oleh produk
-    if (error.message?.includes('foreign key') || error.code === '23503') {
+    if (
+      getErrorMessage(error, "").includes("foreign key") ||
+      getErrorCode(error) === "23503"
+    ) {
       return { success: false, message: "Gagal: Kategori ini sedang digunakan oleh produk!" };
     }
 

@@ -141,7 +141,7 @@ export default function DashboardPdfSplitter() {
         data: buffer,
         useWorkerFetch: false,
         useSystemFonts: true,
-      } as any).promise;
+      }).promise;
 
       setTotalPages(pdf.numPages);
       setRangeFrom("1");

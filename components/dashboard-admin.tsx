@@ -155,6 +155,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
   useEffect(() => {
     if (!upsertState) return;
     if (upsertState.success) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sinkronisasi hasil Server Action ke state dialog, bukan derived state
       setIsDialogOpen(false);
       setImagePreview(null);
       setProductToUpdate(null);
@@ -186,6 +187,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
   // 3. Populate form saat dialog dibuka untuk EDIT (reliable via useEffect)
   useEffect(() => {
     if (isDialogOpen && productToUpdate) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- mengisi form sekali saat dialog edit dibuka
       setFormData({
         title: productToUpdate.title,
         price: String(productToUpdate.price),

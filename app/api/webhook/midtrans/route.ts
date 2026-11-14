@@ -119,7 +119,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ message: "OK" }, { status: 200 });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error("🚨 Webhook Error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }

@@ -141,7 +141,7 @@ export default function DashboardPdfToImage() {
         data: arrayBuffer,
         useWorkerFetch: false,
         useSystemFonts: true,
-      } as any).promise;
+      }).promise;
       setTotalPages(pdf.numPages);
       setRangeFrom("1");
       setRangeTo(String(pdf.numPages));
@@ -234,7 +234,7 @@ export default function DashboardPdfToImage() {
         data: arrayBuffer,
         useWorkerFetch: false,
         useSystemFonts: true,
-      } as any).promise;
+      }).promise;
       const images: ConvertedImage[] = [];
       const originalName = file.name.replace(/\.pdf$/i, "");
 
@@ -253,7 +253,7 @@ export default function DashboardPdfToImage() {
           canvasContext: context,
           viewport: viewport,
           canvas: canvas,
-        } as any).promise;
+        }).promise;
 
         const mimeType = format === "jpg" ? "image/jpeg" : "image/png";
         const qualityValue = format === "jpg" ? quality[0] / 100 : undefined;

@@ -14,23 +14,17 @@ export const metadata: Metadata = {
 }
 
 export default async function AdminPage() {
-  // throw new Error("Ini adalah pesan error simulasi untuk keperluan desain!");
-  // await delay(10000);
-  try {
-    const [products, categories, orders, snapshots] = await Promise.all([
-      getProducts(false) as Promise<Product[]>,
-      getCategories() as Promise<Category[]>,
-      getOrders() as Promise<Order[]>,
-      getSnapshots() as Promise<ProductSnapshot[]>,
-    ]);
+  const [products, categories, orders, snapshots] = await Promise.all([
+    getProducts(false) as Promise<Product[]>,
+    getCategories() as Promise<Category[]>,
+    getOrders() as Promise<Order[]>,
+    getSnapshots() as Promise<ProductSnapshot[]>,
+  ]);
 
-    return (
-      <>
-        <PageTitle title={mainTitle} />
-        <DashboardAdmin products={products} categories={categories} orders={orders} snapshots={snapshots} />
-      </>
-    )
-  } catch (error) {
-    throw error;
-  }
+  return (
+    <>
+      <PageTitle title={mainTitle} />
+      <DashboardAdmin products={products} categories={categories} orders={orders} snapshots={snapshots} />
+    </>
+  );
 }

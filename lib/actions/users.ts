@@ -2,6 +2,7 @@
 
 import { currentUser } from "@clerk/nextjs/server";
 import { clerkClient } from "@clerk/nextjs/server";
+import { getErrorMessage } from "@/lib/errors";
 import { sql } from "@/lib/utils";
 
 // #region Get All Users
@@ -125,9 +126,9 @@ export async function demoteToUser(targetUserId: string) {
     });
 
     return { success: true, message: "Hak akses berhasil dicabut. Akun kembali menjadi User." };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Gagal update role (demote):", error);
-    throw new Error(error.message || "Gagal memperbarui role pengguna.");
+    throw new Error(getErrorMessage(error, "Gagal memperbarui role pengguna."));
   }
 }
 // #endregion
@@ -158,9 +159,9 @@ export async function deleteUserAction(targetUserId: string) {
     await client.users.deleteUser(targetUserId);
 
     return { success: true, message: "Pengguna berhasil dihapus. Data transaksi tetap dipertahankan (anonim)." };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Gagal menghapus pengguna:", error);
-    throw new Error(error.message || "Gagal menghapus pengguna.");
+    throw new Error(getErrorMessage(error, "Gagal menghapus pengguna."));
   }
 }
 // #endregion

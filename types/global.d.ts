@@ -7,10 +7,35 @@ declare global {
     };
   }
 
+  interface SnapResult {
+    order_id?: string;
+    status_code?: string;
+    status_message?: string;
+    transaction_id?: string;
+    [key: string]: unknown;
+  }
+
+  interface SnapCallbacks {
+    onSuccess?: (result: SnapResult) => void;
+    onPending?: (result: SnapResult) => void;
+    onError?: (result: SnapResult) => void;
+    onClose?: () => void;
+  }
+
+  interface Snap {
+    pay: (token: string, callbacks?: SnapCallbacks) => void;
+  }
+
   interface Window {
-    snap: any;
+    snap?: Snap;
   }
 }
+
+/** State yang dikembalikan Server Action ke `useActionState`. */
+export type ActionState = {
+  success: boolean;
+  message: string;
+};
 
 export interface Category {
   id: string;

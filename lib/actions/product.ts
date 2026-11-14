@@ -3,7 +3,7 @@
 import { ROUTES } from "@/lib/constants";
 import { isSupportedThumbnail, sanitizeFileName, sql } from "@/lib/utils";
 import { productSchema } from "@/lib/zod-schemas";
-import { Product } from "@/types/global";
+import { Product, ActionState } from "@/types/global";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { copy, del, putImage } from "@vercel/blob";
 import { randomUUID } from "crypto";
@@ -50,7 +50,7 @@ export async function getProducts(isActive = false): Promise<Product[]> {
 // #endregion
 
 // #region Create/Update Product
-export async function upsertProductAction(state: any, formData: FormData) {
+export async function upsertProductAction(state: ActionState | null, formData: FormData) {
   await auth.protect();
   const user = await currentUser();
   if (!user || !allowedRoles.includes(user.publicMetadata.role as string)) return { success: false, message: "Akses tidak valid!" };
@@ -195,7 +195,7 @@ export async function upsertProductAction(state: any, formData: FormData) {
     revalidatePath(ROUTES.DASHBOARD.INVENTORY);
     revalidatePath(ROUTES.DASHBOARD.ADMIN);
     return { success: true, message: "Data produk berhasil disimpan!" };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error upserting product:", error);
     if (!productSaved) await deleteUnusedThumbnail();
     return { success: false, message: "Gagal menyimpan produk. Hubungi developer." };

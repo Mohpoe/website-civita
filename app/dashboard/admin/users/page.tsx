@@ -10,16 +10,12 @@ export const metadata: Metadata = {
 }
 
 export default async function UsersPage() {
-  try {
-    const users = await getAllUsers();
+  const users = await getAllUsers();
 
-    return (
-      <>
-        <PageTitle title={mainTitle} />
-        <DashboardUsers users={users} />
-      </>
-    )
-  } catch (error) {
-    throw error;
-  }
+  return (
+    <>
+      <PageTitle title={mainTitle} />
+      <DashboardUsers users={users} />
+    </>
+  );
 }

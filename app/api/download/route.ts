@@ -31,7 +31,7 @@ const getDownloadFileName = (fileUrl: string, title: string | null | undefined) 
 };
 
 // Inisialisasi Upstash Redis jika variabel lingkungan tersedia
-let redis: any = null;
+let redis: Redis | null = null;
 try {
   if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
     redis = new Redis({
@@ -107,7 +107,7 @@ export async function GET(req: Request) {
         return new Response("File tidak ditemukan di penyimpanan server", { status: 404 });
       }
 
-      return new NextResponse(result.stream as any, {
+      return new NextResponse(result.stream, {
         headers: {
           "Content-Type": result.blob.contentType || "application/octet-stream",
           "Content-Disposition": `attachment; filename="${fileName}"`,
@@ -169,7 +169,7 @@ export async function GET(req: Request) {
 
     const fileName = getDownloadFileName(fileUrl, order.product?.title);
 
-    return new NextResponse(result.stream as any, {
+    return new NextResponse(result.stream, {
       headers: {
         // [PERBAIKAN FATAL]: Gunakan result.contentType, dan beri nilai fallback yang aman
         "Content-Type": result.blob.contentType || "application/octet-stream",
@@ -182,7 +182,7 @@ export async function GET(req: Request) {
       },
     });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Download error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

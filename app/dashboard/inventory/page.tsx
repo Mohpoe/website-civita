@@ -12,18 +12,15 @@ export const metadata: Metadata = {
 }
 
 export default async function InventoryPage() {
-  try {
-    const user = await currentUser();
-    const [orders] = await Promise.all([
-      getOrders(user?.emailAddresses[0].emailAddress) as Promise<Order[]>
-    ]);
-    return (
-      <>
-        <PageTitle title={mainTitle} />
-        <DashboardInventory orders={orders} />
-      </>
-    );
-  } catch (error) {
-    throw error;
-  }
+  const user = await currentUser();
+  const [orders] = await Promise.all([
+    getOrders(user?.emailAddresses[0].emailAddress) as Promise<Order[]>
+  ]);
+
+  return (
+    <>
+      <PageTitle title={mainTitle} />
+      <DashboardInventory orders={orders} />
+    </>
+  );
 }

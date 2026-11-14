@@ -18,9 +18,14 @@ import { SiInstagram as Instagram, SiWhatsapp } from "react-icons/si";
 const WEBSITE_JSON_LD = {
   "@context": "https://schema.org",
   "@type": "WebSite",
+  "@id": `${APP_CONFIG.URL}/#website`,
   name: APP_CONFIG.NAME,
   alternateName: APP_CONFIG.ALTERNATE_NAMES,
-  url: APP_CONFIG.LINKS.HOMEPAGE_NON_WWW,
+  url: APP_CONFIG.URL,
+  inLanguage: "id-ID",
+  publisher: {
+    "@id": `${APP_CONFIG.URL}/#organization`,
+  },
 };
 
 const assetUrl = (path: string) => `${APP_CONFIG.ASSETS.BASE}${path}`;
@@ -685,7 +690,9 @@ export default function App() {
 
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(WEBSITE_JSON_LD) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(WEBSITE_JSON_LD).replace(/</g, "\\u003c"),
+        }}
       />
 
       <PublicNavigation />
