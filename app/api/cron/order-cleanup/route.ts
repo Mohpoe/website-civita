@@ -28,8 +28,9 @@ interface OrderRow {
  *
  * Status akhir ditentukan dari Midtrans lebih dulu, jadi order yang ternyata
  * sudah dibayar (webhook terlewat) tetap diselamatkan menjadi `success` dan
- * emailnya terkirim. Hanya kalau Midtrans memastikan transaksi tidak ada atau
- * masih menggantung, order ditutup sebagai `expired`.
+ * emailnya terkirim. Order hanya ditutup sebagai `expired` kalau Midtrans
+ * memastikan transaksinya tidak pernah terbentuk; transaksi yang masih hidup
+ * dibiarkan mengikuti masa berlaku dan notifikasi Midtrans.
  *
  * PENTING: jangan memanggil endpoint ini dari localhost selama Development dan
  * Production masih memakai database Neon yang sama. Order production akan
@@ -90,9 +91,15 @@ export async function GET(request: Request) {
           continue;
         }
 
-        // Masih `pending` di Midtrans padahal sudah lewat masa berlaku
-        // transaksi, jadi aman ditutup.
-        nextStatus = midtrans.status === "pending" ? "expired" : midtrans.status;
+        if (midtrans.status === "pending") {
+          // Transaksi masih hidup di Midtrans. Masa berlakunya diatur Midtrans
+          // dan notifikasi `expire` akan datang sendiri. Jangan ditutup di sini
+          // supaya order yang baru saja dipakai ulang tidak ikut kedaluwarsa.
+          summary.skipped += 1;
+          continue;
+        }
+
+        nextStatus = midtrans.status;
       } else if (midtrans.reason === "not-found") {
         // Transaksi tidak pernah terbentuk di Midtrans.
         nextStatus = "expired";

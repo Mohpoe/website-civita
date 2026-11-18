@@ -66,10 +66,14 @@ export async function POST(req: Request) {
 
     const data = await response.json().catch(() => ({}));
 
+    // Midtrans Core API sering membalas HTTP 200 dengan kode sebenarnya di body,
+    // jadi `response.ok` saja tidak cukup untuk menentukan hasil.
+    const midtransStatusCode = String(data.status_code ?? "");
+
     // 4. Transaksi belum pernah terbentuk di Midtrans (user menutup popup
     //    sebelum memilih metode bayar). Tidak ada yang perlu dibatalkan di
     //    sana, jadi order lokal boleh ditutup.
-    if (response.status === 404) {
+    if (midtransStatusCode === "404") {
       await applyOrderStatus(orderId, "canceled");
       return NextResponse.json({
         success: true,
@@ -77,24 +81,27 @@ export async function POST(req: Request) {
       });
     }
 
-    if (!response.ok) {
-      // 412 = transaksi sudah final (settlement/capture) sehingga Midtrans
-      // menolak pembatalan. JANGAN tandai canceled; sinkronkan status aslinya.
-      if (data.status_code === "412" || response.status === 412) {
-        const midtransStatus = await fetchMidtransStatus(orderId);
-        if (midtransStatus.found) {
-          await applyOrderStatus(orderId, midtransStatus.status);
-        }
-
-        return NextResponse.json(
-          {
-            error:
-              "Pesanan ini sudah dibayar atau tidak bisa dibatalkan lagi. Muat ulang halaman untuk melihat status terbaru.",
-          },
-          { status: 409 },
-        );
+    // 5. 412 = transaksi sudah final (settlement/capture) sehingga Midtrans
+    //    menolak pembatalan. JANGAN tandai canceled; sinkronkan status aslinya.
+    if (midtransStatusCode === "412") {
+      const midtransStatus = await fetchMidtransStatus(orderId);
+      if (midtransStatus.found) {
+        await applyOrderStatus(orderId, midtransStatus.status);
       }
 
+      return NextResponse.json(
+        {
+          error:
+            "Pesanan ini sudah dibayar atau tidak bisa dibatalkan lagi. Muat ulang halaman untuk melihat status terbaru.",
+        },
+        { status: 409 },
+      );
+    }
+
+    if (
+      !response.ok ||
+      (midtransStatusCode !== "" && midtransStatusCode !== "200")
+    ) {
       throw new Error(
         data.status_message || "Gagal membatalkan pesanan dari Midtrans",
       );

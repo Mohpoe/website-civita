@@ -23,23 +23,24 @@ export async function getAllUsers() {
       orderBy: "-created_at",
     });
 
-    // 4. Hitung jumlah transaksi per email dari tabel orders, dipisah berdasarkan status
+    // 4. Hitung jumlah transaksi per Clerk user ID dari tabel orders, dipisah berdasarkan status
     //    - sukses: success
     //    - pending: pending, challenge
     //    - gagal: failed, expired, canceled
     const orderCountsRaw = await sql`
       SELECT
-        email,
+        user_id,
         COUNT(*)::int as order_count,
         COUNT(*) FILTER (WHERE status = 'success')::int as success_count,
         COUNT(*) FILTER (WHERE status IN ('pending', 'challenge'))::int as pending_count,
         COUNT(*) FILTER (WHERE status IN ('failed', 'expired', 'canceled'))::int as failed_count
       FROM orders
-      GROUP BY email
+      WHERE user_id IS NOT NULL
+      GROUP BY user_id
     `;
     const orderCountMap = new Map<string, { orderCount: number; successCount: number; pendingCount: number; failedCount: number }>();
-    for (const row of orderCountsRaw as Array<{ email: string; order_count: number; success_count: number; pending_count: number; failed_count: number }>) {
-      orderCountMap.set(row.email, {
+    for (const row of orderCountsRaw as Array<{ user_id: string; order_count: number; success_count: number; pending_count: number; failed_count: number }>) {
+      orderCountMap.set(row.user_id, {
         orderCount: row.order_count,
         successCount: row.success_count,
         pendingCount: row.pending_count,
@@ -49,8 +50,12 @@ export async function getAllUsers() {
 
     // 5. Petakan (mapping) data agar lebih bersih saat dikirim ke Frontend
     const users = usersResponse.data.map((u) => {
-      const email = u.emailAddresses[0]?.emailAddress || "Tidak ada email";
-      const counts = orderCountMap.get(email);
+      const email =
+        u.emailAddresses.find((item) => item.id === u.primaryEmailAddressId)
+          ?.emailAddress ||
+        u.emailAddresses[0]?.emailAddress ||
+        "Tidak ada email";
+      const counts = orderCountMap.get(u.id);
       return {
         id: u.id,
         name: `${u.firstName || ""} ${u.lastName || ""}`.trim() || "[Tanpa_Nama]",

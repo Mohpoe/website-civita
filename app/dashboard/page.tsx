@@ -1,11 +1,12 @@
 import { PageTitle } from "@/components/context/dashboard-page-title";
 import DashboardProducs from "@/components/dashboard-products";
 import { getCategories } from "@/lib/actions/category";
-import { getOrders } from "@/lib/actions/order";
+import { getOrdersForUser } from "@/lib/actions/order";
 import { getProducts } from "@/lib/actions/product";
 import { Category, Order, Product } from "@/types/global";
 import { currentUser } from "@clerk/nextjs/server";
 import { Metadata } from "next";
+import { redirect } from "next/navigation";
 
 const mainTitle = "Produk";
 
@@ -15,12 +16,12 @@ export const metadata: Metadata = {
 
 export default async function DashboardPage() {
   const user = await currentUser();
-  const userEmail = user?.emailAddresses[0]?.emailAddress;
+  if (!user) redirect("/");
 
   const [products, categories, orders] = await Promise.all([
     getProducts(true) as Promise<Product[]>,
     getCategories() as Promise<Category[]>,
-    getOrders(userEmail) as Promise<Order[]>,
+    getOrdersForUser(user.id) as Promise<Order[]>,
   ]);
 
   return (

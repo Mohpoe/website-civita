@@ -1,6 +1,7 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { cookies, headers } from "next/headers";
 import { createHash, randomUUID } from "node:crypto";
+import { getPrimaryEmail } from "@/lib/auth";
 import { sql } from "@/lib/utils";
 import { PDF_TO_WORD_GUEST_COOKIE } from "./config";
 
@@ -73,7 +74,7 @@ export async function getIdentity(): Promise<PdfToWordIdentity> {
       ownerId: user.id,
       ip,
       ipHash,
-      label: user.emailAddresses[0]?.emailAddress,
+      label: getPrimaryEmail(user) ?? undefined,
     };
   }
 

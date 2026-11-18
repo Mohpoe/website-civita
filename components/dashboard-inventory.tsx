@@ -31,6 +31,7 @@ export default function DashboardInventory({ orders: initialOrders }: DashboardI
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [isLoadingCheckout, setIsLoadingCheckout] = useState<string | null>(null);
+  const [payingId, setPayingId] = useState<string | null>(null);
   const itemsPerPage = 5;
 
   // #region LAZY STATUS CHECKING (ZOMBIE ORDER FALLBACK)
@@ -173,6 +174,60 @@ export default function DashboardInventory({ orders: initialOrders }: DashboardI
       toast.add({ type: "error", description: getErrorMessage(error), priority: "high" });
     } finally {
       setCancelingId(null); // Matikan loading setelah selesai atau gagal
+    }
+  };
+  // #endregion
+
+  // #region Handle Bayar Sekarang
+  // Token Snap selalu diminta ulang ke server supaya token yang sudah
+  // kedaluwarsa tidak membuat popup gagal terbuka.
+  const handlePayOrder = async (orderId: string) => {
+    setPayingId(orderId);
+    try {
+      const response = await fetch("/api/order/pay", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Gagal menyiapkan pembayaran");
+      }
+
+      if (!window.snap) {
+        toast.add({
+          type: "info",
+          description:
+            "Sistem pembayaran belum selesai dimuat. Coba lagi sebentar lagi.",
+          priority: "high",
+        });
+        return;
+      }
+
+      window.snap.pay(data.token, {
+        onSuccess: () => window.location.reload(),
+        onPending: () => window.location.reload(),
+        onError: () => {
+          toast.add({
+            type: "error",
+            description: "Pembayaran gagal diproses.",
+            priority: "high",
+          });
+        },
+        onClose: () => window.location.reload(),
+      });
+    } catch (error) {
+      toast.add({
+        type: "error",
+        description: getErrorMessage(error),
+        priority: "high",
+      });
+      // Status di server mungkin sudah berubah (mis. ternyata sudah dibayar).
+      router.refresh();
+    } finally {
+      setPayingId(null);
     }
   };
   // #endregion
@@ -348,29 +403,19 @@ export default function DashboardInventory({ orders: initialOrders }: DashboardI
                               )}
                               <Button
                                 className="w-full sm:w-auto gap-2"
-                                onClick={() => {
-                                  if (order.snap_token && window.snap) {
-                                    window.snap.pay(order.snap_token, {
-                                      onSuccess: () => window.location.reload(),
-                                      onPending: () => window.location.reload(),
-                                      onError: () => {
-                                        toast.add({
-                                          type: "error",
-                                          description: "Pembayaran gagal diproses.",
-                                          priority: "high",
-                                        });
-                                      },
-                                    });
-                                  } else {
-                                    toast.add({
-                                      type: "error",
-                                      description: "Sistem pembayaran sedang dimuat, coba lagi.",
-                                      priority: "high",
-                                    });
-                                  }
-                                }}
+                                onClick={() => handlePayOrder(order.order_id)}
+                                disabled={payingId === order.order_id}
                               >
-                                Bayar Sekarang <ChevronRight className="w-4 h-4" />
+                                {payingId === order.order_id ? (
+                                  <>
+                                    <div className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+                                    Menyiapkan...
+                                  </>
+                                ) : (
+                                  <>
+                                    Bayar Sekarang <ChevronRight className="w-4 h-4" />
+                                  </>
+                                )}
                               </Button>
                             </>
                           )}

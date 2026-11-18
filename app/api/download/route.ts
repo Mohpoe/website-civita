@@ -134,7 +134,7 @@ export async function GET(req: Request) {
       FROM orders o
       LEFT JOIN products p ON o.product_id = p.id
       LEFT JOIN product_snapshots ps ON o.product_snapshot_id = ps.id
-      WHERE o.order_id = ${orderId} AND o.email = ${user.emailAddresses[0].emailAddress}
+      WHERE o.order_id = ${orderId} AND o.user_id = ${user.id}
       LIMIT 1
     `;
 

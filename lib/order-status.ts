@@ -201,18 +201,22 @@ export async function fetchMidtransStatus(
       },
     );
 
-    if (response.status === 404) {
+    const data = await response.json().catch(() => ({}));
+
+    // Midtrans Core API membalas HTTP 200 walau transaksinya tidak ada; kode
+    // sebenarnya ada di body (`status_code`). Jangan mengandalkan HTTP status.
+    const statusCode = String(data.status_code ?? "");
+
+    if (statusCode === "404") {
       return { found: false, reason: "not-found" };
     }
 
-    if (!response.ok) {
+    if (!response.ok || (statusCode !== "" && statusCode !== "200")) {
       console.error(
-        `[Order] status Midtrans ${orderId} gagal: HTTP ${response.status}`,
+        `[Order] status Midtrans ${orderId} gagal: HTTP ${response.status} / ${statusCode || "-"}`,
       );
       return { found: false, reason: "error" };
     }
-
-    const data = await response.json();
 
     return {
       found: true,

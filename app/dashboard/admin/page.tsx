@@ -1,7 +1,7 @@
 import { PageTitle } from "@/components/context/dashboard-page-title";
 import DashboardAdmin from "@/components/dashboard-admin";
 import { getCategories } from "@/lib/actions/category";
-import { getOrders } from "@/lib/actions/order";
+import { getAllOrders } from "@/lib/actions/order";
 import { getProducts } from "@/lib/actions/product";
 import { getSnapshots } from "@/lib/actions/snapshots";
 import { Category, Order, Product, ProductSnapshot } from "@/types/global";
@@ -17,7 +17,7 @@ export default async function AdminPage() {
   const [products, categories, orders, snapshots] = await Promise.all([
     getProducts(false) as Promise<Product[]>,
     getCategories() as Promise<Category[]>,
-    getOrders() as Promise<Order[]>,
+    getAllOrders() as Promise<Order[]>,
     getSnapshots() as Promise<ProductSnapshot[]>,
   ]);
 
