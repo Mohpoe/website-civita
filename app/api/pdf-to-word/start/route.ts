@@ -1,23 +1,22 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
-import { PDFDocument } from "pdf-lib";
 import { after } from "next/server";
 import { submitPdfToDocx } from "@/lib/pdf-to-word/adobe";
 import { deletePrivateBlob, readPrivateBlob } from "@/lib/pdf-to-word/blob";
 import { PDF_TO_WORD_CONFIG } from "@/lib/pdf-to-word/config";
 import { getIdentity } from "@/lib/pdf-to-word/identity";
 import { claimRefund, getJob, saveJob, updateJob } from "@/lib/pdf-to-word/jobs";
+import {
+  PdfPasswordRequiredError,
+  preparePdf,
+  type PreparedPdf,
+} from "@/lib/pdf-to-word/prepare";
 import { consumeQuota, refundQuota } from "@/lib/pdf-to-word/quota";
 import { getRedis } from "@/lib/pdf-to-word/redis";
 import type { PdfToWordJob } from "@/lib/pdf-to-word/types";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
-
-async function countPages(buffer: Buffer): Promise<number> {
-  const document = await PDFDocument.load(buffer, { ignoreEncryption: true });
-  return document.getPageCount();
-}
 
 export async function POST(request: Request) {
   try {
@@ -91,15 +90,31 @@ export async function POST(request: Request) {
         );
       }
 
-      let pages: number;
+      let prepared: PreparedPdf;
       try {
-        pages = await countPages(buffer);
-      } catch {
+        prepared = await preparePdf(buffer);
+      } catch (error) {
+        console.warn("[pdf-to-word] gagal membaca PDF:", error);
         await deletePrivateBlob(pathname);
         await releaseClaim();
+
         return NextResponse.json(
-          { error: "PDF tidak dapat dibaca. Pastikan file tidak terkunci atau rusak." },
+          {
+            error:
+              error instanceof PdfPasswordRequiredError
+                ? "PDF dilindungi password. Hapus password terlebih dahulu, lalu coba lagi."
+                : "PDF tidak dapat dibaca. Pastikan file tidak rusak.",
+          },
           { status: 400 },
+        );
+      }
+
+      const pages = prepared.pages;
+
+      if (prepared.decrypted) {
+        console.info(
+          "[pdf-to-word] PDF berenkripsi didekripsi sebelum dikirim ke Adobe:",
+          fileName,
         );
       }
 
@@ -151,7 +166,7 @@ export async function POST(request: Request) {
           await updateJob(jobId, { status: "submitting" });
 
           const { pollUrl } = await submitPdfToDocx({
-            buffer,
+            buffer: prepared.buffer,
             fileName,
           });
 
