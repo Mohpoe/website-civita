@@ -1,4 +1,5 @@
 import { getErrorMessage } from "@/lib/errors";
+import { MIDTRANS_SNAP_API_URL } from "@/lib/midtrans";
 import { sql } from "@/lib/utils";
 import { Product } from "@/types/global";
 import { currentUser } from "@clerk/nextjs/server";
@@ -52,7 +53,7 @@ export async function POST(req: Request) {
     const serverKey = process.env.MIDTRANS_SERVER_KEY || "";
     const encodedKey = Buffer.from(serverKey + ":").toString("base64");
 
-    const response = await fetch("https://app.midtrans.com/snap/v1/transactions", {
+    const response = await fetch(MIDTRANS_SNAP_API_URL, {
       method: "POST",
       headers: {
         "Accept": "application/json",
@@ -80,7 +81,11 @@ export async function POST(req: Request) {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error_messages?.[0] || "Gagal mendapatkan token dari Midtrans");
+      throw new Error(
+        data.error_messages?.[0] ||
+          data.status_message ||
+          "Gagal mendapatkan token dari Midtrans",
+      );
     }
 
     const snapToken = data.token;

@@ -2,6 +2,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { PageTitleProvider } from "@/components/context/dashboard-page-title";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { MIDTRANS_SNAP_JS_URL } from "@/lib/midtrans";
 import { auth } from "@clerk/nextjs/server";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
@@ -53,7 +54,7 @@ export default async function DashBoardLayout({ children }: LayoutProps<"/dashbo
             </div>
           </main>
           <Script
-            src="https://app.midtrans.com/snap/snap.js"
+            src={MIDTRANS_SNAP_JS_URL}
             data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
             strategy="lazyOnload" // Tidak akan memperlambat loading web Anda
           />

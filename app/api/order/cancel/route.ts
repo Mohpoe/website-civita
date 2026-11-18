@@ -1,4 +1,5 @@
 import { getErrorMessage } from "@/lib/errors";
+import { MIDTRANS_API_BASE_URL } from "@/lib/midtrans";
 import { sql } from "@/lib/utils";
 import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
@@ -19,15 +20,18 @@ export async function POST(req: Request) {
     const serverKey = process.env.MIDTRANS_SERVER_KEY || "";
     const encodedKey = Buffer.from(serverKey + ":").toString("base64");
 
-    // Catatan: Ganti URL ke https://api.midtrans.com/v2/... jika sudah masuk tahap Production
-    const response = await fetch(`https://api.midtrans.com/v2/${orderId}/cancel`, {
-      method: "POST",
-      headers: {
-        "Accept": "application/json",
-        "Content-Type": "application/json",
-        "Authorization": `Basic ${encodedKey}`
-      }
-    });
+    // Endpoint mengikuti MIDTRANS_ENV: sandbox kecuali di-set "production".
+    const response = await fetch(
+      `${MIDTRANS_API_BASE_URL}/v2/${orderId}/cancel`,
+      {
+        method: "POST",
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Authorization": `Basic ${encodedKey}`
+        }
+      },
+    );
 
     const data = await response.json();
 
