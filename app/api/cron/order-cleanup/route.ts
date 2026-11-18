@@ -7,30 +7,58 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 /**
- * Order yang masih `pending` setelah selama ini dianggap ditinggalkan.
+ * Endpoint ini punya dua tugas:
  *
- * Transaksi Midtrans kedaluwarsa sekitar 24 jam. Kalau user hanya membuka
- * popup lalu menutupnya sebelum memilih metode bayar, transaksi tidak pernah
- * terbentuk dan Midtrans tidak mengirim notifikasi apa pun — order seperti ini
- * tidak akan pernah berubah status tanpa sapuan ini.
+ * 1. **Menyelamatkan pembayaran yang notifikasinya terlewat.** Order yang sudah
+ *    dibayar tapi masih `pending` di database diubah menjadi `success` (email
+ *    bukti ikut terkirim), sehingga user bisa langsung mengunduh.
+ * 2. **Menutup order yang ditinggalkan.** Kalau user hanya membuka popup lalu
+ *    menutupnya sebelum memilih metode bayar, transaksi tidak pernah terbentuk
+ *    dan Midtrans tidak mengirim notifikasi apa pun.
+ *
+ * Dijalankan oleh dua penjadwal:
+ *
+ * - Cron Vercel harian (`vercel.json`) sebagai jaring pengaman.
+ * - Cron eksternal (mis. cron-job.org) setiap 15 menit, supaya pembayaran yang
+ *   notifikasinya gagal tertolong dalam hitungan menit, bukan menunggu sehari.
+ *   Kirim header `Authorization: Bearer <CRON_SECRET>`.
  */
-const STALE_PENDING_HOURS = 24;
+
+/**
+ * Order yang lebih muda dari ini tidak diperiksa. Memberi waktu user
+ * menyelesaikan popup sebelum statusnya disentuh.
+ */
+const MIN_PENDING_AGE_MINUTES = 5;
+
+/**
+ * Order `pending` yang transaksinya tidak pernah terbentuk di Midtrans baru
+ * dianggap ditinggalkan setelah selama ini.
+ *
+ * Jangan dibuat terlalu pendek: user bisa saja masih membuka popup dan memilih
+ * metode bayar, dan transaksi baru terbentuk pada saat itu. Kalau order lokal
+ * sudah ditutup sementara user membayar lewat popup lama, webhook tetap
+ * menyelamatkannya, tapi user berisiko membayar dua kali bila ia juga sudah
+ * membuat order baru.
+ */
+const ABANDONED_PENDING_MINUTES = 120;
 
 /** Dibagi per batch supaya satu kali jalan tidak menabrak batas waktu. */
 const MAX_ORDERS_PER_RUN = 25;
 
 interface OrderRow {
   order_id: string;
+  /** Umur order dalam menit, dihitung di database agar tidak tergantung zona waktu. */
+  age_minutes: number | string;
 }
 
 /**
- * Sapu order `pending` yang sudah terlalu lama.
+ * Sapu order `pending`.
  *
  * Status akhir ditentukan dari Midtrans lebih dulu, jadi order yang ternyata
- * sudah dibayar (webhook terlewat) tetap diselamatkan menjadi `success` dan
- * emailnya terkirim. Order hanya ditutup sebagai `expired` kalau Midtrans
- * memastikan transaksinya tidak pernah terbentuk; transaksi yang masih hidup
- * dibiarkan mengikuti masa berlaku dan notifikasi Midtrans.
+ * sudah dibayar tetap diselamatkan menjadi `success`. Transaksi yang masih
+ * hidup (`pending`/`challenge`) dibiarkan mengikuti masa berlaku dan notifikasi
+ * Midtrans; hanya transaksi yang sudah final atau tidak pernah terbentuk yang
+ * diubah di sini.
  *
  * PENTING: jangan memanggil endpoint ini dari localhost selama Development dan
  * Production masih memakai database Neon yang sama. Order production akan
@@ -60,11 +88,13 @@ export async function GET(request: Request) {
     );
   }
 
-  const cutoff = new Date(Date.now() - STALE_PENDING_HOURS * 60 * 60 * 1000);
+  const cutoff = new Date(Date.now() - MIN_PENDING_AGE_MINUTES * 60 * 1000);
 
   try {
     const rows = (await sql`
-      SELECT order_id
+      SELECT
+        order_id,
+        EXTRACT(EPOCH FROM (now() - created_at)) / 60 AS age_minutes
       FROM orders
       WHERE status = 'pending' AND created_at < ${cutoff}
       ORDER BY created_at ASC
@@ -101,10 +131,18 @@ export async function GET(request: Request) {
 
         nextStatus = midtrans.status;
       } else if (midtrans.reason === "not-found") {
-        // Transaksi tidak pernah terbentuk di Midtrans.
+        // Transaksi tidak pernah terbentuk di Midtrans. Tunggu sampai order
+        // cukup tua sebelum ditutup, karena user mungkin masih di popup.
+        const ageMinutes = Number(row.age_minutes);
+
+        if (Number.isFinite(ageMinutes) && ageMinutes < ABANDONED_PENDING_MINUTES) {
+          summary.skipped += 1;
+          continue;
+        }
+
         nextStatus = "expired";
       } else {
-        // Status tidak bisa dipastikan (jaringan/autentikasi); coba lagi besok.
+        // Status tidak bisa dipastikan (jaringan/autentikasi); coba lagi nanti.
         summary.skipped += 1;
         continue;
       }

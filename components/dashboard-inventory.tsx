@@ -185,6 +185,14 @@ export default function DashboardInventory({ orders: initialOrders }: DashboardI
         throw new Error(data.error || "Gagal menyiapkan pembayaran");
       }
 
+      if (data.replacedOrderId) {
+        toast.add({
+          type: "info",
+          description:
+            "Pesanan sebelumnya sudah tidak aktif. Kami buatkan pesanan baru untuk Anda.",
+        });
+      }
+
       if (!window.snap) {
         toast.add({
           type: "info",

@@ -1,6 +1,7 @@
 import { getPrimaryEmail } from "@/lib/auth";
 import { getErrorMessage } from "@/lib/errors";
 import { ensureSnapTokenForOrder } from "@/lib/midtrans-snap";
+import { createOrderWithSnapToken } from "@/lib/order-create";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { sql } from "@/lib/utils";
 import { Product } from "@/types/global";
@@ -163,44 +164,21 @@ export async function POST(req: Request) {
     }
     // #endregion
 
-    const orderId = `ORD-CIV-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-
     // Simpan order lebih dulu, baru minta token. Kalau token gagal dibuat,
-    // baris ini dihapus lagi sehingga tidak ada transaksi Midtrans tanpa order.
-    await sql`
-      INSERT INTO orders (
-        order_id,
-        user_id,
-        email,
-        product_id,
-        amount,
-        status,
-        snap_token
-      )
-      VALUES (
-        ${orderId},
-        ${user.id},
-        ${userEmail},
-        ${productId},
-        ${price},
-        'pending',
-        NULL
-      )
-    `;
-
-    const ensured = await ensureSnapTokenForOrder({
-      orderId,
-      grossAmount: price,
+    // baris order dihapus lagi sehingga tidak ada transaksi Midtrans tanpa order.
+    const created = await createOrderWithSnapToken({
+      userId: user.id,
+      email: userEmail,
+      firstName: user.firstName,
+      productId,
       item: { id: productId, name: product.title, price },
-      customer,
     });
 
-    if (!ensured.ok) {
-      await sql`DELETE FROM orders WHERE order_id = ${orderId}`;
-      return NextResponse.json({ error: ensured.message }, { status: 502 });
+    if (!created.ok) {
+      return NextResponse.json({ error: created.message }, { status: 502 });
     }
 
-    return NextResponse.json({ token: ensured.token, orderId });
+    return NextResponse.json({ token: created.token, orderId: created.orderId });
   } catch (error) {
     console.error("Checkout error:", error);
     return NextResponse.json(
