@@ -1,13 +1,29 @@
-import { sql } from "@/lib/utils";
+import { applyOrderStatus, mapMidtransStatus } from "@/lib/order-status";
 import crypto from "crypto";
 import { NextResponse } from "next/server";
-import { clerkClient } from "@clerk/nextjs/server";
-import { APP_CONFIG } from "@/lib/constants";
-import { sendOrderSuccessEmail } from "@/lib/email";
+
+interface MidtransNotification {
+  order_id?: string;
+  transaction_status?: string;
+  gross_amount?: string;
+  status_code?: string;
+  signature_key?: string;
+  fraud_status?: string | null;
+}
+
+/** Bandingkan signature tanpa membocorkan waktu eksekusi. */
+function isValidSignature(expected: string, received: string): boolean {
+  const expectedBuffer = Buffer.from(expected, "utf8");
+  const receivedBuffer = Buffer.from(received, "utf8");
+
+  if (expectedBuffer.length !== receivedBuffer.length) return false;
+
+  return crypto.timingSafeEqual(expectedBuffer, receivedBuffer);
+}
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    const body = (await req.json()) as MidtransNotification;
 
     const {
       order_id,
@@ -15,110 +31,39 @@ export async function POST(req: Request) {
       gross_amount,
       status_code,
       signature_key,
-      fraud_status
+      fraud_status,
     } = body;
 
+    // Payload tanpa field wajib tidak bisa diverifikasi, jadi jangan diproses.
+    if (!order_id || !status_code || !gross_amount || !signature_key) {
+      console.error("🚨 Webhook Error: payload tidak lengkap.");
+      return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+    }
+
     const serverKey = process.env.MIDTRANS_SERVER_KEY || "";
-    const hash = crypto.createHash("sha512");
+    const calculatedSignature = crypto
+      .createHash("sha512")
+      .update(`${order_id}${status_code}${gross_amount}${serverKey}`)
+      .digest("hex");
 
-    hash.update(order_id + status_code + gross_amount + serverKey);
-    const calculatedSignature = hash.digest("hex");
-
-    if (signature_key !== calculatedSignature) {
+    if (!isValidSignature(calculatedSignature, signature_key)) {
       console.error("🚨 Webhook Error: Invalid Midtrans Signature!");
       return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 
-    let newStatus = "pending";
+    const newStatus = mapMidtransStatus(transaction_status, fraud_status);
+    const result = await applyOrderStatus(order_id, newStatus);
 
-    if (transaction_status === "capture") {
-      if (fraud_status === "challenge") {
-        newStatus = "challenge";
-      } else if (fraud_status === "accept") {
-        newStatus = "success";
-      }
-    } else if (transaction_status === "settlement") {
-      newStatus = "success";
-    } else if (transaction_status === "cancel") {
-      newStatus = "canceled";
-    } else if (transaction_status === "deny" || transaction_status === "failure") {
-      newStatus = "failed";
-    } else if (transaction_status === "expire") {
-      newStatus = "expired";
-    }
-
-    // 1. Dapatkan status saat ini beserta NAMA PRODUK dari database (Hanya 1 Query dengan JOIN)
-    const currentOrderRows = await sql`
-      SELECT
-        o.status,
-        o.user_id,
-        o.product_id,
-        p.title as product_title
-      FROM orders o
-      LEFT JOIN products p ON o.product_id = p.id
-      WHERE o.order_id = ${order_id}
-      LIMIT 1
-    `;
-
-    // Pastikan pesanan ditemukan
-    if (currentOrderRows.length === 0) {
+    if (!result.found) {
       console.error(`Pesanan ${order_id} tidak ditemukan di database.`);
-      return NextResponse.json({ message: "OK" }, { status: 200 }); // Tetap return 200 ke Midtrans
+    } else if (!result.changed) {
+      console.log(
+        `ℹ️ [Webhook] ${order_id} diabaikan (status sudah ${newStatus} atau tidak boleh mundur).`,
+      );
     }
 
-    const orderData = currentOrderRows[0];
-
-    // 2. Eksekusi SQL Update ke Database
-    await sql`
-      UPDATE orders
-      SET status = ${newStatus}
-      WHERE order_id = ${order_id}
-    `;
-
-    console.log(`✅ [Webhook Sukses] Order: ${order_id} | Status berubah menjadi: ${newStatus}`);
-
-    // ==============================================================================
-    // BAGIAN EMAIL: KIRIM EMAIL JIKA STATUS BERUBAH MENJADI SUCCESS
-    // ==============================================================================
-
-    if (newStatus === "success" && orderData.status !== "success") {
-      try {
-        // a. Nama produk sudah didapatkan dari query JOIN sebelumnya
-        const productName = orderData.product_title || `Produk Digital ${APP_CONFIG.NAME}`;
-
-        // b. Ambil detail user dari Clerk menggunakan user_id dari tabel orders
-        const client = await clerkClient();
-        const user = await client.users.getUser(orderData.user_id);
-
-        const userEmail = user.emailAddresses[0]?.emailAddress;
-        const userName = `${user.firstName || ""} ${user.lastName || ""}`.trim() || `Pelanggan Setia ${APP_CONFIG.NAME}`;
-
-        // c. Kirim email
-        if (userEmail) {
-          const sendEmail = await sendOrderSuccessEmail({
-            userEmail,
-            userName,
-            orderId: order_id,
-            productName
-          });
-
-          if (!sendEmail.success) {
-            console.error("Gagal mengirim email!");
-          } else {
-            console.log("✅ Berhasil mengirim email!")
-          }
-        } else {
-          console.warn(`User dengan ID ${orderData.user_id} tidak memiliki email.`);
-        }
-
-      } catch (emailError) {
-        console.error("Gagal saat memproses pengiriman email via Webhook:", emailError);
-      }
-    }
-    // ==============================================================================
-
+    // Selalu 200 ke Midtrans agar notifikasi yang tidak relevan tidak diulang.
     return NextResponse.json({ message: "OK" }, { status: 200 });
-
   } catch (error) {
     console.error("🚨 Webhook Error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

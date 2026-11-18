@@ -325,24 +325,27 @@ export default function DashboardInventory({ orders: initialOrders }: DashboardI
                             </Button>
                           )}
 
-                          {/* JIKA PENDING */}
+                          {/* JIKA PENDING / CHALLENGE */}
                           {(order.status === 'pending' || order.status === 'challenge') && (
                             <>
-                              <Button
-                                variant="outline"
-                                className="hidden sm:flex"
-                                onClick={() => handleCancelOrder(order.order_id)}
-                                disabled={cancelingId === order.order_id}
-                              >
-                                {cancelingId === order.order_id ? (
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-4 h-4 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin"></div>
-                                    Memproses...
-                                  </div>
-                                ) : (
-                                  "Batalkan"
-                                )}
-                              </Button>
+                              {/* Challenge masih menunggu keputusan bank, jadi belum bisa dibatalkan. */}
+                              {order.status === 'pending' && (
+                                <Button
+                                  variant="outline"
+                                  className="hidden sm:flex"
+                                  onClick={() => handleCancelOrder(order.order_id)}
+                                  disabled={cancelingId === order.order_id}
+                                >
+                                  {cancelingId === order.order_id ? (
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-4 h-4 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin"></div>
+                                      Memproses...
+                                    </div>
+                                  ) : (
+                                    "Batalkan"
+                                  )}
+                                </Button>
+                              )}
                               <Button
                                 className="w-full sm:w-auto gap-2"
                                 onClick={() => {
