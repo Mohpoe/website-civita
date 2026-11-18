@@ -1,10 +1,10 @@
 import { APP_CONFIG } from '@/lib/constants';
+import { checkRateLimit } from '@/lib/rate-limit';
 import { sql } from '@/lib/utils';
 import { Order, Product } from '@/types/global';
 import { currentUser } from '@clerk/nextjs/server';
 import { get } from '@vercel/blob';
 import { NextResponse } from 'next/server';
-import { Redis } from '@upstash/redis'
 
 // PENTING: Pindahkan API ini ke Edge Runtime untuk membuka batasan memori (Bebas limit 4.5MB)
 export const runtime = 'edge';
@@ -30,48 +30,23 @@ const getDownloadFileName = (fileUrl: string, title: string | null | undefined) 
   return `${safeProductName}${safeExtension}`;
 };
 
-// Inisialisasi Upstash Redis jika variabel lingkungan tersedia
-let redis: Redis | null = null;
-try {
-  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
-    redis = new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
-    });
-  }
-} catch (error) {
-  console.warn('Upstash Redis not available, rate limiting disabled:', error);
-}
+// Inisialisasi Redis dipusatkan di `lib/rate-limit.ts`.
 
 export async function GET(req: Request) {
   const user = await currentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  // Rate limit check (skip if Redis not available)
-  if (redis) {
-    try {
-      const userId = user.id; // Clerk user ID
-      const key = `download:ratelimit:${userId}`;
+  const rateLimit = await checkRateLimit(
+    `download:ratelimit:${user.id}`,
+    MAX_REQUESTS_PER_WINDOW,
+    RATE_LIMIT_WINDOW,
+  );
 
-      // Increment counter and get current value
-      const current = await redis.incr(key);
-
-      // Set expiration on first request
-      if (current === 1) {
-        await redis.expire(key, RATE_LIMIT_WINDOW);
-      }
-
-      // Check if limit exceeded
-      if (current > MAX_REQUESTS_PER_WINDOW) {
-        return NextResponse.json(
-          { error: "Terlalu banyak permintaan download. Silakan coba lagi nanti." },
-          { status: 429 } // Too Many Requests
-        );
-      }
-    } catch (error) {
-      // Jika rate limit check gagal, kita boleh lanjut (fail open) untuk tidak blokir pengguna sah
-      console.warn('Rate limit check failed, proceeding anyway:', error);
-    }
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { error: "Terlalu banyak permintaan download. Silakan coba lagi nanti." },
+      { status: 429, headers: { "Retry-After": String(RATE_LIMIT_WINDOW) } },
+    );
   }
 
   try {
@@ -97,10 +72,12 @@ export async function GET(req: Request) {
 
       // Gunakan SDK @vercel/blob get() untuk akses private blob yang benar
       // (Sama seperti jalur user, menghindari masalah fetch manual dengan Bearer token)
+      // `oidcToken` tidak perlu dioper: SDK otomatis memakai VERCEL_OIDC_TOKEN
+      // dari runtime. Mengoper token hasil `vercel env pull` justru bisa
+      // kedaluwarsa dan membuat unduhan gagal.
       const result = await get(rows[0].file_url, {
         access: "private",
         storeId: process.env.PRIVATE_BLOB_STORE_ID,
-        oidcToken: process.env.VERCEL_OIDC_TOKEN
       });
 
       if (result?.statusCode !== 200) {
@@ -160,7 +137,6 @@ export async function GET(req: Request) {
     const result = await get(fileUrl, {
       access: "private",
       storeId: process.env.PRIVATE_BLOB_STORE_ID,
-      oidcToken: process.env.VERCEL_OIDC_TOKEN
     });
 
     if (result?.statusCode !== 200) {

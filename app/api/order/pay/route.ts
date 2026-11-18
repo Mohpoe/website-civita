@@ -1,12 +1,16 @@
 import { getPrimaryEmail } from "@/lib/auth";
 import { getErrorMessage } from "@/lib/errors";
 import { ensureSnapTokenForOrder } from "@/lib/midtrans-snap";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { sql } from "@/lib/utils";
 import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 /** Order ID dibuat server sendiri (ORD-CIV-...), jadi formatnya bisa dikunci. */
 const ORDER_ID_PATTERN = /^[A-Za-z0-9._-]{1,64}$/;
+
+const RATE_LIMIT_WINDOW = 60; // detik
+const MAX_PAY_PER_WINDOW = 10; // per user per menit
 
 interface PayOrderRow {
   order_id: string;
@@ -35,6 +39,25 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { error: "Akun Anda belum memiliki email. Lengkapi profil terlebih dahulu." },
         { status: 400 },
+      );
+    }
+
+    const rateLimit = await checkRateLimit(
+      `pay:ratelimit:${user.id}`,
+      MAX_PAY_PER_WINDOW,
+      RATE_LIMIT_WINDOW,
+    );
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          error:
+            "Terlalu banyak percobaan pembayaran. Silakan coba lagi sebentar lagi.",
+        },
+        {
+          status: 429,
+          headers: { "Retry-After": String(RATE_LIMIT_WINDOW) },
+        },
       );
     }
 
@@ -85,13 +108,21 @@ export async function POST(req: Request) {
       );
     }
 
+    const amount = Number(order.amount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return NextResponse.json(
+        { error: "Nominal pesanan tidak valid. Hubungi Admin." },
+        { status: 409 },
+      );
+    }
+
     const ensured = await ensureSnapTokenForOrder({
       orderId: order.order_id,
-      grossAmount: order.amount,
+      grossAmount: amount,
       item: {
         id: order.product_id || order.product_snapshot_id || order.order_id,
         name: order.title || "Produk Digital",
-        price: order.amount,
+        price: amount,
       },
       customer: { firstName: user.firstName, email: userEmail },
       fallbackToken: order.snap_token,

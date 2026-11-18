@@ -1,8 +1,8 @@
 "use client";
 
 import { AnimatePresence, motion } from 'framer-motion';
-import { AlertCircle, BadgeCheckIcon, CheckCircle2, ChevronRight, Clock, Download, ImageIcon, RefreshCcw, Search, ShoppingBag, UserX, XCircle } from 'lucide-react';
-import { useEffect, useState, useMemo, useTransition } from 'react';
+import { AlertCircle, BadgeCheckIcon, CheckCircle2, ChevronRight, Clock, Download, ImageIcon, RefreshCcw, Search, ShoppingBag, UserX } from 'lucide-react';
+import { useState, useTransition } from 'react';
 
 // Import Shadcn UI Components
 import { Badge } from '@/components/ui/badge';
@@ -34,22 +34,11 @@ export default function DashboardInventory({ orders: initialOrders }: DashboardI
   const [payingId, setPayingId] = useState<string | null>(null);
   const itemsPerPage = 5;
 
-  // #region LAZY STATUS CHECKING (ZOMBIE ORDER FALLBACK)
-  // Hitung ulang status pesanan di memori klien. Jika pesanan 'pending' sudah lebih
-  // dari 24 jam (86400000 ms), anggap sebagai 'expired'.
-  const orders = useMemo(() => {
-    const now = new Date().getTime();
-    return initialOrders.map((order) => {
-      if (order.status === 'pending') {
-        const orderTime = new Date(order.created_at).getTime();
-        const diffInMs = now - orderTime;
-        if (diffInMs > 86400000) { // 24 Jam
-          return { ...order, status: 'expired' as const };
-        }
-      }
-      return order;
-    });
-  }, [initialOrders]);
+  // #region STATUS ORDER
+  // Status sepenuhnya mengikuti database. Order yang ditinggalkan dibersihkan
+  // oleh cron /api/cron/order-cleanup, bukan ditebak dari selisih waktu di
+  // browser (yang bisa berbeda zona waktu atau jam perangkat).
+  const orders = initialOrders;
   // #endregion
 
   // Reset pagination ketika tab atau pencarian berubah. Disesuaikan saat
@@ -89,7 +78,7 @@ export default function DashboardInventory({ orders: initialOrders }: DashboardI
   const currentItems = filteredOrders.slice(indexOfFirstItem, indexOfLastItem);
 
   // #region Handle Beli Lagi
-  const [isReorderPending, startReorderTransition] = useTransition();
+  const [, startReorderTransition] = useTransition();
   const handleReorder = (productId: string | null, orderId: string) => {
     if (!productId) return;
 
@@ -534,8 +523,7 @@ export default function DashboardInventory({ orders: initialOrders }: DashboardI
           </TabsList>
         </div>
 
-        {/* Karena isinya sama (renderOrderList yang sudah difilter oleh useMemo di atas),
-            kita bisa langsung menempatkannya di semua tab content */}
+        {/* Isinya sama untuk semua tab; daftar sudah difilter oleh `filteredOrders`. */}
         <TabsContent value="all" className="m-0 focus-visible:outline-none focus-visible:ring-0">{renderOrderList()}</TabsContent>
         <TabsContent value="success" className="m-0 focus-visible:outline-none focus-visible:ring-0">{renderOrderList()}</TabsContent>
         <TabsContent value="pending" className="m-0 focus-visible:outline-none focus-visible:ring-0">{renderOrderList()}</TabsContent>

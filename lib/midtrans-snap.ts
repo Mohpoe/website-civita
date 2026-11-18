@@ -43,6 +43,14 @@ export async function createSnapToken(
     };
   }
 
+  if (!Number.isFinite(input.grossAmount) || input.grossAmount <= 0) {
+    return {
+      ok: false,
+      status: 400,
+      message: "Nominal transaksi tidak valid.",
+    };
+  }
+
   const encodedKey = Buffer.from(`${serverKey}:`).toString("base64");
 
   try {

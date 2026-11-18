@@ -1,6 +1,7 @@
 import { getPrimaryEmail } from "@/lib/auth";
 import { getErrorMessage } from "@/lib/errors";
 import { ensureSnapTokenForOrder } from "@/lib/midtrans-snap";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { sql } from "@/lib/utils";
 import { Product } from "@/types/global";
 import { currentUser } from "@clerk/nextjs/server";
@@ -12,6 +13,9 @@ interface PendingOrderRow {
   snap_token: string | null;
 }
 
+const RATE_LIMIT_WINDOW = 60; // detik
+const MAX_CHECKOUT_PER_WINDOW = 10; // per user per menit
+
 export async function POST(req: Request) {
   try {
     const user = await currentUser();
@@ -22,6 +26,25 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { error: "Akun Anda belum memiliki email. Lengkapi profil terlebih dahulu." },
         { status: 400 },
+      );
+    }
+
+    const rateLimit = await checkRateLimit(
+      `checkout:ratelimit:${user.id}`,
+      MAX_CHECKOUT_PER_WINDOW,
+      RATE_LIMIT_WINDOW,
+    );
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          error:
+            "Terlalu banyak percobaan checkout. Silakan coba lagi sebentar lagi.",
+        },
+        {
+          status: 429,
+          headers: { "Retry-After": String(RATE_LIMIT_WINDOW) },
+        },
       );
     }
 
@@ -51,6 +74,15 @@ export async function POST(req: Request) {
     if (!product.file_url) {
       return NextResponse.json(
         { error: "File untuk produk ini belum tersedia! Hubungi Admin." },
+        { status: 400 },
+      );
+    }
+
+    // Nominal 0/negatif akan ditolak Midtrans dan membuat order menggantung.
+    const price = Number(product.price);
+    if (!Number.isFinite(price) || price <= 0) {
+      return NextResponse.json(
+        { error: "Harga produk tidak valid. Hubungi Admin." },
         { status: 400 },
       );
     }
@@ -150,7 +182,7 @@ export async function POST(req: Request) {
         ${user.id},
         ${userEmail},
         ${productId},
-        ${product.price},
+        ${price},
         'pending',
         NULL
       )
@@ -158,8 +190,8 @@ export async function POST(req: Request) {
 
     const ensured = await ensureSnapTokenForOrder({
       orderId,
-      grossAmount: product.price,
-      item: { id: productId, name: product.title, price: product.price },
+      grossAmount: price,
+      item: { id: productId, name: product.title, price },
       customer,
     });
 
