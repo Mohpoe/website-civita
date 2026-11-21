@@ -1,6 +1,14 @@
 "use client";
 
 import { useSiteSettings } from "@/components/site-settings-provider";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Testimonial } from "@/lib/site-config";
 import { cn } from "@/lib/utils";
@@ -12,6 +20,7 @@ import {
   useTransform,
   type MotionValue,
 } from "framer-motion";
+import { Maximize2, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
@@ -93,6 +102,11 @@ interface CardEntry {
   number: number;
 }
 
+interface PreviewTarget {
+  testimonial: Testimonial;
+  number: number;
+}
+
 /** Bagi testimoni ke tiga kolom dan beri nomor urut sesuai posisi tampil. */
 function groupByColumn(items: Testimonial[]): Record<ColumnKey, CardEntry[]> {
   const buckets: Record<ColumnKey, Testimonial[]> = {
@@ -161,6 +175,9 @@ export function TestimonialWall({ testimonials }: TestimonialWallProps) {
   // lalu diacak di klien setiap kali halaman dibuka.
   const [items, setItems] = useState(() => testimonials.slice(0, MAX_CARDS));
 
+  // Testimoni yang sedang dibuka di lightbox. Null berarti lightbox tertutup.
+  const [preview, setPreview] = useState<PreviewTarget | null>(null);
+
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- pengacakan dilakukan setelah mount agar aman saat hidrasi
     setItems(shuffle(testimonials).slice(0, MAX_CARDS));
@@ -227,6 +244,12 @@ export function TestimonialWall({ testimonials }: TestimonialWallProps) {
                   scrollYProgress={smoothProgress}
                   reduceMotion={!!reduceMotion}
                   brandName={settings.brandName}
+                  onOpen={(entry) =>
+                    setPreview({
+                      testimonial: entry.testimonial,
+                      number: entry.number,
+                    })
+                  }
                 />
               ))}
             </div>
@@ -243,6 +266,9 @@ export function TestimonialWall({ testimonials }: TestimonialWallProps) {
                     aspect="aspect-[4/5]"
                     sizes="(max-width: 768px) 92vw, 40vw"
                     brandName={settings.brandName}
+                    onOpen={() =>
+                      setPreview({ testimonial, number: index + 1 })
+                    }
                   />
                 </li>
               ))}
@@ -255,6 +281,14 @@ export function TestimonialWall({ testimonials }: TestimonialWallProps) {
           </>
         )}
       </div>
+
+      <TestimonialLightbox
+        preview={preview}
+        onOpenChange={(open) => {
+          if (!open) setPreview(null);
+        }}
+        brandName={settings.brandName}
+      />
     </section>
   );
 }
@@ -265,12 +299,14 @@ function ParallaxColumn({
   scrollYProgress,
   reduceMotion,
   brandName,
+  onOpen,
 }: {
   column: ColumnConfig;
   entries: CardEntry[];
   scrollYProgress: MotionValue<number>;
   reduceMotion: boolean;
   brandName: string;
+  onOpen: (entry: CardEntry) => void;
 }) {
   // Kolom tengah bergerak paling jauh karena dianggap paling dekat ke mata,
   // kolom samping lebih lambat. Perbedaan kecepatan inilah ilusi kedalamannya.
@@ -294,6 +330,7 @@ function ParallaxColumn({
             aspect={column.aspect}
             sizes={column.sizes}
             brandName={brandName}
+            onOpen={() => onOpen(entry)}
           />
         </li>
       ))}
@@ -309,6 +346,7 @@ function CardSurface({
   aspect,
   sizes,
   brandName,
+  onOpen,
 }: {
   testimonial: Testimonial;
   accent: Accent;
@@ -317,13 +355,14 @@ function CardSurface({
   aspect: string;
   sizes: string;
   brandName: string;
+  onOpen?: () => void;
 }) {
   const [loaded, setLoaded] = useState(false);
 
   return (
     <figure
       className={cn(
-        "rounded-md border-2 border-ink p-1.5",
+        "relative rounded-md border-2 border-ink p-1.5",
         ACCENT_MAT[accent],
         featured
           ? "shadow-[8px_8px_0_0_var(--ink)]"
@@ -354,6 +393,12 @@ function CardSurface({
           onLoad={() => setLoaded(true)}
           onError={() => setLoaded(true)}
         />
+        {onOpen ? (
+          <span className="pointer-events-none absolute bottom-2 right-2 z-10 inline-flex items-center gap-1 rounded-full border-2 border-ink bg-paper px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-ink shadow-[2px_2px_0_0_var(--ink)]">
+            <Maximize2 className="size-3" />
+            Perbesar
+          </span>
+        ) : null}
       </div>
 
       <figcaption className="flex items-center justify-between gap-2 px-1 pt-1.5">
@@ -382,7 +427,127 @@ function CardSurface({
           {String(number).padStart(2, "0")}
         </span>
       </figcaption>
+
+      {onOpen ? (
+        <button
+          type="button"
+          onClick={onOpen}
+          aria-label={`Perbesar testimoni nomor ${number}`}
+          className="absolute inset-0 z-20 cursor-zoom-in rounded-md outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+        />
+      ) : null}
     </figure>
+  );
+}
+
+/**
+ * Lightbox untuk membaca screenshot chat pada ukuran penuh.
+ *
+ * Screenshot WhatsApp umumnya tinggi, jadi gambar ditampilkan selebar dialog
+ * dan bisa digulir. Zoom memperbesar lebar gambar, bukan mengecilkan tingginya,
+ * supaya teks chat tetap sebesar mungkin.
+ */
+function TestimonialLightbox({
+  preview,
+  onOpenChange,
+  brandName,
+}: {
+  preview: PreviewTarget | null;
+  onOpenChange: (open: boolean) => void;
+  brandName: string;
+}) {
+  return (
+    <Dialog open={preview !== null} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-4xl">
+        {preview ? (
+          <LightboxBody
+            key={preview.testimonial.id}
+            preview={preview}
+            brandName={brandName}
+          />
+        ) : null}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function LightboxBody({
+  preview,
+  brandName,
+}: {
+  preview: PreviewTarget;
+  brandName: string;
+}) {
+  const [zoom, setZoom] = useState(1);
+  const { testimonial, number } = preview;
+  const percent = Math.round(zoom * 100);
+
+  const zoomIn = () =>
+    setZoom((value) => Math.min(4, Math.round((value + 0.25) * 100) / 100));
+  const zoomOut = () =>
+    setZoom((value) => Math.max(1, Math.round((value - 0.25) * 100) / 100));
+  const toggleZoom = () => setZoom((value) => (value === 1 ? 2 : 1));
+
+  return (
+    <>
+      <DialogHeader>
+        <DialogTitle>Testimoni {String(number).padStart(2, "0")}</DialogTitle>
+        <DialogDescription>
+          Gulir untuk membaca. Gunakan tombol zoom atau klik dua kali gambar
+          untuk memperbesar.
+        </DialogDescription>
+      </DialogHeader>
+
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="text-xs font-semibold text-muted-foreground">
+          {testimonial.alt_text || "Tangkapan layar chat klien"}
+        </span>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="outline"
+            size="icon-sm"
+            onClick={zoomOut}
+            disabled={zoom <= 1}
+            aria-label="Perkecil gambar"
+          >
+            <ZoomOut />
+          </Button>
+          <span className="w-12 text-center text-xs font-bold tabular-nums">
+            {percent}%
+          </span>
+          <Button
+            variant="outline"
+            size="icon-sm"
+            onClick={zoomIn}
+            disabled={zoom >= 4}
+            aria-label="Perbesar gambar"
+          >
+            <ZoomIn />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon-sm"
+            onClick={() => setZoom(1)}
+            disabled={zoom === 1}
+            aria-label="Kembalikan ukuran gambar"
+          >
+            <RotateCcw />
+          </Button>
+        </div>
+      </div>
+
+      <div className="h-[58vh] overflow-auto rounded-md border-2 border-ink bg-paper-2 sm:h-[64vh]">
+        {/* eslint-disable-next-line @next/next/no-img-element -- rasio asli screenshot tidak tersimpan, jadi gambar dibiarkan mengikuti ukuran aslinya */}
+        <img
+          src={testimonial.image_url}
+          alt={testimonial.alt_text || `Tangkapan layar testimoni klien ${brandName}`}
+          style={{ width: `${zoom * 100}%` }}
+          className="mx-auto block h-auto max-w-none"
+          draggable={false}
+          onDoubleClick={toggleZoom}
+        />
+      </div>
+    </>
   );
 }
 
