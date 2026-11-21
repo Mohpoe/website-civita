@@ -191,7 +191,7 @@ export default function DashboardTestimonials({ testimonials }: DashboardTestimo
               </CardTitle>
               <CardDescription>
                 {activeCount} testimoni aktif dari {testimonials.length} total. Halaman utama menampilkan
-                maksimal 12 kartu yang dipilih acak.
+                maksimal 9 kartu yang dipilih acak.
               </CardDescription>
             </div>
             <Button onClick={openCreate} className="shrink-0">

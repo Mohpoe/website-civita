@@ -16,10 +16,12 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 /** Jumlah kartu maksimal yang tampil; sisanya tetap tersimpan di dashboard. */
-const MAX_CARDS = 10;
+const MAX_CARDS = 9;
 const MOBILE_CARDS = 6;
 
 type Accent = "coral" | "sage" | "butter" | "sky" | "lilac";
+
+const ACCENTS: Accent[] = ["coral", "sage", "butter", "sky", "lilac"];
 
 const ACCENT_MAT: Record<Accent, string> = {
   coral: "bg-coral",
@@ -37,159 +39,93 @@ const ACCENT_DOT: Record<Accent, string> = {
   lilac: "bg-lilac",
 };
 
-interface CardSlot {
-  key: string;
-  /** Posisi dan lebar dalam persen terhadap panggung 3D. */
-  left: number;
-  top: number;
-  width: number;
-  /** Rotasi statis supaya kartu terasa ditempel manual, bukan grid kaku. */
-  rotate: number;
-  /** Kedalaman kartu (px). Negatif = jauh di belakang. */
-  depth: number;
-  /** Jarak gerak parallax scroll (px). Kartu depan bergerak lebih jauh. */
+type ColumnKey = "left" | "center" | "right";
+
+interface ColumnConfig {
+  key: ColumnKey;
+  /** Jarak gerak parallax vertikal (px). Kolom tengah paling cepat. */
   travel: number;
-  z: number;
-  accent: Accent;
-  featured?: boolean;
-  /** Kartu terkecil hanya ditampilkan di layar lebar. */
-  hideBelowLg?: boolean;
+  /** Jarak turun kolom supaya susunan terasa staggered. */
+  offset: string;
+  /** Rasio kartu di kolom ini. */
+  aspect: string;
   sizes: string;
 }
 
 /**
- * Susunan asimetris dengan hierarki kedalaman.
- *
- * Urutan array sekaligus menjadi prioritas pengisian: kartu utama lebih dulu,
- * lalu pendukung. Kalau testimoni di database lebih sedikit dari jumlah slot,
- * panggung tetap seimbang karena slot belakang yang kosong tidak dipaksa ada.
+ * Tiga kolom asimetris: tengah lebih lebar dan lebih tinggi sebagai fokus,
+ * samping lebih kecil. Offset vertikal membuat susunannya tidak kaku.
  */
-const SLOTS: CardSlot[] = [
+const COLUMNS: ColumnConfig[] = [
   {
-    key: "main",
-    left: 34,
-    top: 10,
-    width: 32,
-    rotate: -1.2,
-    depth: 0,
-    travel: 52,
-    z: 30,
-    accent: "coral",
-    featured: true,
-    sizes: "(max-width: 768px) 100vw, 34vw",
-  },
-  {
-    key: "mid-left",
-    left: 1,
-    top: 28,
-    width: 20,
-    rotate: 2.6,
-    depth: -110,
+    key: "left",
     travel: 36,
-    z: 12,
-    accent: "sage",
-    sizes: "(max-width: 768px) 50vw, 22vw",
+    offset: "md:pt-14",
+    aspect: "aspect-[3/4]",
+    sizes: "(max-width: 768px) 92vw, 26vw",
   },
   {
-    key: "mid-right",
-    left: 78,
-    top: 26,
-    width: 20,
-    rotate: -2.8,
-    depth: -95,
-    travel: 40,
-    z: 13,
-    accent: "lilac",
-    sizes: "(max-width: 768px) 50vw, 22vw",
+    key: "center",
+    travel: 70,
+    offset: "",
+    aspect: "aspect-[4/5]",
+    sizes: "(max-width: 768px) 92vw, 40vw",
   },
   {
-    key: "near-left",
-    left: 14,
-    top: 50,
-    width: 18,
-    rotate: -3.4,
-    depth: 110,
-    travel: 72,
-    z: 44,
-    accent: "sky",
-    sizes: "(max-width: 768px) 50vw, 20vw",
-  },
-  {
-    key: "near-right",
-    left: 67,
-    top: 52,
-    width: 18,
-    rotate: 3.2,
-    depth: 130,
-    travel: 78,
-    z: 45,
-    accent: "butter",
-    sizes: "(max-width: 768px) 50vw, 20vw",
-  },
-  {
-    key: "back-left",
-    left: 8,
-    top: 3,
-    width: 18,
-    rotate: -5,
-    depth: -240,
-    travel: 16,
-    z: 4,
-    accent: "butter",
-    sizes: "(max-width: 768px) 50vw, 20vw",
-  },
-  {
-    key: "back-right",
-    left: 74,
-    top: 4,
-    width: 18,
-    rotate: 4.5,
-    depth: -260,
-    travel: 14,
-    z: 3,
-    accent: "sky",
-    sizes: "(max-width: 768px) 50vw, 20vw",
-  },
-  {
-    key: "back-center",
-    left: 42,
-    top: 3,
-    width: 16,
-    rotate: 2,
-    depth: -280,
-    travel: 10,
-    z: 2,
-    accent: "lilac",
-    hideBelowLg: true,
-    sizes: "(max-width: 768px) 40vw, 18vw",
-  },
-  {
-    key: "front-left",
-    left: 3,
-    top: 58,
-    width: 13,
-    rotate: 5,
-    depth: 190,
-    travel: 98,
-    z: 54,
-    accent: "coral",
-    hideBelowLg: true,
-    sizes: "(max-width: 768px) 40vw, 15vw",
-  },
-  {
-    key: "front-right",
-    left: 84,
-    top: 56,
-    width: 13,
-    rotate: -5,
-    depth: 210,
-    travel: 106,
-    z: 55,
-    accent: "sage",
-    hideBelowLg: true,
-    sizes: "(max-width: 768px) 40vw, 15vw",
+    key: "right",
+    travel: 28,
+    offset: "md:pt-7",
+    aspect: "aspect-[3/4]",
+    sizes: "(max-width: 768px) 92vw, 26vw",
   },
 ];
+
+/**
+ * Urutan pengisian kolom: tengah lebih dulu supaya tetap jadi fokus saat
+ * testimoni yang tersedia sedikit. Selanjutnya bergiliran kiri dan kanan.
+ */
+const COLUMN_FILL_ORDER: ColumnKey[] = ["center", "left", "right"];
+
+interface CardEntry {
+  testimonial: Testimonial;
+  accent: Accent;
+  /** Nomor urut tampil, dihitung dari kiri ke kanan lalu atas ke bawah. */
+  number: number;
+}
+
+/** Bagi testimoni ke tiga kolom dan beri nomor urut sesuai posisi tampil. */
+function groupByColumn(items: Testimonial[]): Record<ColumnKey, CardEntry[]> {
+  const buckets: Record<ColumnKey, Testimonial[]> = {
+    left: [],
+    center: [],
+    right: [],
+  };
+
+  items.forEach((testimonial, index) => {
+    buckets[COLUMN_FILL_ORDER[index % COLUMN_FILL_ORDER.length]].push(testimonial);
+  });
+
+  const columns: Record<ColumnKey, CardEntry[]> = {
+    left: [],
+    center: [],
+    right: [],
+  };
+
+  let number = 0;
+  (["left", "center", "right"] as const).forEach((key) => {
+    columns[key] = buckets[key].map((testimonial) => {
+      const entry: CardEntry = {
+        testimonial,
+        accent: ACCENTS[number % ACCENTS.length],
+        number: number + 1,
+      };
+      number += 1;
+      return entry;
+    });
+  });
+
+  return columns;
+}
 
 function shuffle<T>(items: T[]): T[] {
   const result = [...items];
@@ -209,8 +145,8 @@ export function TestimonialWall({ testimonials }: TestimonialWallProps) {
   const reduceMotion = useReducedMotion();
   const { settings } = useSiteSettings();
 
-  // Progres scroll section dipakai bersama oleh panggung desktop dan grid
-  // mobile. Spring tipis menjaga gerakan tetap mulus saat roda mouse diputar.
+  // Progres scroll section dipakai bersama oleh ketiga kolom. Spring tipis
+  // menjaga gerakan tetap mulus saat roda mouse diputar.
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start end", "end start"],
@@ -229,6 +165,8 @@ export function TestimonialWall({ testimonials }: TestimonialWallProps) {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- pengacakan dilakukan setelah mount agar aman saat hidrasi
     setItems(shuffle(testimonials).slice(0, MAX_CARDS));
   }, [testimonials]);
+
+  const columns = groupByColumn(items);
 
   return (
     <section
@@ -278,45 +216,35 @@ export function TestimonialWall({ testimonials }: TestimonialWallProps) {
           <TestimonialSkeleton />
         ) : (
           <>
-            {/* Panggung 3D: kartu bergerak naik-turun mengikuti scroll halaman. */}
-            <div
-              className="relative mt-12 hidden md:block"
-              style={{ perspective: "1600px" }}
-            >
-              <ul
-                className="relative h-[600px] w-full list-none lg:h-[720px]"
-                style={{ transformStyle: "preserve-3d" }}
-              >
-                {items.map((testimonial, index) => {
-                  const slot = SLOTS[index];
-                  if (!slot) return null;
-
-                  return (
-                    <FloatingCard
-                      key={testimonial.id}
-                      slot={slot}
-                      testimonial={testimonial}
-                      index={index}
-                      scrollYProgress={smoothProgress}
-                      reduceMotion={!!reduceMotion}
-                      brandName={settings.brandName}
-                    />
-                  );
-                })}
-              </ul>
-            </div>
-
-            {/* Mobile: grid dua kolom dengan offset, rotasi, dan parallax scroll. */}
-            <ul className="mt-8 grid list-none grid-cols-2 gap-3 md:hidden">
-              {items.slice(0, MOBILE_CARDS).map((testimonial, index) => (
-                <MobileCard
-                  key={testimonial.id}
-                  testimonial={testimonial}
-                  index={index}
+            {/* Masonry 3 kolom: tiap kolom bergerak vertikal dengan kecepatan
+                berbeda mengikuti scroll, sehingga terasa seperti lapisan 3D. */}
+            <div className="mt-12 hidden gap-4 md:grid md:grid-cols-[0.9fr_1.3fr_0.9fr] md:gap-5 lg:gap-6">
+              {COLUMNS.map((column) => (
+                <ParallaxColumn
+                  key={column.key}
+                  column={column}
+                  entries={columns[column.key]}
                   scrollYProgress={smoothProgress}
                   reduceMotion={!!reduceMotion}
                   brandName={settings.brandName}
                 />
+              ))}
+            </div>
+
+            {/* Mobile: satu kolom rapi tanpa parallax agar mudah dibaca. */}
+            <ul className="mt-8 flex list-none flex-col gap-4 md:hidden">
+              {items.slice(0, MOBILE_CARDS).map((testimonial, index) => (
+                <li key={testimonial.id}>
+                  <CardSurface
+                    testimonial={testimonial}
+                    accent={ACCENTS[index % ACCENTS.length]}
+                    featured={index === 0}
+                    number={index + 1}
+                    aspect="aspect-[4/5]"
+                    sizes="(max-width: 768px) 92vw, 40vw"
+                    brandName={settings.brandName}
+                  />
+                </li>
               ))}
             </ul>
 
@@ -331,104 +259,45 @@ export function TestimonialWall({ testimonials }: TestimonialWallProps) {
   );
 }
 
-function FloatingCard({
-  slot,
-  testimonial,
-  index,
+function ParallaxColumn({
+  column,
+  entries,
   scrollYProgress,
   reduceMotion,
   brandName,
 }: {
-  slot: CardSlot;
-  testimonial: Testimonial;
-  index: number;
+  column: ColumnConfig;
+  entries: CardEntry[];
   scrollYProgress: MotionValue<number>;
   reduceMotion: boolean;
   brandName: string;
 }) {
-  // Lapisan belakang bergerak lambat, lapisan depan bergerak cepat. Inilah
-  // yang membuat kedalaman terasa saat halaman digulir naik atau turun.
-  const scrollY = useTransform(scrollYProgress, [0, 1], [slot.travel, -slot.travel]);
+  // Kolom tengah bergerak paling jauh karena dianggap paling dekat ke mata,
+  // kolom samping lebih lambat. Perbedaan kecepatan inilah ilusi kedalamannya.
+  const scrollY = useTransform(scrollYProgress, [0, 1], [
+    column.travel,
+    -column.travel,
+  ]);
 
   return (
-    <li
-      className={cn("absolute", slot.hideBelowLg && "hidden lg:block")}
-      style={{
-        left: `${slot.left}%`,
-        top: `${slot.top}%`,
-        width: `${slot.width}%`,
-        zIndex: slot.z,
-        transformStyle: "preserve-3d",
-      }}
-    >
-      <motion.div
-        style={{ y: reduceMotion ? 0 : scrollY, transformStyle: "preserve-3d" }}
-        className="will-change-transform"
-      >
-        <motion.div
-          style={{
-            rotate: slot.rotate,
-            translateZ: slot.depth,
-            transformStyle: "preserve-3d",
-          }}
-        >
-          <CardSurface
-            testimonial={testimonial}
-            accent={slot.accent}
-            featured={slot.featured}
-            index={index}
-            sizes={slot.sizes}
-            brandName={brandName}
-          />
-        </motion.div>
-      </motion.div>
-    </li>
-  );
-}
-
-/**
- * Kartu di grid mobile.
- *
- * Kolom kiri dan kanan bergerak berlawanan arah mengikuti scroll, sehingga
- * terasa seperti lapisan yang berbeda tanpa membuat kartu saling menimpa.
- */
-function MobileCard({
-  testimonial,
-  index,
-  scrollYProgress,
-  reduceMotion,
-  brandName,
-}: {
-  testimonial: Testimonial;
-  index: number;
-  scrollYProgress: MotionValue<number>;
-  reduceMotion: boolean;
-  brandName: string;
-}) {
-  // Kartu pembuka membentang dua kolom, jadi tidak ikut bergeser.
-  const travel = index === 0 ? 0 : index % 2 === 1 ? 30 : -30;
-  const scrollY = useTransform(scrollYProgress, [0, 1], [travel, -travel]);
-
-  return (
-    <motion.li
-      className={cn(index === 0 && "col-span-2", index % 3 === 1 && "mt-4")}
+    <motion.ul
+      className={cn("flex list-none flex-col gap-4 md:gap-5 lg:gap-6", column.offset)}
       style={{ y: reduceMotion ? 0 : scrollY }}
     >
-      <div
-        style={{
-          rotate: `${index === 0 ? -0.8 : index % 2 === 0 ? 1.4 : -1.6}deg`,
-        }}
-      >
-        <CardSurface
-          testimonial={testimonial}
-          accent={SLOTS[index]?.accent ?? "coral"}
-          featured={index === 0}
-          index={index}
-          sizes={index === 0 ? "90vw" : "45vw"}
-          brandName={brandName}
-        />
-      </div>
-    </motion.li>
+      {entries.map((entry, position) => (
+        <li key={entry.testimonial.id}>
+          <CardSurface
+            testimonial={entry.testimonial}
+            accent={entry.accent}
+            featured={column.key === "center" && position === 0}
+            number={entry.number}
+            aspect={column.aspect}
+            sizes={column.sizes}
+            brandName={brandName}
+          />
+        </li>
+      ))}
+    </motion.ul>
   );
 }
 
@@ -436,14 +305,16 @@ function CardSurface({
   testimonial,
   accent,
   featured,
-  index,
+  number,
+  aspect,
   sizes,
   brandName,
 }: {
   testimonial: Testimonial;
   accent: Accent;
   featured?: boolean;
-  index: number;
+  number: number;
+  aspect: string;
   sizes: string;
   brandName: string;
 }) {
@@ -462,7 +333,7 @@ function CardSurface({
       <div
         className={cn(
           "relative w-full overflow-hidden rounded-sm border-2 border-on-accent/20 bg-paper-2",
-          featured ? "aspect-[4/5]" : "aspect-[3/4]",
+          aspect,
         )}
         style={{
           backgroundImage:
@@ -508,7 +379,7 @@ function CardSurface({
             featured ? "text-[11px]" : "text-[10px]",
           )}
         >
-          {String(index + 1).padStart(2, "0")}
+          {String(number).padStart(2, "0")}
         </span>
       </figcaption>
     </figure>
@@ -516,12 +387,12 @@ function CardSurface({
 }
 
 /** Kerangka kartu chat untuk keadaan "belum ada testimoni". */
-function SkeletonChat({ featured }: { featured?: boolean }) {
+function SkeletonChat({ aspect = "aspect-[3/4]" }: { aspect?: string }) {
   return (
     <div
       className={cn(
         "relative w-full overflow-hidden rounded-sm border-2 border-on-accent/20 bg-paper-2",
-        featured ? "aspect-[4/5]" : "aspect-[3/4]",
+        aspect,
       )}
       style={{
         backgroundImage:
@@ -547,60 +418,47 @@ function SkeletonChat({ featured }: { featured?: boolean }) {
 function TestimonialSkeleton() {
   return (
     <>
-      <div
-        className="relative mx-auto mt-12 hidden h-[600px] w-full md:block lg:h-[720px]"
-        style={{ perspective: "1600px" }}
-      >
-        <ul
-          className="relative size-full list-none"
-          style={{ transformStyle: "preserve-3d" }}
-        >
-          {SLOTS.slice(0, 5).map((slot) => (
-            <li
-              key={slot.key}
-              className="absolute"
-              style={{
-                left: `${slot.left}%`,
-                top: `${slot.top}%`,
-                width: `${slot.width}%`,
-                zIndex: slot.z,
-              }}
-            >
+      <div className="mt-12 hidden gap-4 md:grid md:grid-cols-[0.9fr_1.3fr_0.9fr] md:gap-5 lg:gap-6">
+        {COLUMNS.map((column) => (
+          <div
+            key={column.key}
+            className={cn("flex flex-col gap-4 md:gap-5 lg:gap-6", column.offset)}
+          >
+            {Array.from({ length: 3 }).map((_, index) => (
               <div
+                key={index}
                 className={cn(
                   "rounded-md border-2 border-ink p-1.5",
-                  ACCENT_MAT[slot.accent],
-                  slot.featured
+                  ACCENT_MAT[ACCENTS[index % ACCENTS.length]],
+                  column.key === "center" && index === 0
                     ? "shadow-[8px_8px_0_0_var(--ink)]"
                     : "shadow-[5px_5px_0_0_var(--ink)]",
                 )}
-                style={{ rotate: `${slot.rotate}deg` }}
               >
-                <SkeletonChat featured={slot.featured} />
+                <SkeletonChat aspect={column.aspect} />
                 <div className="flex items-center justify-between gap-2 px-1 pt-1.5">
                   <Skeleton className="h-2 w-16 rounded-full bg-on-accent/25" />
                   <Skeleton className="h-2 w-4 rounded-full bg-on-accent/20" />
                 </div>
               </div>
-            </li>
-          ))}
-        </ul>
+            ))}
+          </div>
+        ))}
       </div>
 
-      <div className="mt-8 grid grid-cols-2 gap-3 md:hidden">
-        {Array.from({ length: 4 }).map((_, index) => (
+      <div className="mt-8 flex flex-col gap-4 md:hidden">
+        {Array.from({ length: 3 }).map((_, index) => (
           <div
             key={index}
             className={cn(
               "rounded-md border-2 border-ink p-1.5",
-              ACCENT_MAT[["coral", "sage", "sky", "butter"][index] as Accent],
+              ACCENT_MAT[ACCENTS[index % ACCENTS.length]],
               index === 0
-                ? "col-span-2 shadow-[6px_6px_0_0_var(--ink)]"
+                ? "shadow-[6px_6px_0_0_var(--ink)]"
                 : "shadow-[4px_4px_0_0_var(--ink)]",
             )}
-            style={{ rotate: `${index === 0 ? -0.8 : index % 2 === 0 ? 1.4 : -1.6}deg` }}
           >
-            <SkeletonChat featured={index === 0} />
+            <SkeletonChat aspect="aspect-[4/5]" />
             <div className="flex items-center justify-between gap-2 px-1 pt-1.5">
               <Skeleton className="h-2 w-14 rounded-full bg-on-accent/25" />
               <Skeleton className="h-2 w-4 rounded-full bg-on-accent/20" />
