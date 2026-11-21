@@ -1,718 +1,691 @@
-"use client";
-
+import { DashboardLink } from "@/components/landing/dashboard-link";
+import { ProductBuyButton } from "@/components/landing/product-buy-button";
+import { ServiceOrderLink } from "@/components/landing/service-order-link";
+import { TestimonialWall } from "@/components/landing/testimonial-wall";
 import { PublicFooter } from "@/components/public-footer";
 import { PublicNavigation } from "@/components/public-header";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { Separator } from "@/components/ui/separator";
-import { APP_CONFIG, ROUTES } from "@/lib/constants";
+import { buttonVariants } from "@/components/ui/button";
+import { getProducts } from "@/lib/actions/product";
 import { PDF_TOOLS } from "@/lib/pdf-tools";
-import { Show, SignInButton, SignUpButton } from "@clerk/nextjs";
-import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, Briefcase, FileText, Layout, MessageCircle, QuoteIcon, Sparkles, XIcon } from "lucide-react";
+import { getActiveServices } from "@/lib/service-catalog";
+import {
+  SERVICE_HIGHLIGHTS,
+  getServiceVisual,
+  type ServiceAccent,
+  type ServiceHighlight,
+} from "@/lib/services";
+import { getSiteSettings } from "@/lib/settings";
+import { getSiteLinks } from "@/lib/site-config";
+import { getActiveTestimonials } from "@/lib/testimonials";
+import { cn, formatRupiah } from "@/lib/utils";
+import {
+  ArrowRight,
+  ClipboardList,
+  CreditCard,
+  Download,
+  FileCheck2,
+  Languages,
+  Mail,
+  MessageCircle,
+  PencilRuler,
+  Plus,
+  RefreshCcw,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
-import { SiInstagram as Instagram, SiWhatsapp } from "react-icons/si";
+import { SiWhatsapp } from "react-icons/si";
 
-// Structured data WebSite khusus homepage, dirender di HTML awal agar terbaca crawler.
-const WEBSITE_JSON_LD = {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "@id": `${APP_CONFIG.URL}/#website`,
-  name: APP_CONFIG.NAME,
-  alternateName: APP_CONFIG.ALTERNATE_NAMES,
-  url: APP_CONFIG.URL,
-  inLanguage: "id-ID",
-  publisher: {
-    "@id": `${APP_CONFIG.URL}/#organization`,
+export const revalidate = 300;
+
+const ACCENT_BG: Record<ServiceAccent, string> = {
+  coral: "bg-coral",
+  sage: "bg-sage",
+  butter: "bg-butter",
+  sky: "bg-sky",
+  lilac: "bg-lilac",
+};
+
+const TRUST_ITEMS = [
+  { icon: ShieldCheck, label: "ATS-friendly", detail: "Mudah dibaca sistem" },
+  { icon: Languages, label: "ID & English", detail: "Dua bahasa" },
+  { icon: RefreshCcw, label: "Bisa revisi", detail: "Sampai sesuai" },
+  { icon: FileCheck2, label: "Rapi & siap kirim", detail: "Format PDF" },
+] as const;
+
+const PROCESS_STEPS = [
+  {
+    icon: MessageCircle,
+    title: "Konsultasi",
+    description: "Ceritakan posisi dan perusahaan yang dilamar. Kami bantu pilih jenis berkas yang paling pas.",
   },
-};
+  {
+    icon: ClipboardList,
+    title: "Kirim data",
+    description: "Isi data diri, pengalaman, dan pencapaian. Bisa bahasa Indonesia maupun Inggris.",
+  },
+  {
+    icon: CreditCard,
+    title: "Bayar & dikerjakan",
+    description: "Pembayaran aman lewat Midtrans. Admin mengerjakan berkas dan memberi kabar lewat chat.",
+  },
+  {
+    icon: Download,
+    title: "Terima berkas",
+    description: "Unduh hasil final dari dashboard. Revisi tetap bisa diminta sampai sesuai.",
+  },
+] as const;
 
-const assetUrl = (path: string) => `${APP_CONFIG.ASSETS.BASE}${path}`;
+const FAQ_ITEMS = [
+  {
+    question: "Apakah CV-nya benar-benar ATS-friendly?",
+    answer:
+      "Ya. Kami memakai format satu kolom, tanpa tabel, teks dalam bentuk teks asli (bukan gambar), dan judul bagian yang standar. Struktur seperti ini yang paling mudah dibaca sistem ATS.",
+  },
+  {
+    question: "Bisa dibuat dalam bahasa Inggris?",
+    answer:
+      "Bisa. Semua layanan tersedia dalam bahasa Indonesia dan Inggris, termasuk CV, resume, surat lamaran, dan cover letter.",
+  },
+  {
+    question: "Berapa lama proses pengerjaannya?",
+    answer:
+      "Rata-rata 1–3 hari kerja setelah data lengkap dan pembayaran diterima. Untuk kebutuhan mendesak, tanyakan ketersediaan slot cepat lewat WhatsApp.",
+  },
+  {
+    question: "Apakah bisa revisi?",
+    answer:
+      "Bisa. Revisi mencakup perbaikan penulisan, penyesuaian urutan, dan perubahan kecil pada tampilan. Jumlah revisi mengikuti paket yang dipilih.",
+  },
+  {
+    question: "Bagaimana cara memesannya?",
+    answer:
+      "Mulai dari tombol konsultasi atau halaman layanan. Setelah detail disepakati, kamu membayar melalui Midtrans dan admin langsung mengerjakan pesanan.",
+  },
+  {
+    question: "Apakah data saya aman?",
+    answer:
+      "Data hanya dipakai untuk menyusun berkas lamaranmu. File hasil dikirim lewat tautan privat yang hanya bisa diakses oleh pemilik pesanan.",
+  },
+] as const;
 
-// #region Document Mockups (Neo-Pop Styled)
-interface DocumentMockupProps { className?: string; }
+interface LandingServiceCard {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  price: number | null;
+  tags: string[];
+  icon: ServiceHighlight["icon"];
+  accent: ServiceAccent;
+}
 
-const DocumentMockupCV = ({ className }: DocumentMockupProps) => (
-  <div className={`bg-background backdrop-blur-xl border-4 border-foreground shadow-[6px_6px_0px_0px] shadow-foreground rounded-[2rem] p-5 flex flex-col gap-4 ${className}`}>
-    <div className="flex items-center gap-3 border-b-4 border-foreground/10 pb-4">
-      <div className="w-12 h-12 rounded-full bg-brand-orange border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground animate-pulse" />
-      <div className="flex flex-col gap-2">
-        <div className="w-24 h-3 bg-foreground rounded-full" />
-        <div className="w-16 h-2 bg-foreground/50 rounded-full" />
-      </div>
-    </div>
-    <div className="space-y-3">
-      <div className="w-full h-2.5 bg-muted-foreground/20 rounded-full" />
-      <div className="w-5/6 h-2.5 bg-muted-foreground/20 rounded-full" />
-      <div className="w-4/6 h-2.5 bg-muted-foreground/20 rounded-full" />
-    </div>
-    <div className="mt-2 space-y-3">
-      <div className="flex gap-3">
-        <div className="w-1/3 h-16 bg-brand-red/10 dark:bg-brand-red/20 rounded-xl border-2 border-brand-red" />
-        <div className="w-2/3 space-y-2.5 pt-1">
-          <div className="w-full h-2.5 bg-foreground/20 rounded-full" />
-          <div className="w-4/5 h-2.5 bg-foreground/20 rounded-full" />
-        </div>
-      </div>
-    </div>
-  </div>
-);
+export default async function HomePage() {
+  const [settings, products, testimonials, services] = await Promise.all([
+    getSiteSettings(),
+    getProducts(true),
+    getActiveTestimonials(),
+    getActiveServices(),
+  ]);
 
-const DocumentMockupPortfolio = ({ className }: DocumentMockupProps) => (
-  <div className={`bg-brand-orange backdrop-blur-xl border-4 border-foreground shadow-[6px_6px_0px_0px] shadow-foreground rounded-[2rem] p-5 flex flex-col gap-4 ${className}`}>
-    <div className="w-32 h-4 bg-background rounded-full mb-2 border-2 border-foreground" />
-    <div className="grid grid-cols-2 gap-3">
-      <div className="aspect-square bg-background border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground rounded-xl" />
-      <div className="aspect-square bg-background border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground rounded-xl" />
-      <div className="aspect-square bg-background border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground rounded-xl" />
-      <div className="aspect-square bg-background border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground rounded-xl" />
-    </div>
-  </div>
-);
+  const links = getSiteLinks(settings);
+  const featuredProducts = products.slice(0, 6);
 
-const DocumentMockupCoverLetter = ({ className }: DocumentMockupProps) => (
-  <div className={`bg-background backdrop-blur-xl border-4 border-foreground shadow-[6px_6px_0px_0px] shadow-foreground rounded-[2rem] p-6 flex flex-col gap-3 ${className}`}>
-    <div className="w-14 h-14 bg-brand-red rounded-2xl mb-4 flex items-center justify-center border-2 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground">
-      <Sparkles className="text-white w-7 h-7" />
-    </div>
-    <div className="w-1/2 h-3 bg-foreground rounded-full mb-5" />
-    <div className="space-y-3">
-      <div className="w-full h-2 bg-foreground/20 rounded-full" />
-      <div className="w-full h-2 bg-foreground/20 rounded-full" />
-      <div className="w-5/6 h-2 bg-foreground/20 rounded-full" />
-      <div className="w-full h-2 bg-foreground/20 rounded-full" />
-      <div className="w-4/5 h-2 bg-foreground/20 rounded-full" />
-    </div>
-  </div>
-);
-// #endregion
+  // Katalog dari database diprioritaskan. Kalau tabel belum ada (mis. sebelum
+  // migrasi di production), kartu tetap tampil memakai daftar statis tanpa harga.
+  const serviceCards: LandingServiceCard[] =
+    services.length > 0
+      ? services.map((service) => {
+          const visual =
+            getServiceVisual(service.id) ?? getServiceVisual(service.slug);
 
-// #region Header Navigation / Mobile Bottom Bar / Footer
-// Digunakan komponen bersama dari `components/public-header` dan `components/public-footer` agar seragam di seluruh halaman luar dashboard.
-// #endregion
-
-// #region Hero Section
-const Hero = () => {
-  const containerRef = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end start"]
-  });
-
-  const y1 = useTransform(scrollYProgress, [0, 1], [0, -150]);
-  const y2 = useTransform(scrollYProgress, [0, 1], [0, 200]);
-  const y3 = useTransform(scrollYProgress, [0, 1], [0, -250]);
-  const rotate1 = useTransform(scrollYProgress, [0, 1], [0, -5]);
-  const rotate2 = useTransform(scrollYProgress, [0, 1], [0, 5]);
-
-  return (
-    <section ref={containerRef} className="relative min-h-[95vh] flex items-center justify-center overflow-hidden pt-32 pb-20 px-6 border-b-4 border-foreground bg-[radial-gradient(color-mix(in_srgb,currentColor_30%,transparent)_1px,transparent_1px)] dark:bg-[radial-gradient(color-mix(in_srgb,currentColor_13%,transparent)_1px,transparent_1px)] [background-size:20px_20px]">
-      {/* Neo-Pop Background Blobs */}
-      <div className="absolute inset-0 bg-background -z-20" />
-      <div className="absolute top-1/4 left-1/4 w-[40vw] h-[40vw] bg-brand-red/20 rounded-full blur-[100px] -z-10 mix-blend-multiply dark:mix-blend-screen" />
-      <div className="absolute bottom-1/4 right-1/4 w-[30vw] h-[30vw] bg-brand-orange/20 rounded-full blur-[80px] -z-10 mix-blend-multiply dark:mix-blend-screen" />
-
-      {/* Grid Pattern Overlay */}
-      <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] dark:bg-[radial-gradient(#374151_1px,transparent_1px)] [background-size:16px_16px] opacity-40 -z-15 pointer-events-none" />
-
-      <div className="max-w-6xl w-full mx-auto grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
-        {/* Left Content */}
-        <motion.div
-          className="flex flex-col items-start gap-6 z-10"
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-        >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-orange border-2 border-foreground text-sm font-black shadow-[2px_2px_0px_0px] shadow-foreground">
-            <span className="relative flex h-2.5 w-2.5 mr-1">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-foreground opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-foreground"></span>
-            </span>
-            Harga Murah & Profesional
-          </div>
-
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tighter leading-[1.05] text-foreground">
-            <span className="mb-3 block text-lg font-black tracking-tight text-foreground/70 sm:text-xl lg:text-2xl">
-              Jasa Bikin CV ATS-Friendly
-            </span>
-            Bantu kamu <br />
-            <span className="text-brand-red drop-shadow-[4px_4px_0px] drop-shadow-foreground">lolos kerja!</span>
-          </h1>
-
-          <p className="text-lg text-foreground/80 font-medium max-w-md leading-relaxed border-l-4 border-brand-orange pl-4">
-            Tersedia berbagai desain CV (Curriculum Vitae) & resume, mulai dari ATS-friendly, CV Creative, maupun CV basic yang bisa disesuaikan dengan kebutuhanmu.
-          </p>
-
-          <div className="flex flex-col sm:flex-row flex-wrap items-center gap-4 w-full mt-4">
-            <Button className="rounded-full h-14 px-8 w-full sm:w-auto font-bold text-base bg-brand-red text-white border-2 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px] transition-all" size="lg" onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP_CHAT(APP_CONFIG.CONSULT_MESSAGE), "_blank")}>
-              <SiWhatsapp className="w-5 h-5 ml-0 mr-2" />
-              Chat via WhatsApp
-            </Button>
-            <Button className="rounded-full h-14 px-8 w-full sm:w-auto font-bold text-base bg-background text-foreground border-2 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px] hover:text-background transition-all" size="lg" onClick={() => window.open(APP_CONFIG.LINKS.INSTAGRAM, "_blank")}>
-              <Instagram className="w-5 h-5 ml-0 mr-2" />
-              Lihat Portofolio
-            </Button>
-          </div>
-
-          <div className="mt-8 flex items-center gap-4 text-sm font-bold text-foreground">
-            <div className="flex -space-x-3">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="w-10 h-10 rounded-full border-2 border-foreground bg-muted flex items-center justify-center overflow-hidden shadow-[2px_2px_0px_0px] shadow-foreground">
-                  <img src={assetUrl(`/people/people${i}.jpg`)} alt="client" className="w-full h-full object-cover" />
-                </div>
-              ))}
-            </div>
-            <p className="bg-background border-2 border-foreground px-4 py-2 rounded-full shadow-[2px_2px_0px_0px] shadow-foreground">
-              Dipercaya oleh 1000+ orang.
-            </p>
-          </div>
-        </motion.div>
-
-        {/* Right Parallax Elements */}
-        <div className="relative h-[600px] hidden lg:block perspective-[1000px] pointer-events-none">
-          <motion.div style={{ y: y1, rotate: rotate1 }} className="absolute top-10 left-10 w-64 z-20">
-            <DocumentMockupCV className="rotate-[-3deg]" />
-          </motion.div>
-          <motion.div style={{ y: y2, rotate: rotate2 }} className="absolute top-40 right-0 w-72 z-10">
-            <DocumentMockupPortfolio className="rotate-[5deg]" />
-          </motion.div>
-          <motion.div style={{ y: y3 }} className="absolute bottom-10 left-32 w-56 z-30">
-            <DocumentMockupCoverLetter className="rotate-[-2deg]" />
-          </motion.div>
-        </div>
-      </div>
-    </section>
-  );
-};
-// #endregion
-
-// #region Services Section
-const Services = () => {
-  return (
-    <section className="py-32 px-6 bg-muted/40 border-b-4 border-foreground">
-      <div className="max-w-6xl mx-auto space-y-16">
-        <div className="text-center max-w-2xl mx-auto space-y-4">
-          <div className="inline-block px-4 py-1.5 mb-4 rounded-full bg-brand-red text-white border-2 border-foreground font-black text-sm shadow-[2px_2px_0px_0px] shadow-foreground">LAYANAN KAMI</div>
-          <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground">90%+ Desain CV Disukai HRD</h2>
-          <p className="text-foreground/70 font-medium text-lg">Telah terbukti disukai dan sangat mudah di-<em>screening</em> oleh para Recruiter.</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-          {/* Card 1 - Red */}
-          <div className="md:col-span-2 group relative overflow-hidden rounded-[2rem] bg-brand-red text-white border-4 border-foreground p-8 transition-all hover:-translate-y-2 shadow-[6px_6px_0px_0px] shadow-foreground hover:shadow-[10px_10px_0px_0px]">
-            <div className="absolute top-0 right-0 p-8 opacity-20 transition-transform group-hover:scale-110 duration-500 group-hover:rotate-12">
-              <FileText className="w-40 h-40" />
-            </div>
-            <div className="relative z-10 h-full flex flex-col justify-between min-h-[220px]">
-              <div className="w-14 h-14 rounded-2xl bg-white dark:bg-background text-brand-red border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground flex items-center justify-center mb-6">
-                <FileText className="w-7 h-7" />
-              </div>
-              <div>
-                <h3 className="text-3xl font-black mb-3 tracking-tight">CV & Resume Design</h3>
-                <p className="text-white/90 max-w-md font-medium text-lg leading-snug">Layout CV & Resume ATS-friendly yang simpel dan mudah di-screening para HR. Desain CV Kreatif yang aesthetic. Dan CV Basic yang ramah di kantong.</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 2 - Orange */}
-          <div className="md:col-span-1 group relative overflow-hidden rounded-[2rem] bg-brand-orange text-black border-4 border-foreground p-8 transition-all hover:-translate-y-2 shadow-[6px_6px_0px_0px] shadow-foreground hover:shadow-[10px_10px_0px_0px]">
-            <div className="absolute top-0 right-0 p-8 opacity-10 transition-transform group-hover:scale-110 duration-500 group-hover:-rotate-12">
-              <MessageCircle className="w-32 h-32" />
-            </div>
-            <div className="relative z-10 h-full flex flex-col justify-between min-h-[220px]">
-              <div className="w-14 h-14 rounded-2xl bg-background text-foreground border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground flex items-center justify-center mb-6">
-                <MessageCircle className="w-7 h-7" />
-              </div>
-              <div>
-                <h3 className="text-3xl font-black mb-3 tracking-tight">Cover Letter</h3>
-                <p className="text-black/80 font-bold leading-snug">Cover letter & surat lamaran kerja yang disusun secara profesional untuk perbesar peluang lolos kerja.</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 3 - White/Bg */}
-          <div className="md:col-span-1 group relative overflow-hidden rounded-[2rem] bg-background border-4 border-foreground p-8 transition-all hover:-translate-y-2 shadow-[6px_6px_0px_0px] shadow-foreground hover:shadow-[10px_10px_0px_0px]">
-            <div className="relative z-10 h-full flex flex-col justify-between min-h-[220px]">
-              <div className="w-14 h-14 rounded-2xl bg-brand-red text-white border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground flex items-center justify-center mb-6">
-                <Layout className="w-7 h-7" />
-              </div>
-              <div>
-                <h3 className="text-2xl font-black mb-3 tracking-tight">Brosur, Flyer, & Resi</h3>
-                <p className="text-foreground/70 font-medium">Buat bisnis kamu jadi lebih profesional dan menarik pelanggan saat promosi.</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 4 - White/Bg */}
-          <div className="md:col-span-2 group relative overflow-hidden rounded-[2rem] bg-background border-4 border-foreground p-8 transition-all hover:-translate-y-2 shadow-[6px_6px_0px_0px] shadow-foreground hover:shadow-[10px_10px_0px_0px] flex flex-col justify-between">
-            <div className="absolute bottom-0 right-0 w-72 translate-x-12 translate-y-12 opacity-30 transition-transform group-hover:scale-105 duration-500">
-              <DocumentMockupPortfolio />
-            </div>
-            <div className="relative z-10">
-              <div className="w-14 h-14 rounded-2xl bg-brand-orange text-black border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground flex items-center justify-center mb-6">
-                <Briefcase className="w-7 h-7" />
-              </div>
-              <div>
-                <h3 className="text-3xl font-black mb-3 tracking-tight">Company Profile & Portfolio</h3>
-                <p className="text-foreground/70 font-medium max-w-md text-lg leading-snug">Showcase karyamu dengan profesional, dan tingkatkan peluang bisnis yang lebih baik di mata klien.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-};
-// #endregion
-
-// #region PDF Tools Section
-const PdfToolsSection = () => {
-  return (
-    <section id="tools" className="scroll-mt-28 py-32 px-6 bg-background border-b-4 border-foreground">
-      <div className="max-w-6xl mx-auto space-y-14">
-        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
-          <div className="max-w-3xl space-y-4">
-            <div className="inline-block px-4 py-1.5 rounded-full bg-brand-orange text-black border-2 border-foreground font-black text-sm shadow-[2px_2px_0px_0px] shadow-foreground">
-              ALAT PENDUKUNG
-            </div>
-            <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground">
-              Alat PDF Gratis untuk Melengkapi Berkas Lamaran
-            </h2>
-            <p className="text-foreground/70 font-medium text-lg leading-relaxed">
-              Siapkan dokumen pendukung lamaran kerja dengan lebih efisien. Seluruh alat dapat digunakan gratis dan diproses langsung di peramban Anda untuk menjaga privasi berkas.
-            </p>
-          </div>
-          <div className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-background border-2 border-foreground text-sm font-bold shadow-[2px_2px_0px_0px] shadow-foreground w-max">
-            <span className="w-2.5 h-2.5 rounded-full bg-brand-red" />
-            Gratis &amp; tanpa instalasi
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          {PDF_TOOLS.map((tool) => {
-            const Icon = tool.icon;
-            return (
-              <Link
-                key={tool.id}
-                href={tool.href}
-                className="group relative overflow-hidden rounded-[2rem] bg-background border-4 border-foreground p-6 md:p-7 transition-all hover:-translate-y-2 shadow-[6px_6px_0px_0px] shadow-foreground hover:shadow-[10px_10px_0px_0px] flex flex-col"
-              >
-                <div className={`w-14 h-14 rounded-2xl border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground flex items-center justify-center mb-5 ${tool.accent === "red" ? "bg-brand-red text-white" : "bg-brand-orange text-black"}`}>
-                  <Icon className="w-7 h-7" />
-                </div>
-                <h3 className="text-2xl font-black tracking-tight mb-2">{tool.name}</h3>
-                <p className="text-foreground/70 font-medium leading-relaxed flex-1">{tool.description}</p>
-                <div className="mt-6 inline-flex items-center gap-2 text-sm font-black">
-                  Buka alat <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
-};
-// #endregion
-
-// #region Process Section
-const Process = () => {
-  const steps = [
-    { num: "01", title: "Konsultasi Kebutuhan", desc: "Diskusi via WhatsApp, konfirmasi jenis CV atau kebutuhan lain, baik berbahasa Indonesia atau English." },
-    { num: "02", title: "Payment & Eksekusi", desc: "Dengan harga terjangkau mulai dari 13K dapatkan CV & Resume yang profesional." },
-    { num: "03", title: "Revisi Tipis-Tipis", desc: "Untuk lebih menyesuaikan dengan kebutuhan kamu, kami siap revisi hingga maksimal 2 hari." },
-    { num: "04", title: "Done & Good Luck!", desc: "Kami akan kirimkan semua yang kamu butuhkan untuk melamar pekerjaan yang kamu inginkan." }
-  ];
+          return {
+            id: service.id,
+            slug: service.slug,
+            title: service.name,
+            description: service.description,
+            price: service.price,
+            tags: visual?.tags ?? service.languages.map((code) => code.toUpperCase()),
+            icon: visual?.icon ?? FileCheck2,
+            accent: visual?.accent ?? "butter",
+          };
+        })
+      : SERVICE_HIGHLIGHTS.map((service) => ({
+          ...service,
+          slug: service.id,
+          price: null,
+        }));
 
   return (
-    <section className="py-32 px-6 bg-background border-b-4 border-foreground relative overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute right-0 top-0 w-1/2 h-full bg-[radial-gradient(var(--brand-orange)_2px,transparent_2px)] [background-size:24px_24px] opacity-20 -z-10" />
-
-      <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col lg:flex-row gap-16 lg:gap-24">
-          <div className="lg:w-5/12">
-            <div className="sticky top-32 bg-background p-8 rounded-[2rem] border-4 border-foreground shadow-[6px_6px_0px_0px] shadow-foreground">
-              <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-brand-orange text-black border-2 border-foreground font-black text-sm shadow-[2px_2px_0px_0px] shadow-foreground">PROSES CEPAT</div>
-              <h2 className="text-4xl md:text-5xl font-black tracking-tighter mb-6">Murah, Cepat & Profesional.</h2>
-              <p className="text-foreground/80 font-medium mb-10 text-lg leading-relaxed">Dirancang oleh profesional untuk kamu yang pusing cari pekerjaan <em>in this economy</em>. Kami tangani dengan cepat!</p>
-              <Button className="h-14 px-8 w-full rounded-full font-bold text-lg bg-brand-red text-white border-2 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px] shadow-foreground transition-all" onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP_CHAT(APP_CONFIG.CONSULT_MESSAGE), "_blank")}>
-                Mulai Sekarang!
-              </Button>
-            </div>
-          </div>
-
-          <div className="lg:w-7/12 py-8">
-            <div className="space-y-12">
-              {steps.map((step, i) => (
-                <div key={i} className="group relative flex gap-6 md:gap-8 bg-card/50 p-6 rounded-3xl border-2 border-transparent hover:border-foreground hover:bg-background hover:shadow-[4px_4px_0px_0px] shadow-foreground transition-all duration-300">
-                  {/* Line connector */}
-                  {i !== steps.length - 1 && (
-                    <div className="absolute left-[3rem] md:left-[3.3rem] top-20 bottom-[-8rem] w-1.5 bg-foreground/10 group-hover:bg-brand-orange transition-colors rounded-full z-5" />
-                  )}
-
-                  <div className="relative z-10 flex-shrink-0 w-14 h-14 rounded-2xl bg-brand-orange border-4 border-foreground flex items-center justify-center text-xl font-black text-black shadow-[4px_4px_0px_0px] shadow-foreground group-hover:scale-110 transition-transform duration-300 group-hover:bg-brand-red group-hover:text-white">
-                    {step.num}
-                  </div>
-
-                  <div className="pt-2">
-                    <h3 className="text-2xl font-black mb-3 tracking-tight">{step.title}</h3>
-                    <p className="text-foreground/70 font-medium text-lg leading-relaxed">{step.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-};
-// #endregion
-
-// #region Portfolio Showcase
-const PortfolioShowcase = () => {
-  const [activeTab, setActiveTab] = useState("Semua");
-  const tabs = ["Semua", "ATS", "Resume", "Surat Lamaran"];
-
-  const portfolioItems = [
-    { id: 1, type: "ATS", title: "Jasa Pembuatan CV ATS Friendly Corporate", desc: "CV ATS friendly standar HRD untuk melamar lowongan kerja di BUMN, Corporate, dan Tech Company.", imageSrc: assetUrl("/portofolio/cv-ats-1.webp") },
-    { id: 2, type: "Resume", title: "Desain CV Kreatif Estetik Gen-Z", desc: "Contoh CV kreatif dengan desain visual menonjol, sangat cocok untuk apply ke Agensi Kreatif dan Startup.", imageSrc: assetUrl("/portofolio/resume-1.webp") },
-    { id: 3, type: "Surat Lamaran", title: "Jasa Surat Lamaran Kerja Profesional", desc: "Format Cover Letter formal yang sopan, terstruktur, dan ditulis custom (bukan template pasaran).", imageSrc: assetUrl("/portofolio/surat-lamaran-1.webp") },
-    { id: 4, type: "ATS", title: "Template CV ATS Friendly Minimalis", desc: "Desain CV lamaran kerja yang fokus penuh pada bobot pengalaman kerja, pencapaian, dan skill profesional Anda.", imageSrc: assetUrl("/portofolio/cv-ats-2.webp") },
-    { id: 5, type: "Resume", title: "Pembuatan CV Modern Layout 2 Kolom", desc: "Rekomendasi CV modern dengan perpaduan warna subtle dan layout efisien untuk merangkum riwayat hidup.", imageSrc: assetUrl("/portofolio/resume-2.webp") },
-    { id: 6, type: "Surat Lamaran", title: "Jasa Pembuatan Cover Letter", desc: "Surat lamaran kerja profesional yang rapi dan tone profesional.", imageSrc: assetUrl("/portofolio/surat-lamaran-2.webp") },
-  ];
-
-  const filteredItems = portfolioItems.filter(
-    (item) => activeTab === "Semua" || item.type === activeTab
-  );
-
-  return (
-    <section className="py-32 px-6 bg-brand-orange/10 border-b-4 border-foreground">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center max-w-2xl mx-auto space-y-4 mb-14">
-          <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground">Desain Yang Mudah di-<em>Screening</em>.</h2>
-          <p className="text-foreground/70 font-medium text-lg">
-            Setiap CV dan Resume dari kami disusun <em>custom</em> sesuai riwayat pendidikan, pengalaman kerja, dan <em>skills</em> yang kamu miliki!
-          </p>
-        </div>
-
-        <div className="flex justify-center mb-14">
-          <div className="bg-background border-4 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground p-1.5 rounded-[2rem] sm:rounded-full flex flex-wrap justify-center gap-2 max-w-full">
-            {tabs.map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                aria-pressed={activeTab === tab}
-                onClick={() => setActiveTab(tab)}
-                className={`relative px-4 sm:px-6 py-2.5 rounded-full text-sm font-black transition-colors duration-300 whitespace-nowrap ${activeTab === tab ? "text-white" : "text-foreground hover:bg-muted"}`}
-              >
-                {activeTab === tab && (
-                  <motion.div layoutId="portfolioTab" className="absolute inset-0 z-0 bg-brand-red border-2 border-foreground rounded-full shadow-[2px_2px_0px_0px] shadow-foreground" />
-                )}
-                <span className="relative z-10">{tab}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 min-h-[400px]">
-          <AnimatePresence mode="popLayout">
-            {filteredItems.map((item) => (
-              <motion.div
-                key={item.id}
-                layout
-                initial={{ opacity: 0, scale: 0.9, filter: "blur(4px)" }}
-                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                exit={{ opacity: 0, scale: 0.9, filter: "blur(4px)" }}
-                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                className="group flex flex-col gap-5"
-              >
-                <div className="relative bg-background rounded-[2rem] p-3 border-4 border-foreground shadow-[6px_6px_0px_0px] shadow-foreground hover:shadow-[10px_10px_0px_0px] transition-all duration-500 hover:-translate-y-2">
-                  <div className="absolute top-5 right-5 bg-brand-orange text-black text-xs font-black px-4 py-2 rounded-full uppercase tracking-wider z-10 shadow-[2px_2px_0px_0px] shadow-foreground">
-                    {item.type}
-                  </div>
-                  <div className="relative w-full aspect-[1/1.4] rounded-xl overflow-hidden bg-muted group-hover:scale-[1.02] transition-transform duration-500 ease-out">
-                    <img src={item.imageSrc} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
-                  </div>
-                </div>
-                <div className="px-2">
-                  <h3 className="font-black text-foreground text-xl tracking-tight mb-2">{item.title}</h3>
-                  <p className="text-base text-foreground/70 font-medium leading-relaxed">{item.desc}</p>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </motion.div>
-
-        <div className="mt-20 flex justify-center">
-          <Button className="rounded-full h-14 px-8 font-bold bg-background text-foreground border-2 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px] hover:text-background transition-all" onClick={() => window.open(APP_CONFIG.LINKS.INSTAGRAM, "_blank")}>
-            Lihat Lebih Banyak di Instagram <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
-        </div>
-      </div>
-    </section>
-  );
-};
-// #endregion
-
-// #region Testimonials Section
-const TestimonialTextVariant = () => {
-  const reviews = [
-    { name: "Raka, 22", role: "Fresh Grad HTS", text: "Sumpah awalnya pesimis gara-gara IPK nasakom, eh desain CV dari Civita bikin HRD salfok. Besok langsung dapet panggilan interview njir." },
-    { name: "Nisa, 25", role: "Budak Corporate", text: "ATS friendly tapi tetep aesthetic? Kirain mitos, ternyata beneran ada. Makasih Civita, portfolio gue jadi sekelas anak agensi Jaksel." },
-    { name: "Bima, 24", role: "Jobseeker Berkedok Freelancer", text: "Bikin cover letter di sini bahasanya sopan tapi ngga kaku kaya template. HRD-nya notice, pantesan langsung dapet offering letter kemaren." }
-  ];
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.4 }}
-      className="grid grid-cols-1 md:grid-cols-3 gap-8"
-    >
-      {reviews.map((review, i) => (
-        <div key={i} className="bg-background border-4 border-foreground rounded-[2rem] p-8 shadow-[6px_6px_0px_0px] shadow-foreground hover:shadow-[10px_10px_0px_0px] hover:-translate-y-2 transition-all duration-300">
-          <QuoteIcon className="w-10 h-10 text-brand-red mb-6 fill-current" />
-          <p className="text-foreground font-medium mb-8 text-lg leading-relaxed">&quot;{review.text}&quot;</p>
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-brand-orange border-2 border-foreground shadow-[2px_2px_0px_0px] shadow-foreground flex items-center justify-center font-black text-black text-xl">
-              {review.name.charAt(0)}
-            </div>
-            <div>
-              <p className="font-black text-base text-foreground uppercase tracking-tight">{review.name}</p>
-              <p className="text-sm font-bold text-foreground/60">{review.role}</p>
-            </div>
-          </div>
-        </div>
-      ))}
-    </motion.div>
-  );
-};
-
-const TestimonialChatVariant = () => {
-  const screenshots = [
-    assetUrl("/testimoni/testimoni1.webp"),
-    assetUrl("/testimoni/testimoni2.webp"),
-    assetUrl("/testimoni/testimoni3.webp"),
-    assetUrl("/testimoni/testimoni4.webp"),
-    assetUrl("/testimoni/testimoni5.webp"),
-  ];
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.4 }}
-      className="relative w-full max-w-5xl mx-auto px-4 md:px-12"
-    >
-      <Carousel
-        opts={{
-          align: "start",
-          loop: true,
-        }}
-        className="w-full"
-      >
-        <CarouselContent>
-          {screenshots.map((src, idx) => (
-            <CarouselItem key={idx} className="pl-4 md:pl-6 basis-full sm:basis-1/2 lg:basis-1/3">
-              <div className="aspect-[9/16] relative rounded-2xl overflow-hidden border-4 border-foreground bg-muted group">
-                <img
-                  src={src}
-                  alt={`WhatsApp Testimonial ${idx + 1}`}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  loading="lazy"
-                />
-              </div>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-        <CarouselPrevious className="hidden md:flex -left-16 w-14 h-14 bg-brand-orange text-black border-4 !border-foreground rounded-full shadow-[4px_4px_0px_0px] shadow-foreground hover:bg-brand-orange hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px] transition-all dark:!bg-brand-orange dark:!text-black dark:hover:!bg-brand-orange" />
-        <CarouselNext className="hidden md:flex -right-16 w-14 h-14 bg-brand-orange text-black border-4 !border-foreground rounded-full shadow-[4px_4px_0px_0px] shadow-foreground hover:bg-brand-orange hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px] transition-all dark:!bg-brand-orange dark:!text-black dark:hover:!bg-brand-orange" />
-      </Carousel>
-    </motion.div>
-  );
-};
-
-const Testimonials = () => {
-  const [activeVariant, setActiveVariant] = useState("chat"); // "text" | "chat"
-
-  return (
-    <section className="py-32 px-6 bg-background border-b-4 border-foreground overflow-hidden">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center max-w-2xl mx-auto space-y-4 mb-14">
-          <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground">Kata Mereka Yang Keterima Kerja.</h2>
-          <p className="text-foreground/70 font-medium text-lg">
-            Sudah terbukti dari mereka yang telah diterima kerja di berbagai perusahaan dengan bantuan CV dan Resume dari CIVITA.
-          </p>
-        </div>
-
-        <div className="flex justify-center mb-14">
-          <div className="bg-background border-4 border-foreground shadow-[4px_4px_0px_0px] shadow-foreground p-1.5 rounded-full flex gap-1.5 sm:gap-2 max-w-full">
-            <button type="button" aria-pressed={activeVariant === "text"} onClick={() => setActiveVariant("text")} className={`relative px-5 sm:px-8 py-3 rounded-full text-xs sm:text-sm font-black transition-colors duration-300 whitespace-nowrap ${activeVariant === "text" ? "text-white" : "text-foreground hover:bg-muted"}`}>
-              {activeVariant === "text" && <motion.div layoutId="testiPill" className="absolute inset-0 z-0 bg-brand-red border-2 border-foreground rounded-full shadow-[2px_2px_0px_0px] shadow-foreground" />}
-              <span className="relative z-10">Review Teks</span>
-            </button>
-            <button type="button" aria-pressed={activeVariant === "chat"} onClick={() => setActiveVariant("chat")} className={`relative px-5 sm:px-8 py-3 rounded-full text-xs sm:text-sm font-black transition-colors duration-300 whitespace-nowrap ${activeVariant === "chat" ? "text-white" : "text-foreground hover:bg-muted"}`}>
-              {activeVariant === "chat" && <motion.div layoutId="testiPill" className="absolute inset-0 z-0 bg-brand-red border-2 border-foreground rounded-full shadow-[2px_2px_0px_0px] shadow-foreground" />}
-              <span className="relative z-10">Testimoni WA</span>
-            </button>
-          </div>
-        </div>
-
-        <div className="min-h-[300px]">
-          <AnimatePresence mode="wait">
-            {activeVariant === "text" ? <TestimonialTextVariant key="text" /> : <TestimonialChatVariant key="chat" />}
-          </AnimatePresence>
-        </div>
-      </div>
-    </section>
-  );
-};
-// #endregion
-
-// #region CTA Section
-const CTA = () => {
-  return (
-    <section className="relative py-32 px-6 overflow-hidden bg-brand-red">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] bg-white/10 rounded-full blur-[80px] pointer-events-none" />
-      <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_20px,rgba(0,0,0,0.05)_20px,rgba(0,0,0,0.05)_40px)] dark:bg-[repeating-linear-gradient(45deg,transparent,transparent_20px,rgba(255,255,255,0.02)_20px,rgba(255,255,255,0.02)_40px)] pointer-events-none" />
-
-      <div className="relative z-10 max-w-4xl mx-auto text-center space-y-8">
-        <h2 className="text-5xl md:text-7xl font-black tracking-tighter text-white drop-shadow-[4px_4px_0px] drop-shadow-black">
-          Butuh CV & Resume Secepatnya!?
-        </h2>
-        <p className="text-xl md:text-2xl font-bold text-white max-w-3xl mx-auto leading-relaxed border-b-4 border-transparent hover:border-white transition-all cursor-default">
-          Langsung chat admin sekarang! CV kamu langsung jadi dalam 3 jam dan siap digunakan. Dibuat untuk maksimalin peluang dipanggil <em>interview</em>!
-        </p>
-
-        <div className="flex justify-center pt-8">
-          <div className="flex flex-col w-full sm:w-auto gap-6">
-            <button
-              onClick={() => window.open(APP_CONFIG.LINKS.WHATSAPP_CHAT(APP_CONFIG.CONSULT_MESSAGE), "_blank")}
-              className="group relative inline-flex items-center justify-center gap-3 h-16 px-10 bg-brand-orange text-black border-4 border-foreground rounded-full font-black text-xl shadow-[6px_6px_0px_0px] shadow-foreground hover:shadow-[2px_2px_0px_0px] shadow-foreground hover:translate-y-1 transition-all"
-            >
-              Chat Admin {APP_CONFIG.NAME}
-              <ArrowRight className="w-6 h-6 group-hover:translate-x-1.5 transition-transform stroke-[3px]" />
-            </button>
-
-            <Show when="signed-out">
-              <div className="flex items-center justify-center gap-4 text-sm font-bold text-white bg-black/20 dark:bg-black/40 p-4 rounded-full backdrop-blur-sm border-2 border-white/20">
-                <SignInButton mode="modal" fallbackRedirectUrl="/">
-                  <Button variant="link" className="text-white hover:text-brand-orange transition-colors underline underline-offset-4 font-bold text-base">Masuk ke Akun</Button>
-                </SignInButton>
-                <Separator className="opacity-50 h-5" orientation="vertical" />
-                <SignUpButton mode="modal" fallbackRedirectUrl="/">
-                  <Button variant="link" className="text-white hover:text-brand-orange transition-colors underline underline-offset-4 font-bold text-base">Daftar Member Baru</Button>
-                </SignUpButton>
-              </div>
-            </Show>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-};
-// #endregion
-
-// #region Footer & Popup
-const PricingPopup = () => {
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setIsVisible(true), 2500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  return (
-    <AnimatePresence>
-      {isVisible && (
-        <motion.div
-          initial={{ opacity: 0, y: 30, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 30, scale: 0.95, filter: "blur(5px)" }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="fixed bottom-4 md:bottom-10 left-1/2 -translate-x-1/2 md:translate-x-0 md:left-10 z-[40] flex items-center gap-3 sm:gap-4 p-2.5 pr-3 sm:p-3 sm:pr-4 bg-background border-4 border-foreground rounded-full w-max max-w-[calc(100vw-2rem)]"
-        >
-          <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-brand-orange text-black border-2 border-foreground shrink-0">
-            <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />
-          </div>
-          <div className="flex flex-col mr-2 sm:mr-3">
-            <span className="text-[11px] font-black tracking-wider text-muted-foreground uppercase leading-none mb-1.5">
-              Harga Terjangkau
-            </span>
-            <span className="text-sm sm:text-base font-bold text-foreground leading-none">
-              Harga mulai dari <strong className="font-black text-brand-red border-b-2 border-foreground">13K</strong> aja!
-            </span>
-          </div>
-          <button type="button" aria-label="Tutup info harga" onClick={() => setIsVisible(false)} className="p-2 bg-muted border-2 border-transparent hover:border-foreground rounded-full transition-all ml-1 active:translate-y-1">
-            <XIcon className="w-5 h-5 text-foreground" />
-          </button>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-};
-// #endregion
-
-// #region App Wrapper
-export default function App() {
-  return (
-    <div className="font-mono text-foreground antialiased selection:bg-brand-orange selection:text-black min-h-screen bg-background overflow-x-hidden">
-      <style dangerouslySetInnerHTML={{
-        __html: `
-        :root {
-          --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-        }
-        body {
-          font-family: var(--font-mono);
-          scroll-behavior: smooth;
-        }
-
-        /* Neo-Pop Scrollbar */
-        ::-webkit-scrollbar {
-          width: 14px;
-        }
-        ::-webkit-scrollbar-track {
-          background: var(--background);
-          border-left: 4px solid var(--foreground);
-        }
-        ::-webkit-scrollbar-thumb {
-          background: var(--brand-red);
-          border-left: 4px solid var(--foreground);
-          border-bottom: 4px solid var(--foreground);
-        }
-        ::-webkit-scrollbar-thumb:hover {
-          background: var(--brand-orange);
-        }
-      `}} />
-
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(WEBSITE_JSON_LD).replace(/</g, "\\u003c"),
-        }}
-      />
-
+    <div className="min-h-screen bg-paper font-mono text-ink">
       <PublicNavigation />
 
       <main>
-        <Hero />
-        <Services />
-        <PdfToolsSection />
-        <Process />
-        <PortfolioShowcase />
-        <Testimonials />
-        <CTA />
+        {/* ---------------------------------------------------------------- Hero */}
+        <section className="relative overflow-hidden pt-24 pb-12 sm:pt-28 md:pt-32 md:pb-16">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 opacity-60"
+            style={{
+              backgroundImage:
+                "linear-gradient(to right, var(--paper-2) 1px, transparent 1px), linear-gradient(to bottom, var(--paper-2) 1px, transparent 1px)",
+              backgroundSize: "34px 34px",
+            }}
+          />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-paper" />
+
+          <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:gap-8">
+            <div>
+              <span className="nb-sm inline-flex items-center gap-2 rounded-full bg-sage px-3 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-on-accent">
+                <Sparkles className="size-3.5" />
+                Jasa berkas lamaran · ID & EN
+              </span>
+
+              <h1 className="mt-5 max-w-xl text-[2rem] leading-[1.12] font-bold tracking-tight text-ink sm:text-4xl lg:text-5xl">
+                <HeadlineWithMarker text={settings.heroHeadline} />
+              </h1>
+
+              <p className="mt-4 max-w-xl text-sm leading-relaxed text-ink-soft sm:text-base">
+                {settings.heroSubheadline}
+              </p>
+
+              <div className="mt-6 flex flex-col gap-2.5 sm:flex-row sm:items-center">
+                <a
+                  href={links.consult}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={cn(
+                    buttonVariants({ variant: "default" }),
+                    "nb-sm nb-press h-11 bg-coral px-5 text-sm font-semibold text-on-accent hover:bg-coral",
+                  )}
+                >
+                  <SiWhatsapp className="mr-2 size-4" /> Konsultasi gratis
+                </a>
+                <Link
+                  href="/#layanan"
+                  className={cn(
+                    buttonVariants({ variant: "outline" }),
+                    "nb-sm nb-press h-11 border-2 border-ink bg-paper px-5 text-sm font-semibold text-ink hover:bg-paper-2",
+                  )}
+                >
+                  Lihat layanan <ArrowRight className="ml-2 size-4" />
+                </Link>
+              </div>
+
+              <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-ink-soft">
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-coral-deep" />
+                  Dipercaya 1000+ pelamar
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-sage" />
+                  Dikerjakan tenaga profesional
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-sky" />
+                  Hasil rapi & siap kirim
+                </span>
+              </div>
+            </div>
+
+            <DocumentStack />
+          </div>
+        </section>
+
+        {/* -------------------------------------------------------- Trust strip */}
+        <section aria-label="Keunggulan" className="border-y-2 border-ink bg-sage/35">
+          <div className="mx-auto grid max-w-6xl grid-cols-2 gap-px px-0 sm:grid-cols-4">
+            {TRUST_ITEMS.map(({ icon: Icon, label, detail }) => (
+              <div key={label} className="flex items-center gap-2.5 px-4 py-3.5 sm:px-5">
+                <Icon className="size-5 shrink-0" />
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-semibold text-ink sm:text-sm">{label}</p>
+                  <p className="truncate text-[10px] text-ink-soft sm:text-[11px]">{detail}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ------------------------------------------------------------ Layanan */}
+        <section id="layanan" className="scroll-mt-24 bg-paper px-4 py-14 sm:px-6 md:py-20">
+          <div className="mx-auto max-w-6xl">
+            <SectionHeading
+              eyebrow="Layanan"
+              title="Berkas lamaran yang siap di-screening HR."
+              description="Pilih satu berkas atau paket lengkap. Semua disusun custom dari riwayat pendidikan, pengalaman, dan pencapaianmu."
+            />
+
+            <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 md:gap-4">
+              {serviceCards.map((service) => {
+                const Icon = service.icon;
+                return (
+                  <article key={service.id} className="nb nb-hover flex flex-col rounded-lg bg-paper p-4">
+                    <span
+                      className={cn(
+                        "mb-3 flex h-10 w-10 items-center justify-center rounded-md border-2 border-ink text-on-accent",
+                        ACCENT_BG[service.accent],
+                      )}
+                    >
+                      <Icon className="size-5" />
+                    </span>
+                    <h3 className="text-sm font-bold tracking-tight text-ink">{service.title}</h3>
+                    <p className="mt-1.5 flex-1 text-xs leading-relaxed text-ink-soft">
+                      {service.description}
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {service.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="rounded-full border border-ink/25 bg-paper-2 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-ink-soft"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+
+                    <div className="mt-3 flex items-end justify-between gap-2 border-t border-ink/10 pt-3">
+                      {service.price !== null ? (
+                        <>
+                          <span className="text-sm font-bold text-ink">
+                            {formatRupiah(service.price)}
+                          </span>
+                          <ServiceOrderLink slug={service.slug}>
+                            Pesan <ArrowRight className="ml-1 size-3.5" />
+                          </ServiceOrderLink>
+                        </>
+                      ) : (
+                        <a
+                          href={links.consult}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 text-[11px] font-semibold text-ink underline decoration-2 underline-offset-4 hover:text-coral-deep"
+                        >
+                          Tanya admin <ArrowRight className="size-3.5" />
+                        </a>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+
+            <div className="nb mt-6 flex flex-col items-start justify-between gap-3 rounded-lg bg-butter px-4 py-4 text-on-accent sm:flex-row sm:items-center">
+              <p className="text-sm font-medium text-on-accent">
+                Butuh kombinasi berbeda, misalnya CV + surat lamaran + portofolio?
+              </p>
+              <a
+                href={links.consult}
+                target="_blank"
+                rel="noreferrer"
+                className={cn(
+                  buttonVariants({ variant: "default" }),
+                  "nb-sm nb-press h-9 shrink-0 bg-ink px-4 text-xs font-semibold text-paper hover:bg-ink",
+                )}
+              >
+                <SiWhatsapp className="mr-2 size-3.5" /> Tanya admin
+              </a>
+            </div>
+          </div>
+        </section>
+
+        {/* ------------------------------------------------------------ Produk */}
+        <section id="produk" className="scroll-mt-24 border-y-2 border-ink bg-paper-2 px-4 py-14 sm:px-6 md:py-20">
+          <div className="mx-auto max-w-6xl">
+            <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+              <SectionHeading
+                eyebrow="Produk digital"
+                title="Template CV & resume siap pakai."
+                description="Template terlaris untuk berbagai profesi, tersedia dalam bahasa Indonesia dan Inggris. Beli sekali, pakai berkali-kali."
+                className="max-w-2xl"
+              />
+              <DashboardLink className="inline-flex w-max items-center gap-1.5 text-xs font-semibold text-ink underline decoration-2 underline-offset-4 hover:text-coral-deep">
+                Lihat semua template <ArrowRight className="size-3.5" />
+              </DashboardLink>
+            </div>
+
+            {featuredProducts.length === 0 ? (
+              <div className="nb mt-8 flex flex-col items-start gap-3 rounded-lg bg-paper p-5 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm font-semibold">Katalog template sedang disiapkan.</p>
+                  <p className="mt-1 text-xs text-ink-soft">
+                    Sementara itu, chat admin untuk rekomendasi template yang cocok dengan posisi yang kamu lamar.
+                  </p>
+                </div>
+                <a
+                  href={links.consult}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={cn(
+                    buttonVariants({ variant: "default" }),
+                    "nb-sm nb-press h-9 shrink-0 bg-ink px-4 text-xs font-semibold text-paper hover:bg-ink",
+                  )}
+                >
+                  <SiWhatsapp className="mr-2 size-3.5" /> Tanya admin
+                </a>
+              </div>
+            ) : (
+              <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {featuredProducts.map((product) => (
+                  <article
+                    key={product.id}
+                    className="nb nb-hover flex flex-col overflow-hidden rounded-lg bg-paper"
+                  >
+                    <div className="relative aspect-[4/3] w-full border-b-2 border-ink bg-paper-2">
+                      {product.image_url ? (
+                        <Image
+                          src={product.image_url}
+                          alt={product.title}
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center">
+                          <FileCheck2 className="size-10 text-ink-soft/50" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex flex-1 flex-col gap-2 p-4">
+                      <span className="text-[10px] font-semibold uppercase tracking-widest text-ink-soft">
+                        {product.category?.name ?? "Template"}
+                      </span>
+                      <h3 className="line-clamp-2 text-sm font-bold leading-snug text-ink">
+                        {product.title}
+                      </h3>
+                      {product.short_desc ? (
+                        <p className="line-clamp-2 text-xs leading-relaxed text-ink-soft">
+                          {product.short_desc}
+                        </p>
+                      ) : null}
+                      <div className="mt-auto flex items-center justify-between gap-3 pt-2">
+                        <span className="text-sm font-bold text-ink">
+                          {formatRupiah(Number(product.price))}
+                        </span>
+                        <ProductBuyButton className="w-auto" />
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* ------------------------------------------------------------ Proses */}
+        <section className="bg-paper px-4 py-14 sm:px-6 md:py-20">
+          <div className="mx-auto max-w-6xl">
+            <SectionHeading
+              eyebrow="Proses"
+              title="Empat langkah, berkas siap kirim."
+              description="Tanpa ribet. Kamu fokus menyiapkan data, kami yang merapikan sisanya."
+            />
+
+            <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 md:gap-4">
+              {PROCESS_STEPS.map((step, index) => {
+                const Icon = step.icon;
+                return (
+                  <div key={step.title} className="nb relative flex flex-col rounded-lg bg-paper p-4">
+                    <div className="flex items-center justify-between">
+                      <span className="flex h-9 w-9 items-center justify-center rounded-md border-2 border-ink bg-paper-2 text-sm font-bold">
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                      <Icon className="size-5 text-ink-soft" />
+                    </div>
+                    <h3 className="mt-3 text-sm font-bold">{step.title}</h3>
+                    <p className="mt-1.5 text-xs leading-relaxed text-ink-soft">{step.description}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* ---------------------------------------------------------- PDF tools */}
+        <section id="tools" className="scroll-mt-24 border-t-2 border-ink bg-paper-2 px-4 py-14 sm:px-6 md:py-20">
+          <div className="mx-auto max-w-6xl">
+            <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+              <SectionHeading
+                eyebrow="Alat pendukung"
+                title="Alat PDF gratis untuk melengkapi lamaran."
+                description="Gabung, pisah, kompres, dan konversi PDF langsung di peramban. Tanpa instalasi, file diproses di perangkatmu."
+                className="max-w-2xl"
+              />
+              <span className="nb-sm inline-flex w-max items-center gap-2 rounded-full bg-paper px-3 py-1.5 text-[11px] font-semibold text-ink">
+                <span className="h-2 w-2 rounded-full bg-sage" /> Gratis
+              </span>
+            </div>
+
+            <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 md:gap-4">
+              {PDF_TOOLS.map((tool) => {
+                const Icon = tool.icon;
+                return (
+                  <Link
+                    key={tool.id}
+                    href={tool.href}
+                    className="nb nb-hover group flex items-start gap-3 rounded-lg bg-paper p-4"
+                  >
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border-2 border-ink bg-sky text-on-accent">
+                      <Icon className="size-5" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-sm font-bold">{tool.name}</h3>
+                      <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-ink-soft">
+                        {tool.description}
+                      </p>
+                      <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold">
+                        Buka alat
+                        <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+                      </span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* --------------------------------------------------------- Testimoni */}
+        <TestimonialWall testimonials={testimonials} />
+
+        {/* --------------------------------------------------------------- FAQ */}
+        <section className="bg-paper px-4 py-14 sm:px-6 md:py-20">
+          <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-12">
+            <div>
+              <SectionHeading
+                eyebrow="FAQ"
+                title="Masih ada yang ingin ditanyakan?"
+                description="Beberapa pertanyaan yang paling sering masuk. Kalau belum terjawab, chat admin langsung."
+              />
+              <a
+                href={links.consult}
+                target="_blank"
+                rel="noreferrer"
+                className={cn(
+                  buttonVariants({ variant: "default" }),
+                  "nb-sm nb-press mt-5 h-10 bg-ink px-4 text-xs font-semibold text-paper hover:bg-ink",
+                )}
+              >
+                <SiWhatsapp className="mr-2 size-3.5" /> Tanya via WhatsApp
+              </a>
+            </div>
+
+            <div className="flex flex-col gap-2.5">
+              {FAQ_ITEMS.map((item) => (
+                <details key={item.question} className="nb group rounded-lg bg-paper p-4">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-ink [&::-webkit-details-marker]:hidden">
+                    {item.question}
+                    <Plus className="size-4 shrink-0 transition-transform group-open:rotate-45" />
+                  </summary>
+                  <p className="mt-3 text-xs leading-relaxed text-ink-soft">{item.answer}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* --------------------------------------------------------------- CTA */}
+        <section className="bg-paper px-4 pb-16 sm:px-6 md:pb-20">
+          <div className="nb mx-auto max-w-6xl rounded-lg bg-coral p-6 text-on-accent sm:p-8 md:p-10">
+            <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr] lg:items-center">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-on-accent/70">
+                  Mulai hari ini
+                </p>
+                <h2 className="mt-2 text-2xl font-bold tracking-tight text-on-accent sm:text-3xl">
+                  Berkas rapi, peluang lebih besar.
+                </h2>
+                <p className="mt-2 max-w-xl text-sm leading-relaxed text-on-accent/80">
+                  Ceritakan posisi yang kamu incar. Kami bantu susun CV, resume, dan surat lamaran
+                  yang enak dibaca recruiter sekaligus ramah ATS.
+                </p>
+              </div>
+              <div className="flex flex-col gap-2.5 sm:flex-row lg:flex-col">
+                <a
+                  href={links.consult}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={cn(
+                    buttonVariants({ variant: "default" }),
+                    "nb-sm nb-press h-11 justify-center bg-ink px-5 text-sm font-semibold text-paper hover:bg-ink",
+                  )}
+                >
+                  <SiWhatsapp className="mr-2 size-4" /> Chat WhatsApp
+                </a>
+                <a
+                  href={links.email}
+                  className={cn(
+                    buttonVariants({ variant: "outline" }),
+                    "nb-sm nb-press h-11 justify-center border-2 border-ink bg-paper px-5 text-sm font-semibold text-ink hover:bg-paper-2",
+                  )}
+                >
+                  <Mail className="mr-2 size-4" /> Kirim email
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
 
       <PublicFooter />
-      <PricingPopup />
     </div>
   );
 }
-// #endregion
+
+function SectionHeading({
+  eyebrow,
+  title,
+  description,
+  className,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+  className?: string;
+}) {
+  return (
+    <div className={className}>
+      <span className="text-[11px] font-semibold uppercase tracking-widest text-coral-deep">
+        {eyebrow}
+      </span>
+      <h2 className="mt-2 text-2xl font-bold tracking-tight text-ink sm:text-3xl md:text-[2rem]">
+        {title}
+      </h2>
+      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-soft">{description}</p>
+    </div>
+  );
+}
+
+/** Beri sorotan coral pada dua kata terakhir judul hero. */
+function HeadlineWithMarker({ text }: { text: string }) {
+  const words = text.trim().split(/\s+/);
+
+  if (words.length <= 3) return <>{text}</>;
+
+  const head = words.slice(0, -2).join(" ");
+  const tail = words.slice(-2).join(" ");
+
+  return (
+    <>
+      {head}{" "}
+      <span className="relative inline-block">
+        <span aria-hidden="true" className="absolute inset-x-0 bottom-1 h-2.5 bg-coral/80 sm:h-3" />
+        <span className="relative text-on-accent">{tail}</span>
+      </span>
+    </>
+  );
+}
+
+/** Tumpukan dokumen dekoratif di sisi kanan hero. */
+function DocumentStack() {
+  return (
+    <div className="relative mx-auto h-[320px] w-full max-w-sm sm:h-[380px]" aria-hidden="true">
+      <div className="absolute top-8 left-0 w-48 -rotate-6 rounded-lg border-2 border-ink bg-butter p-3.5 text-on-accent shadow-[4px_4px_0_0_var(--ink)] sm:w-52">
+        <div className="h-2 w-16 rounded-sm bg-ink/70" />
+        <div className="mt-3 space-y-1.5">
+          {[90, 70, 80, 55].map((width, index) => (
+            <div key={index} className="h-1.5 rounded-sm bg-ink/20" style={{ width: `${width}%` }} />
+          ))}
+        </div>
+        <div className="mt-3 h-1.5 w-20 rounded-sm bg-ink/40" />
+        <div className="mt-1.5 space-y-1.5">
+          {[85, 65, 75].map((width, index) => (
+            <div key={index} className="h-1.5 rounded-sm bg-ink/15" style={{ width: `${width}%` }} />
+          ))}
+        </div>
+      </div>
+
+      <div className="absolute top-2 right-0 w-44 rotate-[7deg] rounded-lg border-2 border-ink bg-sage p-3.5 text-on-accent shadow-[4px_4px_0_0_var(--ink)] sm:w-48">
+        <div className="flex items-center gap-2">
+          <div className="h-8 w-8 rounded-md border-2 border-ink bg-paper" />
+          <div className="flex-1 space-y-1.5">
+            <div className="h-2 w-full rounded-sm bg-ink/70" />
+            <div className="h-1.5 w-2/3 rounded-sm bg-ink/30" />
+          </div>
+        </div>
+        <div className="mt-3 space-y-1.5">
+          {[80, 95, 60].map((width, index) => (
+            <div key={index} className="h-1.5 rounded-sm bg-ink/20" style={{ width: `${width}%` }} />
+          ))}
+        </div>
+      </div>
+
+      <div className="absolute top-24 left-1/2 w-56 -translate-x-1/2 rotate-[-2deg] rounded-lg border-2 border-ink bg-paper p-4 text-ink shadow-[5px_5px_0_0_var(--ink)] sm:w-64">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-10 w-10 items-center justify-center rounded-md border-2 border-ink bg-coral text-on-accent">
+            <FileCheck2 className="size-5" />
+          </div>
+          <div className="flex-1 space-y-1.5">
+            <div className="h-2.5 w-3/4 rounded-sm bg-ink/80" />
+            <div className="h-1.5 w-1/2 rounded-sm bg-ink/30" />
+          </div>
+        </div>
+
+        <div className="mt-4 h-1.5 w-16 rounded-sm bg-coral-deep" />
+        <div className="mt-2 space-y-1.5">
+          {[100, 88, 94].map((width, index) => (
+            <div key={index} className="h-1.5 rounded-sm bg-ink/15" style={{ width: `${width}%` }} />
+          ))}
+        </div>
+
+        <div className="mt-3 h-1.5 w-20 rounded-sm bg-sage" />
+        <div className="mt-2 space-y-1.5">
+          {[92, 78, 85, 60].map((width, index) => (
+            <div key={index} className="h-1.5 rounded-sm bg-ink/15" style={{ width: `${width}%` }} />
+          ))}
+        </div>
+      </div>
+
+      <div className="absolute right-1 bottom-10 rotate-3 rounded-md border-2 border-ink bg-coral px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-on-accent shadow-[3px_3px_0_0_var(--ink)]">
+        ATS Passed
+      </div>
+      <div className="absolute bottom-24 left-0 -rotate-6 rounded-md border-2 border-ink bg-paper px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-ink shadow-[3px_3px_0_0_var(--ink)]">
+        ID & EN
+      </div>
+      <div className="absolute top-1/2 right-2 rounded-md border-2 border-ink bg-paper px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-ink shadow-[3px_3px_0_0_var(--ink)]">
+        <PencilRuler className="size-3" />
+      </div>
+    </div>
+  );
+}
