@@ -23,12 +23,13 @@ export function NavDocuments({
 }) {
   const { isMobile, setOpenMobile } = useSidebar()
   return (
-    <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+    <SidebarGroup>
       <SidebarGroupLabel>Perkakas</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
           <SidebarMenuItem key={item.name}>
             <SidebarMenuButton
+              tooltip={item.name}
               render={<Link target={item.external ? "_blank" : ""} href={item.url} />}
               onClick={() => { if (isMobile) setOpenMobile(false) }}
             >

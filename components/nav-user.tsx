@@ -43,13 +43,13 @@ export function NavUser() {
               <AvatarImage src={user?.imageUrl} alt={user?.fullName || ""} />
               <AvatarFallback className="rounded-lg">CN</AvatarFallback>
             </Avatar>
-            <div className="grid flex-1 text-left text-sm leading-tight">
+            <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
               <span className="truncate font-medium">{user?.fullName || (<em className="text-foreground/40">[Si Tanpa Nama]</em>)}</span>
               <span className="truncate text-xs text-foreground/70">
                 {user?.primaryEmailAddress?.emailAddress}
               </span>
             </div>
-            <EllipsisVerticalIcon className="ml-auto size-4" />
+            <EllipsisVerticalIcon className="ml-auto size-4 group-data-[collapsible=icon]:hidden" />
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="min-w-56"

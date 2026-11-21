@@ -22,6 +22,7 @@ export function NavSecondary({
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton
+                tooltip={item.title}
                 render={<Link href={item.url} />}
                 onClick={() => { if (isMobile) setOpenMobile(false) }}
               >

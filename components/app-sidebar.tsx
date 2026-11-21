@@ -1,9 +1,10 @@
 "use client"
 
+import { NavAdminGroups, type AdminNavGroup } from "@/components/nav-admin-groups"
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
 import { useSiteSettings } from "@/components/site-settings-provider"
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar"
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail, useSidebar } from "@/components/ui/sidebar"
 import { ROUTES } from "@/lib/constants"
 import { useUser } from "@clerk/nextjs"
 import { BriefcaseBusinessIcon, FileDownIcon, FileImageIcon, FileTextIcon, FileType2Icon, GroupIcon, HelpCircleIcon, ImagesIcon, InboxIcon, ListChecksIcon, MessageSquareQuoteIcon, PackageIcon, PackagePlusIcon, ScissorsIcon, SettingsIcon, ShoppingBagIcon, SquareTextIcon, UsersIcon } from "lucide-react"
@@ -20,6 +21,8 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
   const { settings } = useSiteSettings();
 
   const role = user?.publicMetadata.role;
+  const isAdmin = role === "admin" || role === "superadmin";
+  const isSuperadmin = role === "superadmin";
 
   const { setOpenMobile, isMobile } = useSidebar();
 
@@ -56,61 +59,78 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
           <HelpCircleIcon />
         ),
       },
-      ...(role === "admin" || role === "superadmin"
-        ? [
-          {
-            title: "Kelola Produk",
-            url: ROUTES.DASHBOARD.ADMIN,
-            icon: (
-              <PackagePlusIcon />
-            ),
-          },
-          {
-            title: "Kelola Kategori",
-            url: ROUTES.DASHBOARD.CATEGORY,
-            icon: (
-              <GroupIcon />
-            ),
-          },
-          {
-            title: "Pesanan Jasa Masuk",
-            url: ROUTES.DASHBOARD.ADMIN_SERVICES,
-            icon: (
-              <InboxIcon />
-            ),
-          },
-          {
-            title: "Laporan Penjualan",
-            url: ROUTES.DASHBOARD.REPORT,
-            icon: (
-              <SquareTextIcon />
-            ),
-          },
-          ...(role === "superadmin" ? [
-            {
-              title: "Kelola Pengguna",
-              url: ROUTES.DASHBOARD.USERS,
-              icon: <UsersIcon />
-            },
-            {
-              title: "Katalog Layanan",
-              url: ROUTES.DASHBOARD.SERVICE_CATALOG,
-              icon: <ListChecksIcon />
-            },
-            {
-              title: "Pengaturan Situs",
-              url: ROUTES.DASHBOARD.SETTINGS,
-              icon: <SettingsIcon />
-            },
-            {
-              title: "Kelola Testimoni",
-              url: ROUTES.DASHBOARD.TESTIMONIALS,
-              icon: <MessageSquareQuoteIcon />
-            },
-          ] : [])
-        ]
-        : []),
     ],
+    // Menu administrasi dikelompokkan agar tidak menjadi daftar panjang.
+    navAdmin: (isAdmin
+      ? [
+        {
+          id: "katalog-penjualan",
+          label: "Katalog & Penjualan",
+          items: [
+            {
+              title: "Kelola Produk",
+              url: ROUTES.DASHBOARD.ADMIN,
+              icon: <PackagePlusIcon />,
+            },
+            {
+              title: "Kelola Kategori",
+              url: ROUTES.DASHBOARD.CATEGORY,
+              icon: <GroupIcon />,
+            },
+            {
+              title: "Laporan Penjualan",
+              url: ROUTES.DASHBOARD.REPORT,
+              icon: <SquareTextIcon />,
+            },
+          ],
+        },
+        {
+          id: "layanan-jasa",
+          label: "Layanan Jasa",
+          items: [
+            {
+              title: "Pesanan Jasa Masuk",
+              url: ROUTES.DASHBOARD.ADMIN_SERVICES,
+              icon: <InboxIcon />,
+            },
+            ...(isSuperadmin
+              ? [
+                {
+                  title: "Katalog Layanan",
+                  url: ROUTES.DASHBOARD.SERVICE_CATALOG,
+                  icon: <ListChecksIcon />,
+                },
+              ]
+              : []),
+          ],
+        },
+        {
+          id: "situs-akses",
+          label: "Situs & Akses",
+          items: [
+            ...(isSuperadmin
+              ? [
+                {
+                  title: "Pengaturan Situs",
+                  url: ROUTES.DASHBOARD.SETTINGS,
+                  icon: <SettingsIcon />,
+                },
+                {
+                  title: "Kelola Testimoni",
+                  url: ROUTES.DASHBOARD.TESTIMONIALS,
+                  icon: <MessageSquareQuoteIcon />,
+                },
+                {
+                  title: "Kelola Pengguna",
+                  url: ROUTES.DASHBOARD.USERS,
+                  icon: <UsersIcon />,
+                },
+              ]
+              : []),
+          ],
+        },
+      ].filter((group) => group.items.length > 0) as AdminNavGroup[]
+      : []),
     documents: [
       {
         name: "PDF Merger",
@@ -152,17 +172,18 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
   }
 
   return (
-    <Sidebar collapsible="offcanvas" {...props}>
+    <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
               className="data-[slot=sidebar-menu-button]:p-1.5!"
+              tooltip={settings.brandName}
               render={<Link href={ROUTES.ROOT} />}
               onClick={() => setOpenMobile(!isMobile)}
             >
               <Image alt="Logo" src={settings.logoUrl} className="size-5" width={100} height={100} />
-              <span className="text-base font-bold">{settings.brandName}</span>
+              <span className="text-base font-bold group-data-[collapsible=icon]:hidden">{settings.brandName}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -170,6 +191,7 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
       <Separator />
       <SidebarContent>
         <NavMain items={data.navMain} />
+        <NavAdminGroups groups={data.navAdmin} />
         <NavDocuments items={data.documents} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
@@ -191,6 +213,7 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
           <NavUser />
         )}
       </SidebarFooter>
+      <SidebarRail />
     </Sidebar>
   )
 }
