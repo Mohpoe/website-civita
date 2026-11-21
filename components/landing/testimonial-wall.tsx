@@ -6,7 +6,6 @@ import type { Testimonial } from "@/lib/site-config";
 import { cn } from "@/lib/utils";
 import {
   motion,
-  useMotionValue,
   useReducedMotion,
   useScroll,
   useSpring,
@@ -14,12 +13,7 @@ import {
   type MotionValue,
 } from "framer-motion";
 import Image from "next/image";
-import {
-  useEffect,
-  useRef,
-  useState,
-  type PointerEvent as ReactPointerEvent,
-} from "react";
+import { useEffect, useRef, useState } from "react";
 
 /** Jumlah kartu maksimal yang tampil; sisanya tetap tersimpan di dashboard. */
 const MAX_CARDS = 10;
@@ -55,10 +49,6 @@ interface CardSlot {
   depth: number;
   /** Jarak gerak parallax scroll (px). Kartu depan bergerak lebih jauh. */
   travel: number;
-  /** Jarak gerak parallax kursor (px). */
-  mouse: number;
-  /** Kemiringan 3D saat kursor bergerak (derajat). */
-  tilt: number;
   z: number;
   accent: Accent;
   featured?: boolean;
@@ -83,8 +73,6 @@ const SLOTS: CardSlot[] = [
     rotate: -1.2,
     depth: 0,
     travel: 52,
-    mouse: 10,
-    tilt: 4,
     z: 30,
     accent: "coral",
     featured: true,
@@ -98,8 +86,6 @@ const SLOTS: CardSlot[] = [
     rotate: 2.6,
     depth: -110,
     travel: 36,
-    mouse: 6,
-    tilt: 3,
     z: 12,
     accent: "sage",
     sizes: "(max-width: 768px) 50vw, 22vw",
@@ -112,8 +98,6 @@ const SLOTS: CardSlot[] = [
     rotate: -2.8,
     depth: -95,
     travel: 40,
-    mouse: 7,
-    tilt: 3,
     z: 13,
     accent: "lilac",
     sizes: "(max-width: 768px) 50vw, 22vw",
@@ -126,8 +110,6 @@ const SLOTS: CardSlot[] = [
     rotate: -3.4,
     depth: 110,
     travel: 72,
-    mouse: 16,
-    tilt: 5,
     z: 44,
     accent: "sky",
     sizes: "(max-width: 768px) 50vw, 20vw",
@@ -140,8 +122,6 @@ const SLOTS: CardSlot[] = [
     rotate: 3.2,
     depth: 130,
     travel: 78,
-    mouse: 18,
-    tilt: 5,
     z: 45,
     accent: "butter",
     sizes: "(max-width: 768px) 50vw, 20vw",
@@ -154,8 +134,6 @@ const SLOTS: CardSlot[] = [
     rotate: -5,
     depth: -240,
     travel: 16,
-    mouse: 4,
-    tilt: 2,
     z: 4,
     accent: "butter",
     sizes: "(max-width: 768px) 50vw, 20vw",
@@ -168,8 +146,6 @@ const SLOTS: CardSlot[] = [
     rotate: 4.5,
     depth: -260,
     travel: 14,
-    mouse: 3,
-    tilt: 2,
     z: 3,
     accent: "sky",
     sizes: "(max-width: 768px) 50vw, 20vw",
@@ -182,8 +158,6 @@ const SLOTS: CardSlot[] = [
     rotate: 2,
     depth: -280,
     travel: 10,
-    mouse: 2,
-    tilt: 1.5,
     z: 2,
     accent: "lilac",
     hideBelowLg: true,
@@ -197,8 +171,6 @@ const SLOTS: CardSlot[] = [
     rotate: 5,
     depth: 190,
     travel: 98,
-    mouse: 22,
-    tilt: 7,
     z: 54,
     accent: "coral",
     hideBelowLg: true,
@@ -212,8 +184,6 @@ const SLOTS: CardSlot[] = [
     rotate: -5,
     depth: 210,
     travel: 106,
-    mouse: 24,
-    tilt: 7,
     z: 55,
     accent: "sage",
     hideBelowLg: true,
@@ -239,17 +209,17 @@ export function TestimonialWall({ testimonials }: TestimonialWallProps) {
   const reduceMotion = useReducedMotion();
   const { settings } = useSiteSettings();
 
+  // Progres scroll section dipakai bersama oleh panggung desktop dan grid
+  // mobile. Spring tipis menjaga gerakan tetap mulus saat roda mouse diputar.
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start end", "end start"],
   });
-
-  // Parallax kursor memakai spring agar gerakannya halus, bukan mengikuti
-  // pointer secara mentah. Nilainya dinormalisasi -0.5..0.5 terhadap panggung.
-  const pointerX = useMotionValue(0);
-  const pointerY = useMotionValue(0);
-  const smoothX = useSpring(pointerX, { stiffness: 70, damping: 18, mass: 0.4 });
-  const smoothY = useSpring(pointerY, { stiffness: 70, damping: 18, mass: 0.4 });
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 180,
+    damping: 32,
+    mass: 0.3,
+  });
 
   // Render awal memakai urutan server supaya tidak hydration mismatch,
   // lalu diacak di klien setiap kali halaman dibuka.
@@ -259,19 +229,6 @@ export function TestimonialWall({ testimonials }: TestimonialWallProps) {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- pengacakan dilakukan setelah mount agar aman saat hidrasi
     setItems(shuffle(testimonials).slice(0, MAX_CARDS));
   }, [testimonials]);
-
-  const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
-    if (reduceMotion || event.pointerType !== "mouse") return;
-
-    const rect = event.currentTarget.getBoundingClientRect();
-    pointerX.set((event.clientX - rect.left) / rect.width - 0.5);
-    pointerY.set((event.clientY - rect.top) / rect.height - 0.5);
-  };
-
-  const resetPointer = () => {
-    pointerX.set(0);
-    pointerY.set(0);
-  };
 
   return (
     <section
@@ -321,12 +278,10 @@ export function TestimonialWall({ testimonials }: TestimonialWallProps) {
           <TestimonialSkeleton />
         ) : (
           <>
-            {/* Panggung 3D: kartu melayang, bertumpuk, dan bergerak per lapisan. */}
+            {/* Panggung 3D: kartu bergerak naik-turun mengikuti scroll halaman. */}
             <div
               className="relative mt-12 hidden md:block"
               style={{ perspective: "1600px" }}
-              onPointerMove={handlePointerMove}
-              onPointerLeave={resetPointer}
             >
               <ul
                 className="relative h-[600px] w-full list-none lg:h-[720px]"
@@ -342,9 +297,7 @@ export function TestimonialWall({ testimonials }: TestimonialWallProps) {
                       slot={slot}
                       testimonial={testimonial}
                       index={index}
-                      scrollYProgress={scrollYProgress}
-                      pointerX={smoothX}
-                      pointerY={smoothY}
+                      scrollYProgress={smoothProgress}
                       reduceMotion={!!reduceMotion}
                       brandName={settings.brandName}
                     />
@@ -353,31 +306,17 @@ export function TestimonialWall({ testimonials }: TestimonialWallProps) {
               </ul>
             </div>
 
-            {/* Mobile: grid dua kolom dengan offset dan rotasi kecil. */}
+            {/* Mobile: grid dua kolom dengan offset, rotasi, dan parallax scroll. */}
             <ul className="mt-8 grid list-none grid-cols-2 gap-3 md:hidden">
               {items.slice(0, MOBILE_CARDS).map((testimonial, index) => (
-                <li
+                <MobileCard
                   key={testimonial.id}
-                  className={cn(
-                    index === 0 && "col-span-2",
-                    index % 3 === 1 && "mt-4",
-                  )}
-                >
-                  <div
-                    style={{
-                      rotate: `${index === 0 ? -0.8 : index % 2 === 0 ? 1.4 : -1.6}deg`,
-                    }}
-                  >
-                    <CardSurface
-                      testimonial={testimonial}
-                      accent={SLOTS[index]?.accent ?? "coral"}
-                      featured={index === 0}
-                      index={index}
-                      sizes={index === 0 ? "90vw" : "45vw"}
-                      brandName={settings.brandName}
-                    />
-                  </div>
-                </li>
+                  testimonial={testimonial}
+                  index={index}
+                  scrollYProgress={smoothProgress}
+                  reduceMotion={!!reduceMotion}
+                  brandName={settings.brandName}
+                />
               ))}
             </ul>
 
@@ -397,8 +336,6 @@ function FloatingCard({
   testimonial,
   index,
   scrollYProgress,
-  pointerX,
-  pointerY,
   reduceMotion,
   brandName,
 }: {
@@ -406,24 +343,12 @@ function FloatingCard({
   testimonial: Testimonial;
   index: number;
   scrollYProgress: MotionValue<number>;
-  pointerX: MotionValue<number>;
-  pointerY: MotionValue<number>;
   reduceMotion: boolean;
   brandName: string;
 }) {
   // Lapisan belakang bergerak lambat, lapisan depan bergerak cepat. Inilah
-  // yang membuat kedalaman terasa saat halaman di-scroll.
+  // yang membuat kedalaman terasa saat halaman digulir naik atau turun.
   const scrollY = useTransform(scrollYProgress, [0, 1], [slot.travel, -slot.travel]);
-  const shiftX = useTransform(pointerX, [-0.5, 0.5], [-slot.mouse, slot.mouse]);
-  const shiftY = useTransform(pointerY, [-0.5, 0.5], [
-    -slot.mouse * 0.55,
-    slot.mouse * 0.55,
-  ]);
-  const rotateY = useTransform(pointerX, [-0.5, 0.5], [slot.tilt, -slot.tilt]);
-  const rotateX = useTransform(pointerY, [-0.5, 0.5], [
-    -slot.tilt * 0.5,
-    slot.tilt * 0.5,
-  ]);
 
   return (
     <li
@@ -442,32 +367,68 @@ function FloatingCard({
       >
         <motion.div
           style={{
-            x: reduceMotion ? 0 : shiftX,
-            y: reduceMotion ? 0 : shiftY,
+            rotate: slot.rotate,
+            translateZ: slot.depth,
             transformStyle: "preserve-3d",
           }}
         >
-          <motion.div
-            style={{
-              rotate: slot.rotate,
-              rotateX: reduceMotion ? 0 : rotateX,
-              rotateY: reduceMotion ? 0 : rotateY,
-              translateZ: slot.depth,
-              transformStyle: "preserve-3d",
-            }}
-          >
-            <CardSurface
-              testimonial={testimonial}
-              accent={slot.accent}
-              featured={slot.featured}
-              index={index}
-              sizes={slot.sizes}
-              brandName={brandName}
-            />
-          </motion.div>
+          <CardSurface
+            testimonial={testimonial}
+            accent={slot.accent}
+            featured={slot.featured}
+            index={index}
+            sizes={slot.sizes}
+            brandName={brandName}
+          />
         </motion.div>
       </motion.div>
     </li>
+  );
+}
+
+/**
+ * Kartu di grid mobile.
+ *
+ * Kolom kiri dan kanan bergerak berlawanan arah mengikuti scroll, sehingga
+ * terasa seperti lapisan yang berbeda tanpa membuat kartu saling menimpa.
+ */
+function MobileCard({
+  testimonial,
+  index,
+  scrollYProgress,
+  reduceMotion,
+  brandName,
+}: {
+  testimonial: Testimonial;
+  index: number;
+  scrollYProgress: MotionValue<number>;
+  reduceMotion: boolean;
+  brandName: string;
+}) {
+  // Kartu pembuka membentang dua kolom, jadi tidak ikut bergeser.
+  const travel = index === 0 ? 0 : index % 2 === 1 ? 30 : -30;
+  const scrollY = useTransform(scrollYProgress, [0, 1], [travel, -travel]);
+
+  return (
+    <motion.li
+      className={cn(index === 0 && "col-span-2", index % 3 === 1 && "mt-4")}
+      style={{ y: reduceMotion ? 0 : scrollY }}
+    >
+      <div
+        style={{
+          rotate: `${index === 0 ? -0.8 : index % 2 === 0 ? 1.4 : -1.6}deg`,
+        }}
+      >
+        <CardSurface
+          testimonial={testimonial}
+          accent={SLOTS[index]?.accent ?? "coral"}
+          featured={index === 0}
+          index={index}
+          sizes={index === 0 ? "90vw" : "45vw"}
+          brandName={brandName}
+        />
+      </div>
+    </motion.li>
   );
 }
 
