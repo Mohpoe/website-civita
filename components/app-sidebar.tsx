@@ -2,10 +2,11 @@
 
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
+import { useSiteSettings } from "@/components/site-settings-provider"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar"
-import { APP_CONFIG, ROUTES } from "@/lib/constants"
+import { ROUTES } from "@/lib/constants"
 import { useUser } from "@clerk/nextjs"
-import { FileDownIcon, FileImageIcon, FileTextIcon, FileType2Icon, GroupIcon, HelpCircleIcon, ImagesIcon, PackageIcon, PackagePlusIcon, ScissorsIcon, ShoppingBagIcon, SquareTextIcon, UsersIcon } from "lucide-react"
+import { BriefcaseBusinessIcon, FileDownIcon, FileImageIcon, FileTextIcon, FileType2Icon, GroupIcon, HelpCircleIcon, ImagesIcon, InboxIcon, ListChecksIcon, MessageSquareQuoteIcon, PackageIcon, PackagePlusIcon, ScissorsIcon, SettingsIcon, ShoppingBagIcon, SquareTextIcon, UsersIcon } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import * as React from "react"
@@ -16,6 +17,7 @@ import { Skeleton } from "./ui/skeleton"
 
 export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<typeof Sidebar> & { hasNewProducts?: boolean }) {
   const { isSignedIn, isLoaded, user } = useUser();
+  const { settings } = useSiteSettings();
 
   const role = user?.publicMetadata.role;
 
@@ -36,6 +38,13 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
         url: ROUTES.DASHBOARD.INVENTORY,
         icon: (
           <PackageIcon />
+        ),
+      },
+      {
+        title: "Pesanan Jasa",
+        url: ROUTES.DASHBOARD.SERVICES,
+        icon: (
+          <BriefcaseBusinessIcon />
         ),
       },
     ],
@@ -64,17 +73,41 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
             ),
           },
           {
+            title: "Pesanan Jasa Masuk",
+            url: ROUTES.DASHBOARD.ADMIN_SERVICES,
+            icon: (
+              <InboxIcon />
+            ),
+          },
+          {
             title: "Laporan Penjualan",
             url: ROUTES.DASHBOARD.REPORT,
             icon: (
               <SquareTextIcon />
             ),
           },
-          ...(role === "superadmin" ? [{
-            title: "Kelola Pengguna",
-            url: ROUTES.DASHBOARD.USERS,
-            icon: <UsersIcon />
-          }] : [])
+          ...(role === "superadmin" ? [
+            {
+              title: "Kelola Pengguna",
+              url: ROUTES.DASHBOARD.USERS,
+              icon: <UsersIcon />
+            },
+            {
+              title: "Katalog Layanan",
+              url: ROUTES.DASHBOARD.SERVICE_CATALOG,
+              icon: <ListChecksIcon />
+            },
+            {
+              title: "Pengaturan Situs",
+              url: ROUTES.DASHBOARD.SETTINGS,
+              icon: <SettingsIcon />
+            },
+            {
+              title: "Kelola Testimoni",
+              url: ROUTES.DASHBOARD.TESTIMONIALS,
+              icon: <MessageSquareQuoteIcon />
+            },
+          ] : [])
         ]
         : []),
     ],
@@ -128,8 +161,8 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
               render={<Link href={ROUTES.ROOT} />}
               onClick={() => setOpenMobile(!isMobile)}
             >
-              <Image alt="Logo" src={APP_CONFIG.ASSETS.LOGO} className="size-5" width={100} height={100} />
-              <span className="text-base font-bold">{APP_CONFIG.NAME}</span>
+              <Image alt="Logo" src={settings.logoUrl} className="size-5" width={100} height={100} />
+              <span className="text-base font-bold">{settings.brandName}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

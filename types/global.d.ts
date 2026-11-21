@@ -76,6 +76,54 @@ export interface Order {
   email?: string;
 }
 
+/** Satu layanan jasa berkas lamaran yang dijual dengan harga tetap. */
+export interface Service {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  price: number;
+  languages: string[];
+  is_active: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export type ServiceOrderStatus = Order["status"];
+
+/** Pesanan jasa; `order_id` selalu diawali `SVC-`. */
+export interface ServiceOrder {
+  order_id: string;
+  user_id: string;
+  email: string | null;
+  service_id: string | null;
+  service_name: string;
+  service_slug: string | null;
+  language: string;
+  amount: number;
+  status: ServiceOrderStatus;
+  brief: string | null;
+  source_file_url: string | null;
+  source_file_name: string | null;
+  result_file_url: string | null;
+  result_file_name: string | null;
+  admin_notes: string | null;
+  delivered_at: string | null;
+  snap_token: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ServiceMessage {
+  id: string;
+  order_id: string;
+  sender_id: string;
+  sender_role: "user" | "admin";
+  body: string;
+  created_at: string;
+}
+
 export interface ProductSnapshot {
   id: string;
   original_product_id: string | null;

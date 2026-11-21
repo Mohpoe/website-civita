@@ -1,4 +1,5 @@
 import { applyOrderStatus, mapMidtransStatus } from "@/lib/order-status";
+import { applyServiceOrderStatus } from "@/lib/service-order-status";
 import crypto from "crypto";
 import { NextResponse } from "next/server";
 
@@ -52,7 +53,11 @@ export async function POST(req: Request) {
     }
 
     const newStatus = mapMidtransStatus(transaction_status, fraud_status);
-    const result = await applyOrderStatus(order_id, newStatus);
+
+    // Pesanan jasa memakai tabel sendiri dengan awalan `SVC-`.
+    const result = order_id.startsWith("SVC-")
+      ? await applyServiceOrderStatus(order_id, newStatus)
+      : await applyOrderStatus(order_id, newStatus);
 
     if (!result.found) {
       console.error(`Pesanan ${order_id} tidak ditemukan di database.`);
