@@ -7,7 +7,7 @@ import { useSiteSettings } from "@/components/site-settings-provider"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail, useSidebar } from "@/components/ui/sidebar"
 import { ROUTES } from "@/lib/constants"
 import { useUser } from "@clerk/nextjs"
-import { BriefcaseBusinessIcon, FileDownIcon, FileImageIcon, FileTextIcon, FileType2Icon, GroupIcon, HelpCircleIcon, ImagesIcon, InboxIcon, ListChecksIcon, MessageSquareQuoteIcon, PackageIcon, PackagePlusIcon, ScissorsIcon, SettingsIcon, ShoppingBagIcon, SquareTextIcon, UsersIcon } from "lucide-react"
+import { BriefcaseBusinessIcon, FileDownIcon, FileImageIcon, FileTextIcon, FileType2Icon, Grid2X2PlusIcon, HelpCircleIcon, ImagesIcon, InboxIcon, PackageIcon, PackagePlusIcon, ScissorsIcon, SettingsIcon, ShoppingBagIcon, SquareTextIcon, StarPlusIcon, TagPlusIcon, UsersIcon } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import * as React from "react"
@@ -29,7 +29,7 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
   const data = {
     navMain: [
       {
-        title: "Daftar Produk",
+        title: "Katalog Produk",
         url: ROUTES.DASHBOARD.HOME,
         special: hasNewProducts,
         icon: (
@@ -75,7 +75,7 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
             {
               title: "Kelola Kategori",
               url: ROUTES.DASHBOARD.CATEGORY,
-              icon: <GroupIcon />,
+              icon: <TagPlusIcon />,
             },
             {
               title: "Laporan Penjualan",
@@ -98,7 +98,7 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
                 {
                   title: "Kelola Layanan",
                   url: ROUTES.DASHBOARD.SERVICE_CATALOG,
-                  icon: <ListChecksIcon />,
+                  icon: <Grid2X2PlusIcon />,
                 },
               ]
               : []),
@@ -118,7 +118,7 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
                 {
                   title: "Kelola Testimoni",
                   url: ROUTES.DASHBOARD.TESTIMONIALS,
-                  icon: <MessageSquareQuoteIcon />,
+                  icon: <StarPlusIcon />,
                 },
                 {
                   title: "Kelola Pengguna",
