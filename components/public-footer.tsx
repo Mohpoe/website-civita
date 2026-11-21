@@ -3,7 +3,7 @@
 import { useSiteSettings } from "@/components/site-settings-provider";
 import { ROUTES } from "@/lib/constants";
 import { PDF_TOOLS } from "@/lib/pdf-tools";
-import { Mail, MessageCircle } from "lucide-react";
+import { Mail } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { SiInstagram as Instagram, SiWhatsapp } from "react-icons/si";
@@ -136,7 +136,7 @@ export function PublicFooter() {
               Kebijakan Privasi
             </Link>
             <a href={links.consult} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 hover:text-ink">
-              <MessageCircle className="size-3.5" /> Konsultasi
+              <SiWhatsapp className="size-3.5" /> Konsultasi
             </a>
           </div>
         </div>
