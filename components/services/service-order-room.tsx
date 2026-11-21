@@ -160,7 +160,7 @@ export function ServiceOrderRoom({ order, initialMessages, viewer }: ServiceOrde
       if (!window.snap) {
         toast.add({
           type: "error",
-          description: "Modul pembayaran belum siap. Muat ulang halaman lalu coba lagi.",
+          description: "Pembayaran belum siap. Muat ulang halaman lalu coba lagi.",
         });
         return;
       }
@@ -172,7 +172,7 @@ export function ServiceOrderRoom({ order, initialMessages, viewer }: ServiceOrde
         onClose: () => router.refresh(),
       });
     } catch {
-      toast.add({ type: "error", description: "Gagal menghubungi server pembayaran." });
+      toast.add({ type: "error", description: "Gagal terhubung ke layanan pembayaran." });
     } finally {
       setIsPaying(false);
     }
@@ -300,7 +300,7 @@ export function ServiceOrderRoom({ order, initialMessages, viewer }: ServiceOrde
                 <MessageSquareIcon className="size-5" /> Chat dengan {isAdmin ? "klien" : "admin"}
               </CardTitle>
               <CardDescription>
-                Balasan muncul otomatis dalam ±3 detik. WhatsApp tetap tersedia sebagai cadangan.
+                Balasan muncul otomatis dalam beberapa detik. WhatsApp tetap tersedia sebagai cadangan.
               </CardDescription>
             </CardHeader>
           </Card>

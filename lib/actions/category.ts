@@ -34,7 +34,7 @@ export async function getCategories(): Promise<Category[]> {
 export async function upsertCategoryAction(state: ActionState | null, formData: FormData) {
   await auth.protect();
   const user = await currentUser();
-  if (!user || !allowedRoles.includes(user.publicMetadata.role as string)) return { success: false, message: "Akses tidak valid!" };
+  if (!user || !allowedRoles.includes(user.publicMetadata.role as string)) return { success: false, message: "Anda tidak punya akses untuk tindakan ini." };
 
   const id = formData.get("id") as string | null;
   const name = formData.get("name") as string;
@@ -77,7 +77,7 @@ export async function upsertCategoryAction(state: ActionState | null, formData: 
       getErrorCode(error) === "23505" ||
       getErrorMessage(error, "").includes("categories_slug_key")
     ) {
-      return { success: false, message: "Gagal: Nama kategori (slug) sudah digunakan!" };
+      return { success: false, message: "Nama kategori sudah digunakan. Gunakan nama lain." };
     }
 
     return { success: false, message: "Gagal menyimpan kategori." };
@@ -89,10 +89,10 @@ export async function upsertCategoryAction(state: ActionState | null, formData: 
 export async function deleteCategoryAction(formData: FormData) {
   await auth.protect();
   const user = await currentUser();
-  if (!user || !allowedRoles.includes(user.publicMetadata.role as string)) return { success: false, message: "Akses tidak valid!" };
+  if (!user || !allowedRoles.includes(user.publicMetadata.role as string)) return { success: false, message: "Anda tidak punya akses untuk tindakan ini." };
 
   const id = formData.get("id") as string | null;
-  if (!id) return { success: false, message: "ID Kategori tidak ditemukan!" };
+  if (!id) return { success: false, message: "Kategori tidak ditemukan." };
 
   try {
     await sql`DELETE FROM categories WHERE id = ${id}`;
@@ -109,7 +109,7 @@ export async function deleteCategoryAction(formData: FormData) {
       getErrorMessage(error, "").includes("foreign key") ||
       getErrorCode(error) === "23503"
     ) {
-      return { success: false, message: "Gagal: Kategori ini sedang digunakan oleh produk!" };
+      return { success: false, message: "Kategori ini masih dipakai produk. Pindahkan produknya terlebih dahulu." };
     }
 
     return { success: false, message: "Gagal menghapus kategori." };

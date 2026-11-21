@@ -112,7 +112,7 @@ export default function DashboardReport({ kpi, chartData, orderHistory }: Dashbo
                 <Badge
                   variant="destructive"
                   className="text-xs px-2 py-1"
-                  title="Akun pembeli telah dihapus dari sistem."
+                  title="Akun pembeli sudah dihapus."
                 >
                   <UserX className="w-3 h-3" />
                 </Badge>
@@ -207,7 +207,7 @@ export default function DashboardReport({ kpi, chartData, orderHistory }: Dashbo
       {/* HEADER & FILTER RANGE WAKTU */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">Laporan Analitik</h2>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">Laporan Penjualan</h2>
           <p className="text-muted-foreground">Ringkasan performa penjualan produk digital (WITA).</p>
         </div>
 
@@ -289,7 +289,7 @@ export default function DashboardReport({ kpi, chartData, orderHistory }: Dashbo
           <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b pb-4">
             <div>
               <CardTitle>Grafik Penjualan</CardTitle>
-              <CardDescription>Visualisasi performa berdasarkan rentang waktu terpilih</CardDescription>
+              <CardDescription>Ringkasan performa penjualan pada rentang waktu terpilih</CardDescription>
             </div>
             <div className="mt-4 sm:mt-0 flex p-1 bg-muted rounded-lg w-fit">
               <button

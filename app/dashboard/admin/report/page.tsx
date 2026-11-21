@@ -3,7 +3,7 @@ import DashboardReport from "@/components/dashboard-report";
 import { getReportData } from "@/lib/actions/reports";
 import { Metadata } from "next";
 
-const mainTitle = "Laporan";
+const mainTitle = "Laporan Penjualan";
 
 export const metadata: Metadata = {
   title: mainTitle,

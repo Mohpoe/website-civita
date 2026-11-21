@@ -94,7 +94,7 @@ export function ServiceResultPanel({ order }: { order: ServiceOrder }) {
           <UploadCloudIcon className="size-5" /> Kirim Berkas Hasil
         </CardTitle>
         <CardDescription>
-          Unggah berkas final ke penyimpanan privat. Klien hanya bisa mengunduhnya setelah pembayaran lunas.
+          Unggah berkas hasil akhir. Klien hanya bisa mengunduhnya setelah pembayaran lunas.
         </CardDescription>
       </CardHeader>
 

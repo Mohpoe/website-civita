@@ -47,7 +47,7 @@ export default function DashboardHelp() {
         {[
           {
             num: "01",
-            title: "Jelajahi Katalog Produk",
+            title: "Jelajahi Daftar Produk",
             icon: <ShoppingBag className="w-5 h-5" />,
             steps: [
               "Buka halaman <strong>Daftar Produk</strong> dari menu sidebar.",
@@ -77,12 +77,12 @@ export default function DashboardHelp() {
           },
           {
             num: "04",
-            title: "Unduh File Produk",
+            title: "Unduh Berkas Produk",
             icon: <Download className="w-5 h-5" />,
             steps: [
               "Masuk ke halaman <strong>Pesanan Saya</strong> dari menu sidebar.",
               "Cari pesanan dengan status <strong>Sukses</strong>.",
-              "Klik tombol <strong>Unduh File</strong> untuk mendapatkan produk digital Anda.",
+              "Klik tombol <strong>Unduh Berkas</strong> untuk mendapatkan produk digital Anda.",
             ],
           },
           {
@@ -90,9 +90,9 @@ export default function DashboardHelp() {
             title: "Pesanan Gagal atau Kedaluwarsa",
             icon: <Clock className="w-5 h-5" />,
             steps: [
-              "Jika pembayaran tidak berhasil atau pesanan kadaluwarsa, status akan menjadi <strong>Gagal</strong> atau <strong>Kedaluwarsa</strong>.",
+              "Jika pembayaran tidak berhasil atau pesanan kedaluwarsa, status akan menjadi <strong>Gagal</strong> atau <strong>Kedaluwarsa</strong>.",
               "Anda dapat klik tombol <strong>Beli Lagi</strong> untuk membuat pesanan baru untuk produk yang sama.",
-              "Pastikan membayar sebelum waktu kadaluwarsa habis.",
+              "Pastikan membayar sebelum waktu kedaluwarsa habis.",
             ],
           },
           {
@@ -153,16 +153,16 @@ export default function DashboardHelp() {
               a: "Tidak. Setiap produk hanya dapat dibeli satu kali per akun. Jika produk sudah pernah dibeli dengan status sukses, tombol pembelian akan menampilkan pemberitahuan dan mengarahkan Anda ke halaman Pesanan Saya untuk mengunduh kembali.",
             },
             {
-              q: "Apakah file produk dapat diunduh kapan saja?",
-              a: "Ya, selama pesanan Anda memiliki status sukses, file produk dapat diunduh kapan saja melalui halaman Pesanan Saya. Tidak ada batasan waktu untuk mengunduh setelah pembayaran berhasil.",
+              q: "Apakah berkas produk dapat diunduh kapan saja?",
+              a: "Ya, selama pesanan Anda memiliki status sukses, berkas produk dapat diunduh kapan saja melalui halaman Pesanan Saya. Tidak ada batasan waktu untuk mengunduh setelah pembayaran berhasil.",
             },
             {
               q: "Apa yang terjadi jika produk yang saya beli dihapus admin?",
-              a: "Jika produk dihapus admin karena sudah memiliki transaksi, data produk akan dipindahkan ke arsip. Judul dan file download tetap tersedia di riwayat pesanan Anda dengan label \"Edisi Terbatas\", dan Anda masih dapat mengunduh file-nya.",
+              a: "Jika produk dihapus admin karena sudah memiliki transaksi, data produk akan dipindahkan ke arsip. Judul dan berkas unduhan tetap tersedia di riwayat pesanan Anda dengan label \"Edisi Terbatas\", dan Anda masih dapat mengunduh berkasnya.",
             },
             {
-              q: "Saya sudah bayar tapi pesanan masih pending, apa yang harus dilakukan?",
-              a: "Tunggu beberapa menit hingga sistem memproses notifikasi pembayaran dari Midtrans. Jika setelah 1 jam status masih pending, silakan kontak admin melalui WhatsApp dan sertakan bukti transfer maupun ID pesanan.",
+              q: "Saya sudah bayar tapi pesanan masih menunggu, apa yang harus dilakukan?",
+              a: "Tunggu beberapa menit hingga pembayaran Anda terkonfirmasi. Jika setelah 1 jam status masih menunggu, silakan kontak admin melalui WhatsApp dan sertakan bukti transfer maupun ID pesanan.",
             },
           ].map((faq, idx) => (
             <div key={idx} className="border border-border rounded-lg p-4">

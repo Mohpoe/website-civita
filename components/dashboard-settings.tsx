@@ -82,7 +82,7 @@ export default function DashboardSettings({ settings }: DashboardSettingsProps) 
               <Building2 className="size-5" /> Identitas Situs
             </CardTitle>
             <CardDescription>
-              Nama brand, tagline, dan deskripsi yang tampil di landing page, metadata, serta footer.
+              Nama brand, tagline, dan deskripsi yang tampil di halaman utama serta footer.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -107,7 +107,7 @@ export default function DashboardSettings({ settings }: DashboardSettingsProps) 
                   rows={3}
                   maxLength={400}
                 />
-                <FieldDescription>Dipakai untuk meta description dan ringkasan brand.</FieldDescription>
+                <FieldDescription>Dipakai sebagai ringkasan brand dan pratinjau saat halaman dibagikan.</FieldDescription>
               </Field>
             </FieldGroup>
           </CardContent>
@@ -159,7 +159,7 @@ export default function DashboardSettings({ settings }: DashboardSettingsProps) 
             </Button>
 
             <Field>
-              <FieldLabel htmlFor="logoUrlManual">Atau tempel URL logo</FieldLabel>
+              <FieldLabel htmlFor="logoUrlManual">Atau tempel tautan logo</FieldLabel>
               <Input
                 id="logoUrlManual"
                 value={logoUrl}
@@ -246,18 +246,18 @@ export default function DashboardSettings({ settings }: DashboardSettingsProps) 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <LayoutTemplate className="size-5" /> Teks Landing Page
+            <LayoutTemplate className="size-5" /> Teks Halaman Utama
           </CardTitle>
-          <CardDescription>Judul dan subjudul utama di bagian hero.</CardDescription>
+          <CardDescription>Judul dan subjudul utama di bagian atas halaman utama.</CardDescription>
         </CardHeader>
         <CardContent>
           <FieldGroup>
             <Field>
-              <FieldLabel htmlFor="heroHeadline">Judul hero</FieldLabel>
+              <FieldLabel htmlFor="heroHeadline">Judul utama</FieldLabel>
               <Input id="heroHeadline" name="heroHeadline" defaultValue={settings.heroHeadline} maxLength={160} />
             </Field>
             <Field>
-              <FieldLabel htmlFor="heroSubheadline">Subjudul hero</FieldLabel>
+              <FieldLabel htmlFor="heroSubheadline">Subjudul utama</FieldLabel>
               <Textarea
                 id="heroSubheadline"
                 name="heroSubheadline"
@@ -273,7 +273,7 @@ export default function DashboardSettings({ settings }: DashboardSettingsProps) 
       <div className="flex flex-col items-start justify-between gap-3 rounded-lg border bg-muted/30 p-4 sm:flex-row sm:items-center">
         <p className="flex items-center gap-2 text-sm text-muted-foreground">
           <MessageCircle className="size-4" />
-          Perubahan langsung dipakai landing page setelah disimpan.
+          Perubahan langsung tampil di halaman utama setelah disimpan.
         </p>
         <Button type="submit" disabled={isPending || isUploading} className="min-w-40">
           {isPending ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}

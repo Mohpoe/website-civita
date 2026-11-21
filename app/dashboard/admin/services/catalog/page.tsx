@@ -6,7 +6,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-const mainTitle = "Katalog Layanan";
+const mainTitle = "Kelola Layanan";
 
 export const metadata: Metadata = {
   title: mainTitle,

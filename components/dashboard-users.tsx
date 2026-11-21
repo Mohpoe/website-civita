@@ -63,6 +63,17 @@ interface DashboardUsersProps {
   users: UserData[];
 }
 
+/** Nama hak akses yang mudah dibaca di antarmuka. */
+const ROLE_LABELS: Record<string, string> = {
+  superadmin: "Superadmin",
+  admin: "Admin",
+  user: "Pengguna",
+};
+
+function roleLabel(role: string) {
+  return ROLE_LABELS[role] ?? role;
+}
+
 export default function DashboardUsers({ users }: DashboardUsersProps) {
   // 1. Inisialisasi Hook
   const router = useRouter();
@@ -179,7 +190,7 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
               {role === "superadmin" && <ShieldAlertIcon data-icon="inline-start" className="w-3 h-3" />}
               {role === "admin" && <ShieldCheckIcon data-icon="inline-start" className="w-3 h-3" />}
               {role === "user" && <ShieldIcon data-icon="inline-start" className="w-3 h-3" />}
-              {role.toUpperCase()}
+              {roleLabel(role)}
             </Badge>
           );
         },
@@ -198,7 +209,7 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
           const { orderCount, successCount, pendingCount, failedCount } = user;
           if (orderCount === 0) return <span className="text-xs text-muted-foreground">-</span>;
           return (
-            <div className="flex flex-wrap items-center gap-1.5 min-w-[180px]" title="Ringkasan transaksi berdasarkan status. Data order akan dianonimkan (user_id di-NULL-kan) saat akun dihapus.">
+            <div className="flex flex-wrap items-center gap-1.5 min-w-[180px]" title="Ringkasan transaksi berdasarkan status. Data pesanan tetap tersimpan tanpa identitas akun setelah akun dihapus.">
               <Badge variant="outline" className="text-xs px-1.5 py-0 border-success text-success">
                 <BadgeCheckIcon /> {successCount}
               </Badge>
@@ -298,7 +309,7 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
       <Card className="shadow-md">
         <CardHeader className="border-b">
           <CardTitle>Kelola Pengguna</CardTitle>
-          <CardDescription>Daftar semua pengguna yang terdaftar di sistem melalui Clerk.</CardDescription>
+          <CardDescription>Daftar semua pengguna yang terdaftar.</CardDescription>
         </CardHeader>
 
         <CardContent className="flex flex-col gap-4">
@@ -323,14 +334,14 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
                         <DropdownMenuPortal>
                           <DropdownMenuSubContent>
                             <DropdownMenuGroup>
-                              <DropdownMenuLabel>Filter Role</DropdownMenuLabel>
+                              <DropdownMenuLabel>Filter hak akses</DropdownMenuLabel>
 
-                              {/* Opsi "Semua Role" */}
+                              {/* Opsi "Semua hak akses" */}
                               <DropdownMenuCheckboxItem
                                 checked={filteredRoles.length === uniqueRoles.length || filteredRoles.length === 0}
                                 onCheckedChange={() => table.getColumn("role")?.setFilterValue(undefined)}
                               >
-                                Semua Role
+                                Semua hak akses
                               </DropdownMenuCheckboxItem>
 
                               {/* Looping Checkbox untuk setiap Role Unik */}
@@ -352,7 +363,7 @@ export default function DashboardUsers({ users }: DashboardUsersProps) {
                                     );
                                   }}
                                 >
-                                  {role.charAt(0).toUpperCase() + role.slice(1)}
+                                  {roleLabel(role)}
                                 </DropdownMenuCheckboxItem>
                               ))}
                             </DropdownMenuGroup>

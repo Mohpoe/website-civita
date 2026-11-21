@@ -65,7 +65,7 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
       ? [
         {
           id: "katalog-penjualan",
-          label: "Katalog & Penjualan",
+          label: "Produk & Penjualan",
           items: [
             {
               title: "Kelola Produk",
@@ -96,7 +96,7 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
             ...(isSuperadmin
               ? [
                 {
-                  title: "Katalog Layanan",
+                  title: "Kelola Layanan",
                   url: ROUTES.DASHBOARD.SERVICE_CATALOG,
                   icon: <ListChecksIcon />,
                 },

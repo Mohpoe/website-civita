@@ -187,10 +187,10 @@ export default function DashboardTestimonials({ testimonials }: DashboardTestimo
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <MessageSquareQuoteIcon className="size-5" /> Testimoni Landing Page
+                <MessageSquareQuoteIcon className="size-5" /> Kelola Testimoni
               </CardTitle>
               <CardDescription>
-                {activeCount} testimoni aktif dari {testimonials.length} total. Landing page menampilkan
+                {activeCount} testimoni aktif dari {testimonials.length} total. Halaman utama menampilkan
                 maksimal 12 kartu yang dipilih acak.
               </CardDescription>
             </div>
@@ -206,7 +206,7 @@ export default function DashboardTestimonials({ testimonials }: DashboardTestimo
               <div>
                 <p className="font-medium">Belum ada testimoni.</p>
                 <p className="text-sm text-muted-foreground">
-                  Unggah screenshot chat WhatsApp klien untuk mulai mengisi section testimoni.
+                  Unggah tangkapan layar chat WhatsApp klien untuk mulai mengisi bagian testimoni.
                 </p>
               </div>
               <Button onClick={openCreate} variant="outline">
@@ -223,7 +223,7 @@ export default function DashboardTestimonials({ testimonials }: DashboardTestimo
                   <div className="relative aspect-[4/5] w-full bg-muted">
                     <Image
                       src={testimonial.image_url}
-                      alt={testimonial.alt_text || "Screenshot testimoni"}
+                      alt={testimonial.alt_text || "Tangkapan layar testimoni"}
                       fill
                       sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
                       className="object-cover object-top"
@@ -309,8 +309,8 @@ export default function DashboardTestimonials({ testimonials }: DashboardTestimo
           <DialogHeader>
             <DialogTitle>{editing ? "Ubah Testimoni" : "Tambah Testimoni"}</DialogTitle>
             <DialogDescription>
-              Gunakan screenshot chat WhatsApp asli. Gambar disimpan di PUBLIC_BLOB dan tampil sebagai kartu
-              di landing page.
+              Gunakan tangkapan layar chat WhatsApp asli. Gambar akan tampil sebagai kartu di
+              halaman utama.
             </DialogDescription>
           </DialogHeader>
 
@@ -368,7 +368,7 @@ export default function DashboardTestimonials({ testimonials }: DashboardTestimo
                   placeholder="Mis. testimoni CV ATS"
                   maxLength={200}
                 />
-                <FieldDescription>Tidak tampil di kartu, dipakai untuk aksesibilitas.</FieldDescription>
+                <FieldDescription>Tidak tampil di kartu, hanya dibacakan pembaca layar.</FieldDescription>
               </Field>
 
               <Field>

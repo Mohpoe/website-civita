@@ -10,7 +10,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-const mainTitle = "Pesanan Jasa";
+const mainTitle = "Pesanan Jasa Masuk";
 
 export const metadata: Metadata = {
   title: mainTitle,
@@ -36,7 +36,7 @@ export default async function AdminServicesPage() {
             href={ROUTES.DASHBOARD.SERVICE_CATALOG}
             className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
           >
-            <Settings2Icon className="size-4" /> Kelola katalog & harga
+            <Settings2Icon className="size-4" /> Kelola layanan & harga
           </Link>
         </div>
       ) : null}

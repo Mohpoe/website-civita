@@ -43,7 +43,7 @@ export async function restoreSnapshotAction(snapshotId: string) {
       SELECT * FROM product_snapshots WHERE id = ${snapshotId}
     `;
     if (snapshotRows.length === 0) {
-      return { success: false, message: "Snapshot tidak ditemukan." };
+      return { success: false, message: "Data arsip tidak ditemukan." };
     }
     const snap = snapshotRows[0];
 
@@ -61,7 +61,7 @@ export async function restoreSnapshotAction(snapshotId: string) {
         restoredThumbnailUrl = copied.url;
       } catch (err) {
         console.error("Gagal memulihkan thumbnail:", err);
-        return { success: false, message: "Gagal memulihkan file thumbnail." };
+        return { success: false, message: "Gagal memulihkan gambar pratinjau." };
       }
     }
 
@@ -83,7 +83,7 @@ export async function restoreSnapshotAction(snapshotId: string) {
         if (restoredThumbnailUrl) {
           try { await del(restoredThumbnailUrl, { storeId: process.env.PUBLIC_BLOB_STORE_ID, oidcToken: process.env.VERCEL_OIDC_TOKEN }); } catch {}
         }
-        return { success: false, message: "Gagal memulihkan file download." };
+        return { success: false, message: "Gagal memulihkan berkas unduhan." };
       }
     }
 
@@ -127,7 +127,7 @@ export async function restoreSnapshotAction(snapshotId: string) {
 
     return {
       success: true,
-      message: "Produk berhasil dipulihkan. Produk kembali sebagai draft (tidak aktif di katalog).",
+      message: "Produk berhasil dipulihkan. Produk kembali sebagai draf (tidak tampil di daftar produk).",
       productId: newProductId,
     };
   } catch (error) {

@@ -95,7 +95,7 @@ export async function promoteToAdmin(targetUserId: string) {
       }
     });
 
-    return { success: true, message: "User berhasil diubah menjadi Admin." };
+    return { success: true, message: "Pengguna berhasil diubah menjadi Admin." };
   } catch (error) {
     console.error("Gagal update role:", error);
     throw new Error("Gagal memperbarui role pengguna.");
@@ -130,7 +130,7 @@ export async function demoteToUser(targetUserId: string) {
       }
     });
 
-    return { success: true, message: "Hak akses berhasil dicabut. Akun kembali menjadi User." };
+    return { success: true, message: "Hak akses berhasil dicabut. Akun kembali menjadi Pengguna." };
   } catch (error) {
     console.error("Gagal update role (demote):", error);
     throw new Error(getErrorMessage(error, "Gagal memperbarui role pengguna."));
@@ -163,7 +163,7 @@ export async function deleteUserAction(targetUserId: string) {
     //    ditangani oleh Clerk Webhook `user.deleted` sebagai titik tunggal.
     await client.users.deleteUser(targetUserId);
 
-    return { success: true, message: "Pengguna berhasil dihapus. Data transaksi tetap dipertahankan (anonim)." };
+    return { success: true, message: "Pengguna berhasil dihapus. Data transaksi tetap tersimpan tanpa identitas akun." };
   } catch (error) {
     console.error("Gagal menghapus pengguna:", error);
     throw new Error(getErrorMessage(error, "Gagal menghapus pengguna."));

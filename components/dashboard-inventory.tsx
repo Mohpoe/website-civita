@@ -92,7 +92,7 @@ export default function DashboardInventory({ orders: initialOrders }: DashboardI
     if (alreadyPurchased) {
       toast.add({
         title: "Produk Sudah Dibeli",
-        description: "Anda sudah memiliki produk ini. Silakan cek halaman 'Pesanan Saya' untuk mengunduh file.",
+        description: "Anda sudah memiliki produk ini. Silakan cek halaman 'Pesanan Saya' untuk mengunduh berkas.",
         type: "error",
         priority: "high",
       });
@@ -197,7 +197,7 @@ export default function DashboardInventory({ orders: initialOrders }: DashboardI
         toast.add({
           type: "info",
           description:
-            "Sistem pembayaran belum selesai dimuat. Coba lagi sebentar lagi.",
+            "Pembayaran belum siap. Coba lagi sebentar lagi.",
           priority: "high",
         });
         return;
@@ -332,7 +332,7 @@ export default function DashboardInventory({ orders: initialOrders }: DashboardI
                               <Badge
                                 variant="destructive"
                                 className="text-xs font-normal"
-                                title="Akun pelanggan ini telah dihapus dari sistem. Email tetap tersimpan untuk bukti transaksi."
+                                title="Akun pelanggan ini sudah dihapus. Email tetap tersimpan sebagai bukti transaksi."
                               >
                                 <UserX className="w-3 h-3" /> Akun Tidak Aktif
                               </Badge>
@@ -373,7 +373,7 @@ export default function DashboardInventory({ orders: initialOrders }: DashboardI
                               className="w-full sm:w-auto gap-2"
                               onClick={() => window.open(`/api/download?orderId=${order.order_id}`, '_blank')}
                             >
-                              <Download className="w-4 h-4" /> Unduh File
+                              <Download className="w-4 h-4" /> Unduh Berkas
                             </Button>
                           )}
 

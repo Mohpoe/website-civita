@@ -67,7 +67,7 @@ export async function updateSiteSettingsAction(
     ["Logo", logoUrl],
   ] as const) {
     if (url !== "" && !/^https?:\/\//i.test(url)) {
-      return { success: false, message: `URL ${label} harus diawali http:// atau https://` };
+      return { success: false, message: `Tautan ${label} harus diawali http:// atau https://` };
     }
   }
 

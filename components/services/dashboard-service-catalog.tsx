@@ -150,7 +150,7 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <Settings2Icon className="size-5" /> Katalog Layanan
+                <Settings2Icon className="size-5" /> Kelola Layanan
               </CardTitle>
               <CardDescription>
                 {services.filter((service) => service.is_active).length} layanan aktif dari{" "}
@@ -170,7 +170,7 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
               <div>
                 <p className="font-medium">Belum ada layanan.</p>
                 <p className="text-sm text-muted-foreground">
-                  Tambahkan layanan pertama agar bisa dipesan dari landing page.
+                  Tambahkan layanan pertama agar bisa dipesan dari halaman utama.
                 </p>
               </div>
               <Button onClick={openCreate} variant="outline">
@@ -184,7 +184,7 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <p className="truncate font-semibold">{service.name}</p>
-                      <p className="font-mono text-[11px] text-muted-foreground">{service.slug}</p>
+                      <p className="truncate text-[11px] text-muted-foreground">Kode: {service.slug}</p>
                     </div>
                     <Badge variant={service.is_active ? "default" : "secondary"}>
                       {service.is_active ? "Aktif" : "Nonaktif"}
@@ -243,7 +243,7 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
           <DialogHeader>
             <DialogTitle>{editing ? "Ubah Layanan" : "Tambah Layanan"}</DialogTitle>
             <DialogDescription>
-              Harga dipakai apa adanya saat klien membayar lewat Midtrans.
+              Harga ini yang akan ditagihkan saat klien membayar.
             </DialogDescription>
           </DialogHeader>
 
@@ -268,15 +268,16 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="serviceSlug">Slug</FieldLabel>
+                  <FieldLabel htmlFor="serviceSlug">Kode layanan</FieldLabel>
                   <Input
                     id="serviceSlug"
                     name="slug"
                     value={slug}
                     onChange={(event) => setSlug(event.target.value)}
-                    placeholder="otomatis dari nama"
+                    placeholder="Terisi otomatis dari nama"
                     maxLength={80}
                   />
+                  <FieldDescription>Dipakai di alamat tautan layanan. Kosongkan untuk mengisi otomatis.</FieldDescription>
                 </Field>
               </div>
 
@@ -342,7 +343,7 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
               </Field>
 
               <Field orientation="horizontal">
-                <FieldLabel htmlFor="serviceActive">Tampilkan di landing page</FieldLabel>
+                <FieldLabel htmlFor="serviceActive">Tampilkan di halaman utama</FieldLabel>
                 <Switch
                   id="serviceActive"
                   checked={isActive}
@@ -372,7 +373,7 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
             </AlertDialogMedia>
             <AlertDialogTitle>Hapus layanan?</AlertDialogTitle>
             <AlertDialogDescription>
-              Layanan hilang dari landing page. Riwayat pesanan lama tetap tersimpan dengan nama
+              Layanan akan hilang dari halaman utama. Riwayat pesanan lama tetap tersimpan dengan nama
               layanan saat itu.
             </AlertDialogDescription>
           </AlertDialogHeader>

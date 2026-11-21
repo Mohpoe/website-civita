@@ -129,7 +129,7 @@ export default function DashboardCategory({ categories }: DashboardCategoryProps
         cell: (info) => <span className="font-medium">{info.getValue()}</span>,
       }),
       columnHelper.accessor("slug", {
-        header: "Slug",
+        header: "Kode Kategori",
         cell: (info) => (
           <span className="font-mono text-xs text-muted-foreground/80">
             /{info.getValue()}

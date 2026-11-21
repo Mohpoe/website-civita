@@ -348,7 +348,7 @@ export function ServiceOrderForm({
             <p className="flex items-start gap-2 text-[11px] leading-relaxed text-muted-foreground">
               <ShieldCheckIcon className="mt-0.5 size-3.5 shrink-0" />
               Data hanya dipakai untuk menyusun berkas lamaranmu. Berkas hasil dikirim lewat
-              tautan privat yang hanya bisa diakses pemilik pesanan.
+              tautan pribadi yang hanya bisa diakses pemilik pesanan.
             </p>
           </CardContent>
         </Card>

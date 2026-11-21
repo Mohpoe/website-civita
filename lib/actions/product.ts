@@ -53,7 +53,7 @@ export async function getProducts(isActive = false): Promise<Product[]> {
 export async function upsertProductAction(state: ActionState | null, formData: FormData) {
   await auth.protect();
   const user = await currentUser();
-  if (!user || !allowedRoles.includes(user.publicMetadata.role as string)) return { success: false, message: "Akses tidak valid!" };
+  if (!user || !allowedRoles.includes(user.publicMetadata.role as string)) return { success: false, message: "Anda tidak punya akses untuk tindakan ini." };
 
   const id = formData.get("id") as string | null;
 
@@ -70,7 +70,7 @@ export async function upsertProductAction(state: ActionState | null, formData: F
 
   if (imageFile && imageFile.size > 0) {
     if (!isSupportedThumbnail(imageFile)) return { success: false, message: "Format gambar tidak didukung. Gunakan JPG, PNG, WebP, atau AVIF." };
-    if (imageFile.size > 4 * 1024 * 1024) return { success: false, message: "Ukuran gambar melebihi 4MB!" };
+    if (imageFile.size > 4 * 1024 * 1024) return { success: false, message: "Ukuran gambar maksimal 4 MB." };
     try {
       const blob = await putImage(`thumbnails/${sanitizeFileName(imageFile.name)}`, imageFile, {
         access: "public",
@@ -82,7 +82,7 @@ export async function upsertProductAction(state: ActionState | null, formData: F
       finalImageUrl = blob.url;
     } catch (error) {
       console.error("Gagal mengunggah gambar thumbnail:", error);
-      return { success: false, message: "Gagal mengunggah gambar thumbnail." };
+      return { success: false, message: "Gagal mengunggah gambar pratinjau." };
     }
   }
   // #endregion
@@ -199,7 +199,7 @@ export async function upsertProductAction(state: ActionState | null, formData: F
   } catch (error) {
     console.error("Error upserting product:", error);
     if (!productSaved) await deleteUnusedThumbnail();
-    return { success: false, message: "Gagal menyimpan produk. Hubungi developer." };
+    return { success: false, message: "Gagal menyimpan produk. Coba lagi." };
   }
 }
 // #endregion
@@ -208,10 +208,10 @@ export async function upsertProductAction(state: ActionState | null, formData: F
 export async function deleteProductAction(formData: FormData) {
   await auth.protect();
   const user = await currentUser();
-  if (!user || !allowedRoles.includes(user.publicMetadata.role as string)) return { success: false, message: "Akses tidak valid, silakan login!" };
+  if (!user || !allowedRoles.includes(user.publicMetadata.role as string)) return { success: false, message: "Silakan masuk terlebih dahulu." };
 
   const id = formData.get("id") as string | null;
-  if (!id) return { success: false, message: "ID Produk tidak ditemukan!" };
+  if (!id) return { success: false, message: "Produk tidak ditemukan." };
 
   try {
     // 1. Cek apakah produk memiliki order terkait
@@ -220,7 +220,7 @@ export async function deleteProductAction(formData: FormData) {
 
     // 2. Ambil data produk sebelum dihapus
     const productRows = await sql`SELECT * FROM products WHERE id = ${id}`;
-    if (productRows.length === 0) return { success: false, message: "Produk tidak ditemukan di database." };
+    if (productRows.length === 0) return { success: false, message: "Produk tidak ditemukan." };
 
     const product = productRows[0] as Product;
 
@@ -244,7 +244,7 @@ export async function deleteProductAction(formData: FormData) {
           thumbnailSnapshotUrl = copied.url;
         } catch (copyErr) {
           console.error("Gagal menyalin thumbnail ke snapshot:", copyErr);
-          return { success: false, message: "Gagal memindahkan thumbnail ke arsip." };
+          return { success: false, message: "Gagal memindahkan gambar pratinjau ke arsip." };
         }
       }
 
@@ -266,7 +266,7 @@ export async function deleteProductAction(formData: FormData) {
           if (thumbnailSnapshotUrl) {
             try { await del(thumbnailSnapshotUrl, { storeId: process.env.PUBLIC_BLOB_STORE_ID, oidcToken: process.env.VERCEL_OIDC_TOKEN }); } catch { }
           }
-          return { success: false, message: "Gagal memindahkan file download ke arsip." };
+          return { success: false, message: "Gagal memindahkan berkas unduhan ke arsip." };
         }
       }
 
@@ -345,7 +345,7 @@ export async function deleteProductAction(formData: FormData) {
       revalidatePath(ROUTES.DASHBOARD.INVENTORY);
       revalidatePath(ROUTES.DASHBOARD.ADMIN);
       revalidatePath(ROUTES.ROOT);
-      return { success: true, message: "Produk dan file berhasil dihapus!" };
+      return { success: true, message: "Produk dan berkas berhasil dihapus." };
     }
   } catch (error) {
     console.error("Error deleting product:", error);

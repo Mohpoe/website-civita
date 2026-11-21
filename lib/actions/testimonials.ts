@@ -49,7 +49,7 @@ export async function createTestimonialAction(
   const rawOrder = Number(text(formData, "sortOrder", 10));
 
   if (!isHttpsUrl(imageUrl)) {
-    return { success: false, message: "Upload gambar terlebih dahulu sebelum menyimpan." };
+    return { success: false, message: "Unggah gambar terlebih dahulu sebelum menyimpan." };
   }
 
   try {
@@ -84,7 +84,7 @@ export async function updateTestimonialAction(
 
   if (!id) return { success: false, message: "Testimoni tidak ditemukan." };
   if (!isHttpsUrl(imageUrl)) {
-    return { success: false, message: "Upload gambar terlebih dahulu sebelum menyimpan." };
+    return { success: false, message: "Unggah gambar terlebih dahulu sebelum menyimpan." };
   }
 
   try {
@@ -132,7 +132,7 @@ export async function toggleTestimonialAction(formData: FormData): Promise<Actio
     revalidateTestimonials();
     return {
       success: true,
-      message: isActive ? "Testimoni ditampilkan kembali." : "Testimoni disembunyikan dari landing page.",
+      message: isActive ? "Testimoni ditampilkan kembali." : "Testimoni disembunyikan dari halaman utama.",
     };
   } catch (error) {
     console.error("Gagal mengubah status testimoni:", error);

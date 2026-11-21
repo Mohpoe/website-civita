@@ -127,7 +127,7 @@ export default function PrivacyPolicyPage() {
                 <section id="penghapusan-data" className="scroll-mt-32">
                   <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4 tracking-tight">6. Penghapusan Data</h2>
                   <p className="text-muted-foreground leading-relaxed">
-                    Anda memiliki hak untuk meminta kami menghapus seluruh informasi karir dan file CV Anda dari <em>database</em> kami setelah pesanan selesai. Silakan hubungi admin kami melalui WhatsApp atau Email untuk mengajukan penghapusan data, dan kami akan segera melakukannya.
+                    Anda memiliki hak untuk meminta kami menghapus seluruh informasi karir dan file CV Anda dari <em>data</em> kami setelah pesanan selesai. Silakan hubungi admin kami melalui WhatsApp atau Email untuk mengajukan penghapusan data, dan kami akan segera melakukannya.
                   </p>
                 </section>
 

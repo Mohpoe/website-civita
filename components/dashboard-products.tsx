@@ -173,7 +173,7 @@ export default function DashboardProducts({ products, categories, orders }: Dash
       if (!window.snap) {
         toast.add({
           title: "Pembayaran Belum Siap",
-          description: "Sistem pembayaran belum selesai dimuat. Pesanan Anda sudah dibuat, silakan buka 'Pesanan Saya' untuk melanjutkan pembayaran.",
+          description: "Pembayaran belum siap. Pesanan Anda sudah dibuat, silakan buka 'Pesanan Saya' untuk melanjutkan pembayaran.",
           type: "info",
           priority: "high",
         });
@@ -210,7 +210,7 @@ export default function DashboardProducts({ products, categories, orders }: Dash
           console.error("Pembayaran Gagal", result);
           toast.add({
             title: "Pembayaran Gagal",
-            description: "Terjadi kesalahan pada sistem bank/e-wallet. Silakan coba lagi.",
+            description: "Terjadi kesalahan pada layanan bank/e-wallet. Silakan coba lagi.",
             type: "error",
             priority: "high"
           });
@@ -223,10 +223,10 @@ export default function DashboardProducts({ products, categories, orders }: Dash
     } catch (error) {
       console.error("Gagal memproses checkout:", error);
       toast.add({
-        title: "Sistem Sibuk",
+        title: "Layanan Sibuk",
         description: getErrorMessage(
           error,
-          "Gagal menghubungi server. Periksa koneksi internet Anda.",
+          "Gagal terhubung ke internet. Periksa koneksi Anda.",
         ),
         type: "error",
         priority: "high"
@@ -290,7 +290,7 @@ export default function DashboardProducts({ products, categories, orders }: Dash
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
           <div className="space-y-2">
             <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
-              Katalog Produk
+              Daftar Produk
             </h2>
             <p className="text-muted-foreground max-w-2xl">
               Akselerasikan karirmu dengan berbagai produk digital dari {APP_CONFIG.NAME}!
@@ -443,7 +443,7 @@ export default function DashboardProducts({ products, categories, orders }: Dash
                   ? selectedCategoryName
                     ? `Tidak ada produk yang cocok dengan kategori "${selectedCategoryName}". Silakan pilih kategori lain.`
                     : "Tidak ada produk yang cocok dengan filter saat ini. Coba ubah pilihan kategori."
-                  : "Saat ini belum ada produk yang tersedia di katalog ini, silakan kembali lagi nanti."}
+                  : "Saat ini belum ada produk yang tersedia di daftar ini, silakan kembali lagi nanti."}
             </p>
           </div>
         ) : (

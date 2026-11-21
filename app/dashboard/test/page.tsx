@@ -3,7 +3,7 @@ import { ROUTES } from "@/lib/constants";
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-const mainTitle = "Produk";
+const mainTitle = "Daftar Produk";
 
 export const metadata: Metadata = {
   title: mainTitle,

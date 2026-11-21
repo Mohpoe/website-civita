@@ -206,7 +206,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
         const ext = fileName.split('.').pop()?.toUpperCase() || "FILE";
         setSelectedFile({
           name: fileName,
-          size: "Tersimpan di server",
+          size: "Sudah tersimpan",
           type: ext,
         });
         setUploadedFileUrl(productToUpdate.file_url);
@@ -500,7 +500,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                         const ext = fileName.split('.').pop()?.toUpperCase() || "FILE";
                         setSelectedFile({
                           name: fileName,
-                          size: "Tersimpan di server",
+                          size: "Sudah tersimpan",
                           type: ext,
                         });
                         setUploadedFileUrl(product.file_url);
@@ -631,7 +631,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
       <TabsContent value="produk" className="w-full">
         <Card className="shadow-md">
           <CardHeader className="border-b">
-            <CardTitle>Kelola Produk Digital</CardTitle>
+            <CardTitle>Kelola Produk</CardTitle>
             <CardDescription>Silakan atur produk digital yang ingin dijual.</CardDescription>
             <CardAction>
               <Button variant="outline" onClick={() => {
@@ -1133,7 +1133,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
               <DialogDescription>
                 {productToUpdate
                   ? "Ubah detail informasi produk di bawah ini."
-                  : "Isi form di bawah ini untuk menambahkan produk baru ke katalog."}
+                  : "Isi form di bawah ini untuk menambahkan produk baru ke daftar produk."}
               </DialogDescription>
             </DialogHeader>
             <Separator className="py-0" />
@@ -1163,7 +1163,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                   {
                     // #region Thumbnail
                     <Field>
-                      <FieldLabel htmlFor="imageFile">Thumbnail Produk <span className="text-destructive">*</span></FieldLabel>
+                      <FieldLabel htmlFor="imageFile">Gambar Pratinjau Produk <span className="text-destructive">*</span></FieldLabel>
                       <div className="flex gap-4 items-start">
                         <div className={`relative group flex items-center justify-center w-20 h-20 shrink-0 overflow-hidden rounded-xl transition-all ${!imagePreview ? "border-2 border-dashed border-muted-foreground/100" : "border-2 border-muted-foreground"} rounded-xl`}>
                           {imagePreview ? (
@@ -1182,7 +1182,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                           <div className="flex items-center gap-2">
 
                             <Button type="button" variant="secondary" size="sm" onClick={() => document.getElementById("imageFile")?.click()}>
-                              {imagePreview ? "Ganti Thumbnail" : "Upload Thumbnail"}
+                              {imagePreview ? "Ganti Gambar" : "Unggah Gambar"}
                             </Button>
 
                             <input type="hidden" name="oldImageUrl" value={productToUpdate?.image_url} required />
@@ -1372,7 +1372,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                   {
                     // #region Upload File
                     <Field>
-                      <FieldLabel htmlFor="fileUrl">File Produk Digital <span className="text-destructive">*</span></FieldLabel>
+                      <FieldLabel htmlFor="fileUrl">Berkas Produk Digital <span className="text-destructive">*</span></FieldLabel>
 
                       {(selectedFile || isUploadingFile) && (
                         <Attachment className="mt-3">

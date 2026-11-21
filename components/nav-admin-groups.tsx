@@ -15,7 +15,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
 
-/** Satu kelompok menu admin, mis. "Katalog & Penjualan". */
+/** Satu kelompok menu admin, mis. "Produk & Penjualan". */
 export interface AdminNavGroup {
   id: string
   label: string
@@ -47,7 +47,7 @@ export function NavAdminGroups({ groups }: { groups: AdminNavGroup[] }) {
   const collapsed = !isMobile && state === "collapsed"
 
   // Cari item paling spesifik yang cocok supaya halaman turunan tidak
-  // menyalakan dua menu sekaligus (mis. layanan vs katalog layanan).
+  // menyalakan dua menu sekaligus (mis. daftar pesanan vs pengelolaan layanan).
   const activeUrl = groups
     .flatMap((group) => group.items)
     .filter((item) => matchesPath(pathname, item.url))

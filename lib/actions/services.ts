@@ -94,7 +94,7 @@ export async function upsertServiceAction(
 ): Promise<ActionState> {
   const guard = await requireRole([SUPERADMIN]);
   if (!guard.ok) {
-    return { success: false, message: "Hanya superadmin yang dapat mengubah katalog layanan." };
+    return { success: false, message: "Hanya superadmin yang dapat mengubah layanan." };
   }
 
   const existingId = text(formData, "id", 64);
@@ -120,7 +120,7 @@ export async function upsertServiceAction(
 
   const slug = slugify(text(formData, "slug", 80) || name);
   if (!slug) {
-    return { success: false, message: "Slug layanan tidak valid." };
+    return { success: false, message: "Kode layanan tidak valid." };
   }
 
   const id = existingId || slug;
@@ -150,7 +150,7 @@ export async function upsertServiceAction(
     console.error("Gagal menyimpan layanan:", error);
     const message = (error as Error).message || "";
     if (/unique|duplicate/i.test(message)) {
-      return { success: false, message: "Slug sudah dipakai layanan lain. Gunakan slug berbeda." };
+      return { success: false, message: "Kode layanan sudah dipakai layanan lain. Gunakan kode yang berbeda." };
     }
     return { success: false, message: "Gagal menyimpan layanan. Coba lagi." };
   }
@@ -159,7 +159,7 @@ export async function upsertServiceAction(
 export async function toggleServiceAction(formData: FormData): Promise<ActionState> {
   const guard = await requireRole([SUPERADMIN]);
   if (!guard.ok) {
-    return { success: false, message: "Hanya superadmin yang dapat mengubah katalog layanan." };
+    return { success: false, message: "Hanya superadmin yang dapat mengubah layanan." };
   }
 
   const id = text(formData, "id", 64);
@@ -171,7 +171,7 @@ export async function toggleServiceAction(formData: FormData): Promise<ActionSta
     revalidateServices();
     return {
       success: true,
-      message: isActive ? "Layanan ditampilkan kembali." : "Layanan disembunyikan dari landing page.",
+      message: isActive ? "Layanan ditampilkan kembali." : "Layanan disembunyikan dari halaman utama.",
     };
   } catch (error) {
     console.error("Gagal mengubah status layanan:", error);
@@ -439,7 +439,7 @@ export async function deleteServiceBlobAction(url: string): Promise<ActionState>
     return { success: false, message: "Tidak diizinkan." };
   }
 
-  if (!isHttpsUrl(url)) return { success: false, message: "URL tidak valid." };
+  if (!isHttpsUrl(url)) return { success: false, message: "Tautan tidak valid." };
 
   await deleteBlobSafely(url);
   return { success: true, message: "File dihapus." };
