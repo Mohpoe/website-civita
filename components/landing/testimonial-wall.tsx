@@ -82,7 +82,7 @@ const SLOTS: CardSlot[] = [
     width: 32,
     rotate: -1.2,
     depth: 0,
-    travel: 30,
+    travel: 52,
     mouse: 10,
     tilt: 4,
     z: 30,
@@ -97,7 +97,7 @@ const SLOTS: CardSlot[] = [
     width: 20,
     rotate: 2.6,
     depth: -110,
-    travel: 16,
+    travel: 36,
     mouse: 6,
     tilt: 3,
     z: 12,
@@ -111,7 +111,7 @@ const SLOTS: CardSlot[] = [
     width: 20,
     rotate: -2.8,
     depth: -95,
-    travel: 18,
+    travel: 40,
     mouse: 7,
     tilt: 3,
     z: 13,
@@ -125,7 +125,7 @@ const SLOTS: CardSlot[] = [
     width: 18,
     rotate: -3.4,
     depth: 110,
-    travel: 46,
+    travel: 72,
     mouse: 16,
     tilt: 5,
     z: 44,
@@ -139,7 +139,7 @@ const SLOTS: CardSlot[] = [
     width: 18,
     rotate: 3.2,
     depth: 130,
-    travel: 52,
+    travel: 78,
     mouse: 18,
     tilt: 5,
     z: 45,
@@ -149,11 +149,11 @@ const SLOTS: CardSlot[] = [
   {
     key: "back-left",
     left: 8,
-    top: 0,
+    top: 3,
     width: 18,
     rotate: -5,
     depth: -240,
-    travel: 8,
+    travel: 16,
     mouse: 4,
     tilt: 2,
     z: 4,
@@ -163,11 +163,11 @@ const SLOTS: CardSlot[] = [
   {
     key: "back-right",
     left: 74,
-    top: 1,
+    top: 4,
     width: 18,
     rotate: 4.5,
     depth: -260,
-    travel: 6,
+    travel: 14,
     mouse: 3,
     tilt: 2,
     z: 3,
@@ -177,11 +177,11 @@ const SLOTS: CardSlot[] = [
   {
     key: "back-center",
     left: 42,
-    top: 1,
+    top: 3,
     width: 16,
     rotate: 2,
     depth: -280,
-    travel: 4,
+    travel: 10,
     mouse: 2,
     tilt: 1.5,
     z: 2,
@@ -196,7 +196,7 @@ const SLOTS: CardSlot[] = [
     width: 13,
     rotate: 5,
     depth: 190,
-    travel: 66,
+    travel: 98,
     mouse: 22,
     tilt: 7,
     z: 54,
@@ -211,7 +211,7 @@ const SLOTS: CardSlot[] = [
     width: 13,
     rotate: -5,
     depth: 210,
-    travel: 72,
+    travel: 106,
     mouse: 24,
     tilt: 7,
     z: 55,
@@ -278,7 +278,7 @@ export function TestimonialWall({ testimonials }: TestimonialWallProps) {
       id="testimoni"
       ref={sectionRef}
       aria-labelledby="testimoni-title"
-      className="relative scroll-mt-24 overflow-hidden bg-paper py-16 md:py-24"
+      className="relative scroll-mt-24 overflow-hidden bg-paper py-20 md:py-28"
     >
       {/* Menyatu dengan section di atas (paper-2) dan di bawah (paper). */}
       <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-24 bg-gradient-to-b from-paper-2 to-transparent" />
@@ -329,7 +329,7 @@ export function TestimonialWall({ testimonials }: TestimonialWallProps) {
               onPointerLeave={resetPointer}
             >
               <ul
-                className="relative h-[520px] w-full list-none lg:h-[620px]"
+                className="relative h-[600px] w-full list-none lg:h-[720px]"
                 style={{ transformStyle: "preserve-3d" }}
               >
                 {items.map((testimonial, index) => {
@@ -587,7 +587,7 @@ function TestimonialSkeleton() {
   return (
     <>
       <div
-        className="relative mx-auto mt-12 hidden h-[520px] w-full md:block lg:h-[620px]"
+        className="relative mx-auto mt-12 hidden h-[600px] w-full md:block lg:h-[720px]"
         style={{ perspective: "1600px" }}
       >
         <ul
