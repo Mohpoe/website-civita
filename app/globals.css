@@ -9,6 +9,19 @@
   --color-foreground: var(--foreground);
   --color-brand-red: var(--brand-red);
   --color-brand-orange: var(--brand-orange);
+  /* Palet landing page: neo-brutalism lembut. */
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  /* Teks di atas bidang aksen pastel; selalu gelap di kedua tema. */
+  --color-on-accent: var(--on-accent);
+  --color-coral: var(--coral);
+  --color-coral-deep: var(--coral-deep);
+  --color-sage: var(--sage);
+  --color-butter: var(--butter);
+  --color-sky: var(--sky);
+  --color-lilac: var(--lilac);
   --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-geist-mono);
@@ -89,6 +102,24 @@
   --foreground: oklch(0.145 0 0);
   --brand-red: #ef3936;
   --brand-orange: #f68e51;
+
+  /* ---------------------------------------------------------------------
+     Palet landing page.
+     Warna brand lama (#ef3936 / #f68e51) diturunkan menjadi coral pastel,
+     dipakai sebagai warna utama. Aksen lain dibuat sama lembutnya supaya
+     tidak ada pasangan warna yang "berteriak".
+     --------------------------------------------------------------------- */
+  --paper: #faf7f2;
+  --paper-2: #f2ece3;
+  --ink: #221f1b;
+  --ink-soft: #5a534b;
+  --on-accent: #221f1b;
+  --coral: #e7a79c;
+  --coral-deep: #b96a5c;
+  --sage: #afc6a6;
+  --butter: #f2ddb0;
+  --sky: #b3c9e4;
+  --lilac: #cfc3e6;
 }
 
 .dark {
@@ -127,6 +158,18 @@
   --sidebar-ring: oklch(0.556 0 0);
   --brand-red: #d9302d;
   --brand-orange: #d97941;
+
+  --paper: #1b1917;
+  --paper-2: #24211d;
+  --ink: #f3ede4;
+  --ink-soft: #b8afa4;
+  --on-accent: #221f1b;
+  --coral: #e7a79c;
+  --coral-deep: #f0b7ac;
+  --sage: #8fa886;
+  --butter: #c9b584;
+  --sky: #8fa8c4;
+  --lilac: #a99bc4;
 }
 
 @layer base {
@@ -148,6 +191,26 @@
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;
+  }
+}
+
+/* Komponen neo-brutalism lembut untuk halaman publik.
+   Garis tetap tegas, tapi tebal dan bayangan dikurangi supaya tidak berat. */
+@layer components {
+  .nb {
+    @apply border-2 border-ink shadow-[3px_3px_0_0_var(--ink)];
+  }
+
+  .nb-sm {
+    @apply border-2 border-ink shadow-[2px_2px_0_0_var(--ink)];
+  }
+
+  .nb-hover {
+    @apply transition-[transform,box-shadow] duration-150 hover:-translate-x-px hover:-translate-y-px hover:shadow-[4px_4px_0_0_var(--ink)] active:translate-x-px active:translate-y-px active:shadow-none;
+  }
+
+  .nb-press {
+    @apply transition-[transform,box-shadow] duration-150 hover:translate-x-px hover:translate-y-px hover:shadow-none;
   }
 }
 

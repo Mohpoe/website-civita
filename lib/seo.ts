@@ -10,7 +10,7 @@ export const OG_IMAGE = {
   url: "/opengraph-image",
   width: 1200,
   height: 630,
-  alt: `${APP_CONFIG.NAME} — ${APP_CONFIG.TAGLINE}`,
+  alt: "Jasa pembuatan CV ATS-friendly, resume, dan surat lamaran profesional",
 };
 
 type PageMetadataInput = {

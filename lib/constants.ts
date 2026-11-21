@@ -59,6 +59,11 @@ export const ROUTES = {
     CATEGORY: "/dashboard/admin/category",
     REPORT: "/dashboard/admin/report",
     USERS: "/dashboard/admin/users",
+    SETTINGS: "/dashboard/admin/settings",
+    TESTIMONIALS: "/dashboard/admin/testimonials",
+    SERVICES: "/dashboard/services",
+    ADMIN_SERVICES: "/dashboard/admin/services",
+    SERVICE_CATALOG: "/dashboard/admin/services/catalog",
     HELP: "/dashboard/help",
   },
   PDF_TOOLS: {
@@ -74,5 +79,8 @@ export const ROUTES = {
 /** Menu utama yang dipakai bersama oleh navbar desktop dan drawer mobile. */
 export const PUBLIC_NAV_LINKS = [
   { label: "Beranda", href: ROUTES.ROOT },
+  { label: "Layanan", href: "/#layanan" },
+  { label: "Template", href: "/#produk" },
   { label: "Alat PDF", href: "/#tools" },
+  { label: "Testimoni", href: "/#testimoni" },
 ] as const;

@@ -68,6 +68,7 @@ export async function upsertCategoryAction(state: ActionState | null, formData: 
 
     revalidatePath(ROUTES.DASHBOARD.HOME);
     revalidatePath(ROUTES.DASHBOARD.ADMIN);
+    revalidatePath(ROUTES.ROOT);
 
     return { success: true, message: "Kategori berhasil disimpan!" };
   } catch (error) {
@@ -98,6 +99,7 @@ export async function deleteCategoryAction(formData: FormData) {
 
     revalidatePath(ROUTES.DASHBOARD.HOME);
     revalidatePath(ROUTES.DASHBOARD.ADMIN);
+    revalidatePath(ROUTES.ROOT);
     return { success: true, message: "Kategori berhasil dihapus!" };
   } catch (error) {
     console.error("Error deleting category:", error);

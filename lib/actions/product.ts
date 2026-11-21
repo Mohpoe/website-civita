@@ -194,6 +194,7 @@ export async function upsertProductAction(state: ActionState | null, formData: F
     revalidatePath(ROUTES.DASHBOARD.HOME);
     revalidatePath(ROUTES.DASHBOARD.INVENTORY);
     revalidatePath(ROUTES.DASHBOARD.ADMIN);
+    revalidatePath(ROUTES.ROOT);
     return { success: true, message: "Data produk berhasil disimpan!" };
   } catch (error) {
     console.error("Error upserting product:", error);
@@ -306,6 +307,7 @@ export async function deleteProductAction(formData: FormData) {
       revalidatePath(ROUTES.DASHBOARD.HOME);
       revalidatePath(ROUTES.DASHBOARD.INVENTORY);
       revalidatePath(ROUTES.DASHBOARD.ADMIN);
+      revalidatePath(ROUTES.ROOT);
       return {
         success: true,
         message: `Produk dipindahkan ke arsip karena memiliki ${orderCount} transaksi. Data transaksi tetap aman.`,
@@ -342,6 +344,7 @@ export async function deleteProductAction(formData: FormData) {
       revalidatePath(ROUTES.DASHBOARD.HOME);
       revalidatePath(ROUTES.DASHBOARD.INVENTORY);
       revalidatePath(ROUTES.DASHBOARD.ADMIN);
+      revalidatePath(ROUTES.ROOT);
       return { success: true, message: "Produk dan file berhasil dihapus!" };
     }
   } catch (error) {

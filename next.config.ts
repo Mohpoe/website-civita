@@ -21,6 +21,12 @@ const nextConfig: NextConfig = {
         hostname: APP_CONFIG.ASSETS.HOST,
         pathname: '/**',
       },
+      {
+        // Testimoni dan logo bisa berasal dari store PUBLIC_BLOB mana pun.
+        protocol: 'https',
+        hostname: '**.public.blob.vercel-storage.com',
+        pathname: '/**',
+      },
     ],
   },
 };

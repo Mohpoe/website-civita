@@ -1,15 +1,17 @@
-import { APP_CONFIG } from '@/lib/constants';
+import { getSiteSettings } from '@/lib/settings';
 import type { MetadataRoute } from 'next';
 
-export default function manifest(): MetadataRoute.Manifest {
+export default async function manifest(): Promise<MetadataRoute.Manifest> {
+  const settings = await getSiteSettings();
+
   return {
-    name: APP_CONFIG.NAME,
-    short_name: APP_CONFIG.NAME,
-    description: `${APP_CONFIG.NAME} - ${APP_CONFIG.TAGLINE}`,
+    name: settings.brandName,
+    short_name: settings.brandName,
+    description: settings.description,
     start_url: '/',
     display: 'standalone',
-    background_color: '#ffffff',
-    theme_color: '#ffffff',
+    background_color: '#faf7f2',
+    theme_color: '#faf7f2',
     icons: [
       {
         src: '/android-chrome-192x192.png',
