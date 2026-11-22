@@ -30,10 +30,17 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
     navMain: [
       {
         title: "Katalog Produk",
-        url: ROUTES.DASHBOARD.HOME,
+        url: ROUTES.PRODUCTS,
         special: hasNewProducts,
         icon: (
           <ShoppingBagIcon />
+        ),
+      },
+      {
+        title: "Katalog Jasa",
+        url: ROUTES.DASHBOARD.SERVICES,
+        icon: (
+          <BriefcaseBusinessIcon />
         ),
       },
       {
@@ -41,13 +48,6 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
         url: ROUTES.DASHBOARD.INVENTORY,
         icon: (
           <PackageIcon />
-        ),
-      },
-      {
-        title: "Pesanan Jasa",
-        url: ROUTES.DASHBOARD.SERVICES,
-        icon: (
-          <BriefcaseBusinessIcon />
         ),
       },
     ],

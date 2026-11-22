@@ -1,9 +1,8 @@
-import { DashboardLink } from "@/components/landing/dashboard-link";
-import { ProductBuyButton } from "@/components/landing/product-buy-button";
 import { ServiceOrderLink } from "@/components/landing/service-order-link";
 import { TestimonialWall } from "@/components/landing/testimonial-wall";
 import { PublicFooter } from "@/components/public-footer";
 import { PublicNavigation } from "@/components/public-header";
+import { ProductCard } from "@/components/products/product-card";
 import { buttonVariants } from "@/components/ui/button";
 import { getProducts } from "@/lib/actions/product";
 import { PDF_TOOLS } from "@/lib/pdf-tools";
@@ -33,7 +32,6 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { SiWhatsapp } from "react-icons/si";
 
@@ -340,9 +338,12 @@ export default async function HomePage() {
                 description="Template terlaris untuk berbagai profesi, tersedia dalam bahasa Indonesia dan Inggris. Beli sekali, pakai berkali-kali."
                 className="max-w-2xl"
               />
-              <DashboardLink className="inline-flex w-max items-center gap-1.5 text-xs font-semibold text-ink underline decoration-2 underline-offset-4 hover:text-coral-deep">
+              <Link
+                href="/produk"
+                className="inline-flex w-max items-center gap-1.5 text-xs font-semibold text-ink underline decoration-2 underline-offset-4 hover:text-coral-deep"
+              >
                 Lihat semua template <ArrowRight className="size-3.5" />
-              </DashboardLink>
+              </Link>
             </div>
 
             {featuredProducts.length === 0 ? (
@@ -367,46 +368,12 @@ export default async function HomePage() {
               </div>
             ) : (
               <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {featuredProducts.map((product) => (
-                  <article
+                {featuredProducts.map((product, index) => (
+                  <ProductCard
                     key={product.id}
-                    className="nb nb-hover flex flex-col overflow-hidden rounded-lg bg-paper"
-                  >
-                    <div className="relative aspect-[4/3] w-full border-b-2 border-ink bg-paper-2">
-                      {product.image_url ? (
-                        <Image
-                          src={product.image_url}
-                          alt={product.title}
-                          fill
-                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-full items-center justify-center">
-                          <FileCheck2 className="size-10 text-ink-soft/50" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex flex-1 flex-col gap-2 p-4">
-                      <span className="text-[10px] font-semibold uppercase tracking-widest text-ink-soft">
-                        {product.category?.name ?? "Template"}
-                      </span>
-                      <h3 className="line-clamp-2 text-sm font-bold leading-snug text-ink">
-                        {product.title}
-                      </h3>
-                      {product.short_desc ? (
-                        <p className="line-clamp-2 text-xs leading-relaxed text-ink-soft">
-                          {product.short_desc}
-                        </p>
-                      ) : null}
-                      <div className="mt-auto flex items-center justify-between gap-3 pt-2">
-                        <span className="text-sm font-bold text-ink">
-                          {formatRupiah(Number(product.price))}
-                        </span>
-                        <ProductBuyButton className="w-auto" />
-                      </div>
-                    </div>
-                  </article>
+                    product={product}
+                    priority={index < 3}
+                  />
                 ))}
               </div>
             )}

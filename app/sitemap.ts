@@ -1,4 +1,5 @@
 import { APP_CONFIG, ROUTES } from '@/lib/constants';
+import { getActiveProducts } from '@/lib/products';
 import type { MetadataRoute } from 'next';
 
 const PAGE_URL = (path: string) =>
@@ -11,7 +12,9 @@ const PAGE_URL = (path: string) =>
  * setiap request, sehingga Google melihat semua halaman "berubah" terus dan
  * sinyal itu jadi tidak berguna.
  */
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const products = await getActiveProducts();
+
   const toolPages = [
     ROUTES.PDF_TOOLS.PDF_TO_WORD,
     ROUTES.PDF_TOOLS.PDF_COMPRESSOR,
@@ -27,6 +30,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly',
       priority: 1,
     },
+    {
+      url: PAGE_URL(ROUTES.PRODUCTS),
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    ...products.map((product) => ({
+      url: PAGE_URL(`${ROUTES.PRODUCTS}/${product.slug || product.id}`),
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    })),
     ...toolPages.map((path) => ({
       url: PAGE_URL(path),
       changeFrequency: 'monthly' as const,

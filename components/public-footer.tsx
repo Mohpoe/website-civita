@@ -14,7 +14,7 @@ const SERVICE_LINKS = [
   { label: "Resume ATS", href: "/#layanan" },
   { label: "Surat Lamaran", href: "/#layanan" },
   { label: "Cover Letter", href: "/#layanan" },
-  { label: "Template Digital", href: "/#produk" },
+  { label: "Template Digital", href: "/produk" },
 ];
 
 export function PublicFooter() {

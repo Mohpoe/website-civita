@@ -58,6 +58,12 @@ export interface Product {
   is_active: boolean;
   created_at: string;
   file_url: string;
+  /** Alamat publik, dibuat otomatis dari judul dan boleh disesuaikan admin. */
+  slug?: string | null;
+  /** Keterangan format berkas, misalnya "PDF" atau "DOCX + PDF". */
+  file_format?: string | null;
+  /** Keterangan ukuran berkas, misalnya "2.4 MB". */
+  file_size?: string | null;
   category?: Category;
 }
 

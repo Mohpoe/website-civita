@@ -50,6 +50,7 @@ export const APP_CONFIG = {
 
 export const ROUTES = {
   ROOT: "/",
+  PRODUCTS: "/produk",
   TERMS: "/terms-of-service",
   POLICY: "/privacy-policy",
   DASHBOARD: {
@@ -80,7 +81,7 @@ export const ROUTES = {
 export const PUBLIC_NAV_LINKS = [
   { label: "Beranda", href: ROUTES.ROOT },
   { label: "Layanan", href: "/#layanan" },
-  { label: "Template", href: "/#produk" },
+  { label: "Produk", href: ROUTES.PRODUCTS },
   { label: "Alat PDF", href: "/#tools" },
   { label: "Testimoni", href: "/#testimoni" },
 ] as const;

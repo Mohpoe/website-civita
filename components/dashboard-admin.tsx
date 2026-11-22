@@ -110,20 +110,26 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
   // Form state untuk mempertahankan input saat terjadi error (tidak direset)
   const [formData, setFormData] = useState<{
     title: string;
+    slug: string;
     price: string;
     isActive: boolean;
     category: string;
     shortDesc: string;
     longDesc: string;
     features: string;
+    fileFormat: string;
+    fileSize: string;
   }>({
     title: "",
+    slug: "",
     price: "",
     isActive: true,
     category: "",
     shortDesc: "",
     longDesc: "",
     features: "",
+    fileFormat: "",
+    fileSize: "",
   });
   const [formError, setFormError] = useState<string | null>(null);
   // Lepaskan object URL preview lama supaya memori tidak bocor saat ganti thumbnail/dialog ditutup
@@ -142,12 +148,15 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
     setUploadProgress(0);
     setFormData({
       title: "",
+      slug: "",
       price: "",
       isActive: true,
       category: "",
       shortDesc: "",
       longDesc: "",
       features: "",
+      fileFormat: "",
+      fileSize: "",
     });
     setFormError(null);
   };
@@ -161,12 +170,15 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
       setProductToUpdate(null);
       setFormData({
         title: "",
+        slug: "",
         price: "",
         isActive: true,
         category: "",
         shortDesc: "",
         longDesc: "",
         features: "",
+        fileFormat: "",
+        fileSize: "",
       });
       setFormError(null);
       toast.add({
@@ -190,6 +202,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
       // eslint-disable-next-line react-hooks/set-state-in-effect -- mengisi form sekali saat dialog edit dibuka
       setFormData({
         title: productToUpdate.title,
+        slug: productToUpdate.slug || "",
         price: String(productToUpdate.price),
         isActive: productToUpdate.is_active,
         category: productToUpdate.category_id || "",
@@ -198,6 +211,8 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
         features: Array.isArray(productToUpdate.features)
           ? productToUpdate.features.join("\n")
           : "",
+        fileFormat: productToUpdate.file_format || "",
+        fileSize: productToUpdate.file_size || "",
       });
       setImagePreview(productToUpdate.image_url || null);
       setFormError(null);
@@ -1111,12 +1126,15 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
               setUploadProgress(0);
               setFormData({
                 title: "",
+                slug: "",
                 price: "",
                 isActive: true,
                 category: "",
                 shortDesc: "",
                 longDesc: "",
                 features: "",
+                fileFormat: "",
+                fileSize: "",
               });
               setFormError(null);
             }
@@ -1253,6 +1271,26 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                   }
 
                   {
+                    // #region Alamat Halaman
+                    <Field>
+                      <Label htmlFor="slug">Alamat Halaman</Label>
+                      <Input
+                        id="slug"
+                        name="slug"
+                        placeholder="otomatis-dari-nama-produk"
+                        value={formData.slug}
+                        onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                        maxLength={120}
+                        disabled={upsertIsPending || isUploadingFile}
+                      />
+                      <FieldDescription className="text-xs">
+                        Bagian alamat setelah /produk/. Kosongkan agar dibuat otomatis dari nama produk.
+                      </FieldDescription>
+                    </Field>
+                    // #endregion
+                  }
+
+                  {
                     // #region Harga & Status
                     <FieldGroup className="grid md:grid-cols-2 gap-4">
                       <Field>
@@ -1366,6 +1404,37 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                       />
                       <FieldDescription className="text-xs">Pisahkan dengan Enter</FieldDescription>
                     </Field>
+                    // #endregion
+                  }
+
+                  {
+                    // #region Info Berkas (opsional)
+                    <FieldGroup className="grid md:grid-cols-2 gap-4">
+                      <Field>
+                        <FieldLabel htmlFor="fileFormat">Format Berkas</FieldLabel>
+                        <Input
+                          id="fileFormat"
+                          name="fileFormat"
+                          placeholder="Misalnya PDF atau DOCX + PDF"
+                          value={formData.fileFormat}
+                          onChange={(e) => setFormData({ ...formData, fileFormat: e.target.value })}
+                          maxLength={40}
+                          disabled={upsertIsPending || isUploadingFile}
+                        />
+                      </Field>
+                      <Field>
+                        <FieldLabel htmlFor="fileSize">Ukuran Berkas</FieldLabel>
+                        <Input
+                          id="fileSize"
+                          name="fileSize"
+                          placeholder="Misalnya 2.4 MB"
+                          value={formData.fileSize}
+                          onChange={(e) => setFormData({ ...formData, fileSize: e.target.value })}
+                          maxLength={40}
+                          disabled={upsertIsPending || isUploadingFile}
+                        />
+                      </Field>
+                    </FieldGroup>
                     // #endregion
                   }
 

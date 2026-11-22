@@ -2,6 +2,7 @@
 
 import { ROUTES } from "@/lib/constants";
 import { SERVICES_TAG } from "@/lib/service-catalog";
+import { slugify } from "@/lib/slug";
 import { getServiceAccess } from "@/lib/service-access";
 import { sql } from "@/lib/utils";
 import type { ActionState, Service, ServiceOrder } from "@/types/global";
@@ -32,15 +33,6 @@ function isPrivateBlobUrl(value: string): boolean {
   } catch {
     return false;
   }
-}
-
-function slugify(value: string): string {
-  return value
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 80);
 }
 
 async function requireRole(roles: string[]): Promise<{ ok: true; userId: string; role: string } | { ok: false }> {
@@ -118,7 +110,7 @@ export async function upsertServiceAction(
     return { success: false, message: "Pilih minimal satu bahasa." };
   }
 
-  const slug = slugify(text(formData, "slug", 80) || name);
+  const slug = slugify(text(formData, "slug", 80) || name, 80);
   if (!slug) {
     return { success: false, message: "Kode layanan tidak valid." };
   }

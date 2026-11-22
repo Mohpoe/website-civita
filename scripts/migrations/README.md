@@ -7,6 +7,7 @@ selalu di branch development lebih dulu, lalu di production.
 | --- | --- |
 | `001_site_settings_testimonials.sql` | Tabel `site_settings` + `testimonials` (identitas situs & testimoni landing page). |
 | `002_services_orders_chat.sql` | Tabel `services`, `service_orders`, `service_messages` + seed 8 layanan jasa. |
+| `003_product_catalog.sql` | Kolom `slug`, `file_format`, `file_size` pada `products` + isi slug produk lama dan unique index. |
 
 ## Menjalankan di development
 

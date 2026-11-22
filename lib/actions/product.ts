@@ -1,15 +1,51 @@
 "use server";
 
 import { ROUTES } from "@/lib/constants";
+import { PRODUCTS_TAG } from "@/lib/products";
+import { slugify } from "@/lib/slug";
 import { isSupportedThumbnail, sanitizeFileName, sql } from "@/lib/utils";
 import { productSchema } from "@/lib/zod-schemas";
 import { Product, ActionState } from "@/types/global";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { copy, del, putImage } from "@vercel/blob";
 import { randomUUID } from "crypto";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 const allowedRoles = ["admin", "superadmin"];
+
+/**
+ * Cari alamat produk yang belum dipakai.
+ *
+ * Slug dari admin dipakai apa adanya; kalau kosong, dibuat dari judul. Saat
+ * bentrok, tambahkan -2, -3, dan seterusnya supaya alamat tetap unik.
+ */
+async function ensureUniqueProductSlug(
+  base: string,
+  excludeId?: string,
+): Promise<string> {
+  const root = slugify(base, 120) || `produk-${Date.now().toString(36)}`;
+  let candidate = root;
+  let suffix = 1;
+
+  while (true) {
+    const rows = excludeId
+      ? await sql`SELECT id FROM products WHERE slug = ${candidate} AND id <> ${excludeId} LIMIT 1`
+      : await sql`SELECT id FROM products WHERE slug = ${candidate} LIMIT 1`;
+
+    if (rows.length === 0) return candidate;
+
+    suffix += 1;
+    candidate = `${root}-${suffix}`;
+  }
+}
+
+/** Segarkan katalog publik dan halaman detail setelah produk berubah. */
+function revalidateProductPages(slug?: string | null) {
+  revalidateTag(PRODUCTS_TAG, { expire: 0 });
+  revalidatePath(ROUTES.PRODUCTS);
+  revalidatePath(ROUTES.ROOT);
+  if (slug) revalidatePath(`${ROUTES.PRODUCTS}/${slug}`);
+}
 
 // #region Get Products
 export async function getProducts(isActive = false): Promise<Product[]> {
@@ -107,8 +143,13 @@ export async function upsertProductAction(state: ActionState | null, formData: F
   const finalFileUrl = formData.get("finalFileUrl") as string;
   // #endregion
 
+  const requestedSlug = String(formData.get("slug") ?? "").trim();
+  const requestedFormat = String(formData.get("fileFormat") ?? "").trim();
+  const requestedSize = String(formData.get("fileSize") ?? "").trim();
+
   const rawData = {
     title: formData.get("title"),
+    slug: requestedSlug,
     price: formData.get("price"),
     isActive: formData.get("isActive") === "on",
     categoryId: formData.get("category"),
@@ -116,6 +157,8 @@ export async function upsertProductAction(state: ActionState | null, formData: F
     longDesc: formData.get("longDesc"),
     imageUrl: finalImageUrl,
     fileUrl: finalFileUrl,
+    fileFormat: requestedFormat,
+    fileSize: requestedSize,
     features: featuresArray,
   };
 
@@ -127,7 +170,21 @@ export async function upsertProductAction(state: ActionState | null, formData: F
     return { success: false, message: `Validasi gagal: ${errorMessages}` };
   }
 
-  const { title, price, isActive, categoryId, shortDesc, longDesc, imageUrl, fileUrl, features } = validated.data;
+  const {
+    title,
+    price,
+    isActive,
+    categoryId,
+    shortDesc,
+    longDesc,
+    imageUrl,
+    fileUrl,
+    features,
+    slug: validatedSlug,
+    fileFormat,
+    fileSize,
+  } = validated.data;
+  const slug = await ensureUniqueProductSlug(validatedSlug || title, id || undefined);
   const featuresJson = JSON.stringify(features);
   let productSaved = false;
 
@@ -137,6 +194,7 @@ export async function upsertProductAction(state: ActionState | null, formData: F
       await sql`
         UPDATE products
         SET title = ${title},
+          slug = ${slug},
           price = ${price},
           is_active = ${isActive},
           category_id = ${categoryId},
@@ -144,7 +202,9 @@ export async function upsertProductAction(state: ActionState | null, formData: F
           long_desc = ${longDesc},
           features = ${featuresJson}::jsonb,
           image_url = ${imageUrl},
-          file_url = ${fileUrl}
+          file_url = ${fileUrl},
+          file_format = ${fileFormat || null},
+          file_size = ${fileSize || null}
         WHERE id = ${id}
       `;
     } else {
@@ -152,11 +212,13 @@ export async function upsertProductAction(state: ActionState | null, formData: F
       const newId = `prod_${randomUUID().substring(0, 8)}`;
       await sql`
         INSERT INTO products (
-          id, title, price, is_active, category_id,
-          short_desc, long_desc, features, image_url, file_url
+          id, title, slug, price, is_active, category_id,
+          short_desc, long_desc, features, image_url, file_url,
+          file_format, file_size
         ) VALUES (
-          ${newId}, ${title}, ${price}, ${isActive}, ${categoryId},
-          ${shortDesc}, ${longDesc}, ${featuresJson}::jsonb, ${imageUrl}, ${fileUrl}
+          ${newId}, ${title}, ${slug}, ${price}, ${isActive}, ${categoryId},
+          ${shortDesc}, ${longDesc}, ${featuresJson}::jsonb, ${imageUrl}, ${fileUrl},
+          ${fileFormat || null}, ${fileSize || null}
         )
       `;
     }
@@ -191,10 +253,10 @@ export async function upsertProductAction(state: ActionState | null, formData: F
     }
     // #endregion
 
+    revalidateProductPages(slug);
     revalidatePath(ROUTES.DASHBOARD.HOME);
     revalidatePath(ROUTES.DASHBOARD.INVENTORY);
     revalidatePath(ROUTES.DASHBOARD.ADMIN);
-    revalidatePath(ROUTES.ROOT);
     return { success: true, message: "Data produk berhasil disimpan!" };
   } catch (error) {
     console.error("Error upserting product:", error);
@@ -304,10 +366,10 @@ export async function deleteProductAction(formData: FormData) {
         WHERE product_id = ${id}
       `;
 
+      revalidateProductPages(product.slug ?? product.id);
       revalidatePath(ROUTES.DASHBOARD.HOME);
       revalidatePath(ROUTES.DASHBOARD.INVENTORY);
       revalidatePath(ROUTES.DASHBOARD.ADMIN);
-      revalidatePath(ROUTES.ROOT);
       return {
         success: true,
         message: `Produk dipindahkan ke arsip karena memiliki ${orderCount} transaksi. Data transaksi tetap aman.`,
@@ -341,10 +403,10 @@ export async function deleteProductAction(formData: FormData) {
 
       await sql`DELETE FROM products WHERE id = ${id}`;
 
+      revalidateProductPages(product.slug ?? product.id);
       revalidatePath(ROUTES.DASHBOARD.HOME);
       revalidatePath(ROUTES.DASHBOARD.INVENTORY);
       revalidatePath(ROUTES.DASHBOARD.ADMIN);
-      revalidatePath(ROUTES.ROOT);
       return { success: true, message: "Produk dan berkas berhasil dihapus." };
     }
   } catch (error) {
