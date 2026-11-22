@@ -201,7 +201,7 @@ export default async function HomePage() {
                   <SiWhatsapp className="mr-2 size-4" /> Konsultasi gratis
                 </a>
                 <Link
-                  href="/#layanan"
+                  href="/jasa"
                   className={cn(
                     buttonVariants({ variant: "outline" }),
                     "nb-sm nb-press h-11 border-2 border-ink bg-paper px-5 text-sm font-semibold text-ink hover:bg-paper-2",
