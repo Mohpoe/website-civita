@@ -20,10 +20,17 @@ export default async function NewServiceOrderPage({
 }: {
   searchParams: Promise<{ service?: string }>;
 }) {
-  const user = await currentUser();
-  if (!user) redirect("/");
-
   const [params, services] = await Promise.all([searchParams, getActiveServices()]);
+
+  const user = await currentUser();
+  if (!user) {
+    // Kembalikan ke detail layanan supaya pengunjung bisa masuk lewat tombol pesan.
+    redirect(
+      params.service
+        ? `${ROUTES.SERVICES}/${params.service}`
+        : ROUTES.SERVICES,
+    );
+  }
 
   return (
     <>
@@ -35,8 +42,8 @@ export default async function NewServiceOrderPage({
           <p className="text-sm text-muted-foreground">
             Katalog sedang disiapkan. Sementara itu, hubungi admin lewat WhatsApp.
           </p>
-          <Link href={ROUTES.DASHBOARD.SERVICES} className={cn(buttonVariants({ variant: "outline" }))}>
-            Kembali ke pesanan
+          <Link href={ROUTES.SERVICES} className={cn(buttonVariants({ variant: "outline" }))}>
+            Lihat katalog jasa
           </Link>
         </div>
       ) : (

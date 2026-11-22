@@ -50,6 +50,8 @@ async function requireRole(roles: string[]): Promise<{ ok: true; userId: string;
 function revalidateServices() {
   revalidateTag(SERVICES_TAG, { expire: 0 });
   revalidatePath(ROUTES.ROOT);
+  revalidatePath(ROUTES.SERVICES);
+  revalidatePath(`${ROUTES.SERVICES}/[slug]`, "page");
   revalidatePath(ROUTES.DASHBOARD.SERVICES);
   revalidatePath(ROUTES.DASHBOARD.ADMIN_SERVICES);
   revalidatePath(ROUTES.DASHBOARD.SERVICE_CATALOG);

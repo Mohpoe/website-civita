@@ -1,5 +1,6 @@
 import { APP_CONFIG, ROUTES } from '@/lib/constants';
 import { getActiveProducts } from '@/lib/products';
+import { getActiveServices } from '@/lib/service-catalog';
 import type { MetadataRoute } from 'next';
 
 const PAGE_URL = (path: string) =>
@@ -13,7 +14,10 @@ const PAGE_URL = (path: string) =>
  * sinyal itu jadi tidak berguna.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const products = await getActiveProducts();
+  const [products, services] = await Promise.all([
+    getActiveProducts(),
+    getActiveServices(),
+  ]);
 
   const toolPages = [
     ROUTES.PDF_TOOLS.PDF_TO_WORD,
@@ -37,6 +41,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     ...products.map((product) => ({
       url: PAGE_URL(`${ROUTES.PRODUCTS}/${product.slug || product.id}`),
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    })),
+    {
+      url: PAGE_URL(ROUTES.SERVICES),
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    ...services.map((service) => ({
+      url: PAGE_URL(`${ROUTES.SERVICES}/${service.slug}`),
       changeFrequency: 'weekly' as const,
       priority: 0.8,
     })),

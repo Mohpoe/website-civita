@@ -96,7 +96,7 @@ export function ServiceOrderList({
 
             {viewer === "user" ? (
               <Link
-                href={`${ROUTES.DASHBOARD.SERVICES}/new`}
+                href={ROUTES.SERVICES}
                 className={cn(buttonVariants({ variant: "default" }), "shrink-0")}
               >
                 <PlusIcon className="size-4" /> Pesan layanan
@@ -140,7 +140,7 @@ export function ServiceOrderList({
               </div>
               {viewer === "user" && orders.length === 0 ? (
                 <Link
-                  href={`${ROUTES.DASHBOARD.SERVICES}/new`}
+                  href={ROUTES.SERVICES}
                   className={cn(buttonVariants({ variant: "outline" }))}
                 >
                   <PlusIcon className="size-4" /> Pesan sekarang

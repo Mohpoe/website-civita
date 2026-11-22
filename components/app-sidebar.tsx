@@ -38,7 +38,7 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
       },
       {
         title: "Katalog Jasa",
-        url: ROUTES.DASHBOARD.SERVICES,
+        url: ROUTES.SERVICES,
         icon: (
           <BriefcaseBusinessIcon />
         ),
@@ -48,6 +48,13 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
         url: ROUTES.DASHBOARD.INVENTORY,
         icon: (
           <PackageIcon />
+        ),
+      },
+      {
+        title: "Pesanan Jasa",
+        url: ROUTES.DASHBOARD.SERVICES,
+        icon: (
+          <InboxIcon />
         ),
       },
     ],

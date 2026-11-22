@@ -10,10 +10,11 @@ import { SiInstagram as Instagram, SiWhatsapp } from "react-icons/si";
 import { TfiLinkedin } from "react-icons/tfi";
 
 const SERVICE_LINKS = [
-  { label: "CV ATS Friendly", href: "/#layanan" },
-  { label: "Resume ATS", href: "/#layanan" },
-  { label: "Surat Lamaran", href: "/#layanan" },
-  { label: "Cover Letter", href: "/#layanan" },
+  { label: "Semua Jasa", href: "/jasa" },
+  { label: "CV ATS Friendly", href: "/jasa/cv-ats" },
+  { label: "Resume ATS", href: "/jasa/resume-ats" },
+  { label: "Surat Lamaran", href: "/jasa/surat-lamaran" },
+  { label: "Cover Letter", href: "/jasa/cover-letter" },
   { label: "Template Digital", href: "/produk" },
 ];
 

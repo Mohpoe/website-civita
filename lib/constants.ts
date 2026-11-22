@@ -51,6 +51,7 @@ export const APP_CONFIG = {
 export const ROUTES = {
   ROOT: "/",
   PRODUCTS: "/produk",
+  SERVICES: "/jasa",
   TERMS: "/terms-of-service",
   POLICY: "/privacy-policy",
   DASHBOARD: {
@@ -80,7 +81,7 @@ export const ROUTES = {
 /** Menu utama yang dipakai bersama oleh navbar desktop dan drawer mobile. */
 export const PUBLIC_NAV_LINKS = [
   { label: "Beranda", href: ROUTES.ROOT },
-  { label: "Layanan", href: "/#layanan" },
+  { label: "Layanan", href: ROUTES.SERVICES },
   { label: "Produk", href: ROUTES.PRODUCTS },
   { label: "Alat PDF", href: "/#tools" },
   { label: "Testimoni", href: "/#testimoni" },

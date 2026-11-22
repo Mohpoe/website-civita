@@ -249,11 +249,20 @@ export default async function HomePage() {
         {/* ------------------------------------------------------------ Layanan */}
         <section id="layanan" className="scroll-mt-24 bg-paper px-4 py-14 sm:px-6 md:py-20">
           <div className="mx-auto max-w-6xl">
-            <SectionHeading
-              eyebrow="Layanan"
-              title="Berkas lamaran yang siap di-screening HR."
-              description="Pilih satu berkas atau paket lengkap. Semua disusun custom dari riwayat pendidikan, pengalaman, dan pencapaianmu."
-            />
+            <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+              <SectionHeading
+                eyebrow="Layanan"
+                title="Berkas lamaran yang siap di-screening HR."
+                description="Pilih satu berkas atau paket lengkap. Semua disusun custom dari riwayat pendidikan, pengalaman, dan pencapaianmu."
+                className="max-w-2xl"
+              />
+              <Link
+                href="/jasa"
+                className="inline-flex w-max items-center gap-1.5 text-xs font-semibold text-ink underline decoration-2 underline-offset-4 hover:text-coral-deep"
+              >
+                Lihat semua jasa <ArrowRight className="size-3.5" />
+              </Link>
+            </div>
 
             <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 md:gap-4">
               {serviceCards.map((service) => {
@@ -290,7 +299,7 @@ export default async function HomePage() {
                             {formatRupiah(service.price)}
                           </span>
                           <ServiceOrderLink slug={service.slug}>
-                            Pesan <ArrowRight className="ml-1 size-3.5" />
+                            Lihat detail <ArrowRight className="ml-1 size-3.5" />
                           </ServiceOrderLink>
                         </>
                       ) : (
