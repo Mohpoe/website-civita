@@ -5,21 +5,64 @@ import { unstable_cache } from "next/cache";
 /** Tag revalidasi katalog layanan; dipakai server action setelah superadmin menyimpan. */
 export const SERVICES_TAG = "services";
 
-interface ServiceRow extends Omit<Service, "languages"> {
+export interface ServiceRow {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  price: number | string;
+  prices?: unknown;
   languages: unknown;
+  is_active: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
 }
 
-/** `languages` disimpan sebagai jsonb; pastikan selalu berupa array string. */
-function normalizeService(row: ServiceRow): Service {
+/**
+ * `languages` dan `prices` disimpan sebagai jsonb. Data lama (sebelum migrasi
+ * 004) hanya punya `price`, jadi harga per bahasa diisi dari harga tunggal itu.
+ */
+export function normalizeService(row: ServiceRow): Service {
   const languages = Array.isArray(row.languages)
     ? row.languages.filter((item): item is string => typeof item === "string")
     : [];
 
+  const prices: Record<string, number> = {};
+  if (row.prices && typeof row.prices === "object" && !Array.isArray(row.prices)) {
+    for (const [code, value] of Object.entries(row.prices as Record<string, unknown>)) {
+      const amount = Number(value);
+      if (Number.isFinite(amount) && amount >= 0) {
+        prices[code] = Math.round(amount);
+      }
+    }
+  }
+
+  const fallback = Math.round(Number(row.price) || 0);
+  const activeLanguages = languages.length > 0 ? languages : ["id"];
+  for (const code of activeLanguages) {
+    if (!prices[code]) prices[code] = fallback;
+  }
+
+  const enabledPrices = activeLanguages
+    .map((code) => prices[code])
+    .filter((amount) => Number.isFinite(amount) && amount > 0);
+
   return {
     ...row,
-    price: Number(row.price),
-    languages: languages.length > 0 ? languages : ["id"],
+    price: enabledPrices.length > 0 ? Math.min(...enabledPrices) : fallback,
+    prices,
+    languages: activeLanguages,
   };
+}
+
+/** Harga yang benar-benar ditagihkan untuk bahasa yang dipilih klien. */
+export function servicePriceForLanguage(
+  service: Pick<Service, "price" | "prices">,
+  language: string,
+): number {
+  const amount = Number(service.prices?.[language] ?? service.price);
+  return Number.isFinite(amount) ? amount : 0;
 }
 
 /**
@@ -30,14 +73,14 @@ export async function readServices(onlyActive = false): Promise<Service[]> {
   try {
     const rows = (onlyActive
       ? await sql`
-          SELECT id, slug, name, description, price, languages,
+          SELECT id, slug, name, description, price, prices, languages,
                  is_active, sort_order, created_at, updated_at
           FROM services
           WHERE is_active = true
           ORDER BY sort_order ASC, name ASC
         `
       : await sql`
-          SELECT id, slug, name, description, price, languages,
+          SELECT id, slug, name, description, price, prices, languages,
                  is_active, sort_order, created_at, updated_at
           FROM services
           ORDER BY sort_order ASC, name ASC
@@ -67,7 +110,7 @@ export async function getServiceBySlug(slug: string): Promise<Service | null> {
 
   try {
     const rows = (await sql`
-      SELECT id, slug, name, description, price, languages,
+      SELECT id, slug, name, description, price, prices, languages,
              is_active, sort_order, created_at, updated_at
       FROM services
       WHERE slug = ${slug} AND is_active = true
@@ -87,7 +130,7 @@ export async function getServiceById(id: string): Promise<Service | null> {
 
   try {
     const rows = (await sql`
-      SELECT id, slug, name, description, price, languages,
+      SELECT id, slug, name, description, price, prices, languages,
              is_active, sort_order, created_at, updated_at
       FROM services
       WHERE id = ${id} AND is_active = true

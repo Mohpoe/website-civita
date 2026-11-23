@@ -31,6 +31,13 @@ export function ServiceCard({ service }: { service: Service }) {
       ? visual.tags
       : service.languages.map((code) => code.toUpperCase());
 
+  const distinctPrices = new Set(
+    service.languages
+      .map((code) => service.prices[code])
+      .filter((amount) => Number.isFinite(amount) && amount > 0),
+  );
+  const hasMultiplePrices = distinctPrices.size > 1;
+
   return (
     <Link
       href={servicePath(service)}
@@ -66,8 +73,15 @@ export function ServiceCard({ service }: { service: Service }) {
       ) : null}
 
       <div className="mt-3 flex items-end justify-between gap-2 border-t border-ink/10 pt-3">
-        <span className="text-sm font-bold text-ink">
-          {formatRupiah(service.price)}
+        <span className="flex flex-col">
+          {hasMultiplePrices ? (
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-soft">
+              Mulai dari
+            </span>
+          ) : null}
+          <span className="text-sm font-bold text-ink">
+            {formatRupiah(service.price)}
+          </span>
         </span>
         <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-ink underline decoration-2 underline-offset-4 group-hover:text-coral-deep">
           Lihat detail

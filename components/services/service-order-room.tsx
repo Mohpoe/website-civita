@@ -2,13 +2,33 @@
 
 import { ServiceResultPanel } from "@/components/services/service-result-panel";
 import { ServiceStatusBadge } from "@/components/services/service-status-badge";
+import {
+  Attachment,
+  AttachmentAction,
+  AttachmentActions,
+  AttachmentContent,
+  AttachmentDescription,
+  AttachmentMedia,
+  AttachmentTitle,
+} from "@/components/ui/attachment";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Bubble, BubbleContent } from "@/components/ui/bubble";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupTextarea } from "@/components/ui/input-group";
+import {
+  Message,
+  MessageAvatar,
+  MessageContent,
+  MessageFooter,
+  MessageGroup,
+  MessageHeader,
+} from "@/components/ui/message";
 import { toast } from "@/components/ui/toast";
-import type { ServiceMessage, ServiceOrder } from "@/types/global";
+import type { ServiceAttachment, ServiceMessage, ServiceOrder } from "@/types/global";
 import { ROUTES } from "@/lib/constants";
-import { cn, formatRupiah } from "@/lib/utils";
+import { cn, formatFileSize, formatRupiah, sanitizeFileName } from "@/lib/utils";
+import { uploadPresigned } from "@vercel/blob/client";
 import {
   CheckCircle2Icon,
   CreditCardIcon,
@@ -19,6 +39,8 @@ import {
   MessageSquareIcon,
   PaperclipIcon,
   SendIcon,
+  UploadCloudIcon,
+  XIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -27,8 +49,17 @@ import { useEffect, useRef, useState } from "react";
 interface ServiceOrderRoomProps {
   order: ServiceOrder;
   initialMessages: ServiceMessage[];
+  attachments: ServiceAttachment[];
   viewer: "user" | "admin";
 }
+
+interface PendingChatFile {
+  name: string;
+  size: number;
+  url: string;
+}
+
+const MAX_CHAT_FILE_SIZE = 15 * 1024 * 1024;
 
 function formatDateTime(value: string): string {
   try {
@@ -54,13 +85,33 @@ function formatTime(value: string): string {
   }
 }
 
-export function ServiceOrderRoom({ order, initialMessages, viewer }: ServiceOrderRoomProps) {
+function languageName(code: string): string {
+  if (code === "en") return "English";
+  if (code === "id") return "Bahasa Indonesia";
+  return code.toUpperCase();
+}
+
+function whatsappHref(value: string): string {
+  const digits = value.replace(/\D/g, "");
+  return digits ? `https://wa.me/${digits}` : "";
+}
+
+export function ServiceOrderRoom({
+  order,
+  initialMessages,
+  attachments,
+  viewer,
+}: ServiceOrderRoomProps) {
   const router = useRouter();
   const [messages, setMessages] = useState<ServiceMessage[]>(initialMessages);
   const [body, setBody] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [isPaying, setIsPaying] = useState(false);
+  const [chatFile, setChatFile] = useState<PendingChatFile | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const lastCountRef = useRef(initialMessages.length);
   const isAdmin = viewer === "admin";
 
@@ -104,9 +155,41 @@ export function ServiceOrderRoom({ order, initialMessages, viewer }: ServiceOrde
     if (element) element.scrollTop = element.scrollHeight;
   }, [messages.length]);
 
+  const uploadChatFile = async (file: File) => {
+    if (file.size > MAX_CHAT_FILE_SIZE) {
+      toast.add({ type: "error", description: "Ukuran berkas maksimal 15 MB." });
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    try {
+      const blob = await uploadPresigned(
+        `service-chat/${sanitizeFileName(file.name)}`,
+        file,
+        {
+          access: "private",
+          handleUploadUrl: "/api/upload/service",
+          onUploadProgress: (event) => {
+            setUploadProgress(Math.round((event.loaded / Math.max(event.total, 1)) * 100));
+          },
+        },
+      );
+
+      setChatFile({ name: file.name, size: file.size, url: blob.url });
+    } catch (error) {
+      console.error(error);
+      toast.add({ type: "error", description: "Gagal mengunggah lampiran. Coba lagi." });
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   const sendMessage = async () => {
     const text = body.trim();
-    if (!text || isSending) return;
+    if ((!text && !chatFile) || isSending || isUploading) return;
 
     setIsSending(true);
     try {
@@ -115,7 +198,12 @@ export function ServiceOrderRoom({ order, initialMessages, viewer }: ServiceOrde
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ body: text }),
+          body: JSON.stringify({
+            body: text,
+            attachment: chatFile
+              ? { url: chatFile.url, name: chatFile.name, size: chatFile.size }
+              : undefined,
+          }),
         },
       );
 
@@ -132,6 +220,7 @@ export function ServiceOrderRoom({ order, initialMessages, viewer }: ServiceOrde
       setMessages((previous) => [...previous, data.message as ServiceMessage]);
       lastCountRef.current += 1;
       setBody("");
+      setChatFile(null);
     } catch {
       toast.add({ type: "error", description: "Gagal mengirim pesan. Periksa koneksi." });
     } finally {
@@ -181,6 +270,7 @@ export function ServiceOrderRoom({ order, initialMessages, viewer }: ServiceOrde
 
   const isPending = order.status === "pending" || order.status === "challenge";
   const hasResult = order.status === "success" && !!order.result_file_url;
+  const waHref = order.whatsapp ? whatsappHref(order.whatsapp) : "";
 
   return (
     <div className="flex flex-col gap-4 md:gap-6">
@@ -207,7 +297,7 @@ export function ServiceOrderRoom({ order, initialMessages, viewer }: ServiceOrde
               <div className="rounded-lg border bg-muted/30 p-3">
                 <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Bahasa</p>
                 <p className="mt-1 inline-flex items-center gap-1.5 font-semibold">
-                  <LanguagesIcon className="size-4" /> {order.language.toUpperCase()}
+                  <LanguagesIcon className="size-4" /> {languageName(order.language)}
                 </p>
               </div>
               <div className="rounded-lg border bg-muted/30 p-3">
@@ -236,16 +326,56 @@ export function ServiceOrderRoom({ order, initialMessages, viewer }: ServiceOrde
               </div>
             ) : null}
 
-            <div className="flex flex-wrap gap-2">
-              {order.source_file_url ? (
+            <div>
+              <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Lampiran klien
+              </p>
+              {attachments.length > 0 ? (
+                <div className="flex flex-col gap-2">
+                  {attachments.map((attachment) => (
+                    <Attachment key={attachment.id} size="sm" className="w-full">
+                      <AttachmentMedia>
+                        <FileTextIcon />
+                      </AttachmentMedia>
+                      <AttachmentContent>
+                        <AttachmentTitle>
+                          {attachment.file_name || "Lampiran"}
+                        </AttachmentTitle>
+                        <AttachmentDescription>
+                          {formatFileSize(attachment.file_size ?? 0) || "Berkas pendukung"}
+                        </AttachmentDescription>
+                      </AttachmentContent>
+                      <AttachmentActions>
+                        <AttachmentAction
+                          nativeButton={false}
+                          render={
+                            <a
+                              href={`/api/download/service?orderId=${encodeURIComponent(order.order_id)}&attachmentId=${encodeURIComponent(attachment.id)}`}
+                              aria-label={`Unduh ${attachment.file_name || "lampiran"}`}
+                            />
+                          }
+                        >
+                          <DownloadIcon />
+                        </AttachmentAction>
+                      </AttachmentActions>
+                    </Attachment>
+                  ))}
+                </div>
+              ) : order.source_file_url ? (
                 <a
                   href={`/api/download/service?orderId=${encodeURIComponent(order.order_id)}&file=source`}
                   className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
                 >
                   <PaperclipIcon className="size-3.5" /> Lampiran klien
                 </a>
-              ) : null}
+              ) : (
+                <p className="rounded-lg border border-dashed px-3 py-2 text-xs text-muted-foreground">
+                  Tidak ada lampiran. Berkas tambahan bisa dikirim lewat chat di bawah.
+                </p>
+              )}
+            </div>
 
+            <div className="flex flex-wrap gap-2">
               {hasResult ? (
                 <a
                   href={`/api/download/service?orderId=${encodeURIComponent(order.order_id)}`}
@@ -298,12 +428,42 @@ export function ServiceOrderRoom({ order, initialMessages, viewer }: ServiceOrde
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <MessageSquareIcon className="size-5" /> Chat dengan {isAdmin ? "klien" : "admin"}
+                <MessageSquareIcon className="size-5" />
+                {isAdmin ? "Kontak klien" : "Butuh bantuan?"}
               </CardTitle>
               <CardDescription>
-                Balasan muncul otomatis dalam beberapa detik. WhatsApp tetap tersedia sebagai cadangan.
+                {isAdmin
+                  ? "Hubungi klien lewat chat di bawah atau WhatsApp jika mendesak."
+                  : "Gunakan ruang obrolan di bawah untuk bertanya progres, revisi, atau detail tambahan."}
               </CardDescription>
             </CardHeader>
+            <CardContent className="flex flex-col gap-3 text-sm">
+              {order.email ? (
+                <p className="truncate text-muted-foreground">
+                  Email: <span className="text-foreground">{order.email}</span>
+                </p>
+              ) : null}
+
+              {order.whatsapp ? (
+                <a
+                  href={waHref}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={cn(buttonVariants({ variant: "outline", size: "sm" }), "w-fit")}
+                >
+                  <MessageSquareIcon className="size-3.5" /> WhatsApp {order.whatsapp}
+                </a>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Nomor WhatsApp tidak tersedia untuk pesanan ini.
+                </p>
+              )}
+
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                Balasan chat muncul otomatis dalam beberapa detik. Berkas tambahan bisa
+                dilampirkan langsung di ruang obrolan.
+              </p>
+            </CardContent>
           </Card>
         </div>
       </div>
@@ -316,49 +476,117 @@ export function ServiceOrderRoom({ order, initialMessages, viewer }: ServiceOrde
           <CardDescription>
             {isAdmin
               ? "Jawab pertanyaan klien dan kabari progres pengerjaan."
-              : "Tanyakan progres atau minta revisi di sini."}
+              : "Tanyakan progres, minta revisi, atau kirim berkas tambahan di sini."}
           </CardDescription>
         </CardHeader>
 
         <CardContent className="flex flex-col gap-3">
           <div
             ref={listRef}
-            className="flex max-h-[420px] min-h-[220px] flex-col gap-2 overflow-y-auto rounded-lg border bg-muted/20 p-3"
+            className="flex max-h-[480px] min-h-[260px] flex-col gap-3 overflow-y-auto rounded-lg border bg-muted/20 p-3"
           >
             {messages.length === 0 ? (
               <p className="m-auto max-w-sm text-center text-sm text-muted-foreground">
-                Belum ada pesan. {isAdmin ? "Sapa klien" : "Sapa admin"} untuk memulai.
+                Belum ada pesan. {isAdmin ? "Sapa klien" : "Sapa admin"} untuk memulai, atau
+                kirim berkas tambahan bila diperlukan.
               </p>
             ) : (
-              messages.map((message) => {
-                const own = message.sender_role === viewer;
-                return (
-                  <div
-                    key={message.id}
-                    className={cn("flex flex-col gap-1", own ? "items-end" : "items-start")}
-                  >
-                    <div
-                      className={cn(
-                        "max-w-[85%] rounded-lg border px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap",
-                        own
-                          ? "border-foreground/20 bg-foreground text-background"
-                          : "border-border bg-background text-foreground",
-                      )}
-                    >
-                      {message.body}
-                    </div>
-                    <span className="px-1 text-[10px] text-muted-foreground">
-                      {message.sender_role === "admin" ? "Admin" : "Klien"} ·{" "}
-                      {formatTime(message.created_at)}
-                    </span>
-                  </div>
-                );
-              })
+              <MessageGroup className="mt-auto">
+                {messages.map((message) => {
+                  const own = message.sender_role === viewer;
+                  const fromAdmin = message.sender_role === "admin";
+                  const senderLabel = fromAdmin ? "Admin" : "Klien";
+
+                  return (
+                    <Message key={message.id} align={own ? "end" : "start"}>
+                      <MessageAvatar>
+                        <Avatar size="sm">
+                          <AvatarFallback
+                            className={cn(
+                              "text-[10px] font-bold",
+                              fromAdmin && "bg-foreground text-background",
+                            )}
+                          >
+                            {fromAdmin ? "AD" : "KL"}
+                          </AvatarFallback>
+                        </Avatar>
+                      </MessageAvatar>
+
+                      <MessageContent>
+                        <MessageHeader>{own ? "Anda" : senderLabel}</MessageHeader>
+
+                        {message.body ? (
+                          <Bubble
+                            align={own ? "end" : "start"}
+                            variant={own ? "default" : "outline"}
+                          >
+                            <BubbleContent className="whitespace-pre-wrap">
+                              {message.body}
+                            </BubbleContent>
+                          </Bubble>
+                        ) : null}
+
+                        {message.attachment_url ? (
+                          <Attachment size="sm" className="w-full max-w-sm">
+                            <AttachmentMedia>
+                              <FileTextIcon />
+                            </AttachmentMedia>
+                            <AttachmentContent>
+                              <AttachmentTitle>
+                                {message.attachment_name || "Lampiran"}
+                              </AttachmentTitle>
+                              <AttachmentDescription>
+                                {formatFileSize(message.attachment_size ?? 0) || "Berkas lampiran"}
+                              </AttachmentDescription>
+                            </AttachmentContent>
+                            <AttachmentActions>
+                              <AttachmentAction
+                                nativeButton={false}
+                                render={
+                                  <a
+                                    href={`/api/download/service?orderId=${encodeURIComponent(order.order_id)}&messageId=${encodeURIComponent(message.id)}`}
+                                    aria-label={`Unduh ${message.attachment_name || "lampiran"}`}
+                                  />
+                                }
+                              >
+                                <DownloadIcon />
+                              </AttachmentAction>
+                            </AttachmentActions>
+                          </Attachment>
+                        ) : null}
+
+                        <MessageFooter>{formatTime(message.created_at)}</MessageFooter>
+                      </MessageContent>
+                    </Message>
+                  );
+                })}
+              </MessageGroup>
             )}
           </div>
 
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
-            <Textarea
+          {chatFile ? (
+            <Attachment size="sm" className="w-full">
+              <AttachmentMedia>
+                <FileTextIcon />
+              </AttachmentMedia>
+              <AttachmentContent>
+                <AttachmentTitle>{chatFile.name}</AttachmentTitle>
+                <AttachmentDescription>{formatFileSize(chatFile.size)}</AttachmentDescription>
+              </AttachmentContent>
+              <AttachmentActions>
+                <AttachmentAction
+                  aria-label="Hapus lampiran"
+                  disabled={isSending}
+                  onClick={() => setChatFile(null)}
+                >
+                  <XIcon />
+                </AttachmentAction>
+              </AttachmentActions>
+            </Attachment>
+          ) : null}
+
+          <InputGroup className="items-end">
+            <InputGroupTextarea
               value={body}
               onChange={(event) => setBody(event.target.value)}
               onKeyDown={(event) => {
@@ -370,13 +598,52 @@ export function ServiceOrderRoom({ order, initialMessages, viewer }: ServiceOrde
               rows={2}
               maxLength={2000}
               placeholder="Tulis pesan... (Enter untuk kirim, Shift+Enter baris baru)"
-              className="min-h-11 flex-1 resize-none"
+              className="min-h-11"
             />
-            <Button onClick={sendMessage} disabled={isSending || body.trim().length === 0}>
-              {isSending ? <Loader2Icon className="size-4 animate-spin" /> : <SendIcon className="size-4" />}
-              Kirim
-            </Button>
-          </div>
+
+            <InputGroupAddon align="inline-end" className="pb-1.5">
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="sr-only"
+                accept=".pdf,.doc,.docx,.zip,.png,.jpg,.jpeg"
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  if (file) void uploadChatFile(file);
+                }}
+              />
+
+              <InputGroupButton
+                size="icon-sm"
+                aria-label="Lampirkan berkas"
+                title="Lampirkan berkas (maks. 15 MB)"
+                disabled={isUploading || isSending}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {isUploading ? (
+                  <Loader2Icon className="animate-spin" />
+                ) : (
+                  <UploadCloudIcon />
+                )}
+              </InputGroupButton>
+
+              <InputGroupButton
+                variant="default"
+                size="icon-sm"
+                aria-label="Kirim pesan"
+                disabled={isSending || isUploading || (!body.trim() && !chatFile)}
+                onClick={() => void sendMessage()}
+              >
+                {isSending ? <Loader2Icon className="animate-spin" /> : <SendIcon />}
+              </InputGroupButton>
+            </InputGroupAddon>
+          </InputGroup>
+
+          <p className="text-[11px] text-muted-foreground">
+            {isUploading
+              ? `Mengunggah lampiran... ${uploadProgress}%`
+              : "Lampiran maksimal 15 MB per berkas (PDF, DOC, DOCX, ZIP, JPG, PNG)."}
+          </p>
         </CardContent>
       </Card>
     </div>

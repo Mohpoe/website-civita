@@ -15,7 +15,9 @@ export async function readServiceMessages(orderId: string): Promise<ServiceMessa
 
   try {
     const rows = (await sql`
-      SELECT id, order_id, sender_id, sender_role, body, created_at
+      SELECT id, order_id, sender_id, sender_role, body,
+             attachment_url, attachment_name,
+             attachment_size::int AS attachment_size, created_at
       FROM service_messages
       WHERE order_id = ${orderId}
       ORDER BY created_at ASC

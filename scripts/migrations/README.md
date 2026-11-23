@@ -8,6 +8,7 @@ selalu di branch development lebih dulu, lalu di production.
 | `001_site_settings_testimonials.sql` | Tabel `site_settings` + `testimonials` (identitas situs & testimoni landing page). |
 | `002_services_orders_chat.sql` | Tabel `services`, `service_orders`, `service_messages` + seed 8 layanan jasa. |
 | `003_product_catalog.sql` | Kolom `slug`, `file_format`, `file_size` pada `products` + isi slug produk lama dan unique index. |
+| `004_service_pricing_attachments.sql` | Harga per bahasa (`services.prices`), nomor WhatsApp klien, tabel `service_order_attachments`, dan lampiran pada `service_messages`. |
 
 ## Menjalankan di development
 
@@ -15,6 +16,7 @@ selalu di branch development lebih dulu, lalu di production.
 node --env-file=.env.local scripts/run-migration.mjs 001_site_settings_testimonials.sql
 node --env-file=.env.local scripts/run-migration.mjs 002_services_orders_chat.sql
 node --env-file=.env.local scripts/run-migration.mjs 003_product_catalog.sql
+node --env-file=.env.local scripts/run-migration.mjs 004_service_pricing_attachments.sql
 ```
 
 Skrip membaca `NEONDB_DATABASE_URL` dari `.env.local`. Driver HTTP Neon
@@ -28,15 +30,16 @@ dilewati otomatis oleh skrip (tetap aman saat dijalankan manual).
 3. Salin seluruh isi `001_site_settings_testimonials.sql`, jalankan.
 4. Salin seluruh isi `002_services_orders_chat.sql`, jalankan.
 5. Salin seluruh isi `003_product_catalog.sql`, jalankan.
-6. Verifikasi:
+6. Salin seluruh isi `004_service_pricing_attachments.sql`, jalankan.
+7. Verifikasi:
 
 ```sql
 SELECT table_name
 FROM information_schema.tables
 WHERE table_schema = 'public'
-  AND table_name IN ('site_settings', 'testimonials', 'services', 'service_orders', 'service_messages');
+  AND table_name IN ('site_settings', 'testimonials', 'services', 'service_orders', 'service_messages', 'service_order_attachments');
 
-SELECT slug, name, price, is_active FROM services ORDER BY sort_order;
+SELECT slug, name, price, prices, is_active FROM services ORDER BY sort_order;
 
 SELECT count(*) FILTER (WHERE slug IS NULL OR slug = '') AS produk_tanpa_slug,
        count(*) AS total_produk

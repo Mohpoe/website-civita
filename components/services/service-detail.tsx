@@ -67,6 +67,14 @@ export function ServiceDetail({
       : service.languages.map((code) => code.toUpperCase());
   const href = servicePath(service);
 
+  const pricedLanguages = service.languages.filter(
+    (code) => (service.prices[code] ?? 0) > 0,
+  );
+  const distinctPrices = new Set(pricedLanguages.map((code) => service.prices[code]));
+  const hasMultiplePrices = distinctPrices.size > 1;
+
+  const languageLabel = (code: string) => (code === "en" ? "English" : "Bahasa Indonesia");
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Service",
@@ -169,17 +177,38 @@ export function ServiceDetail({
               {service.description}
             </p>
 
-            <div className="mt-5 flex flex-wrap items-end gap-x-3 gap-y-1">
-              <span className="text-3xl font-bold text-ink">
-                {formatRupiah(service.price)}
-              </span>
-              <span className="pb-1 text-xs text-ink-soft">
-                Harga tetap, tanpa biaya tersembunyi
-              </span>
+            <div className="mt-5">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-soft">
+                {hasMultiplePrices ? "Mulai dari" : "Harga tetap"}
+              </p>
+              <div className="mt-1 flex flex-wrap items-end gap-x-3 gap-y-1">
+                <span className="text-3xl font-bold text-ink">
+                  {formatRupiah(service.price)}
+                </span>
+                <span className="pb-1 text-xs text-ink-soft">
+                  {hasMultiplePrices
+                    ? "harga berbeda per bahasa, tanpa biaya tersembunyi"
+                    : "tanpa biaya tersembunyi"}
+                </span>
+              </div>
+
+              {pricedLanguages.length > 1 ? (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {pricedLanguages.map((code) => (
+                    <span
+                      key={code}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-ink/20 bg-paper-2 px-2.5 py-1 text-xs font-semibold text-ink"
+                    >
+                      <Languages className="size-3.5" />
+                      {languageLabel(code)}: {formatRupiah(service.prices[code])}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
             </div>
 
             <div className="mt-5">
-              <ServiceOrderButton slug={service.slug} detailPath={href} />
+              <ServiceOrderButton service={service} />
             </div>
 
             <div className="nb-sm mt-6 rounded-lg bg-paper p-4">

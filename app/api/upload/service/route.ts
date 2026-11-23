@@ -6,13 +6,14 @@ import { NextResponse } from "next/server";
 const ADMIN_ROLES = ["admin", "superadmin"];
 
 /**
- * Lampiran sumber dari klien dan berkas hasil dari admin disimpan di
- * PRIVATE_BLOB.
+ * Lampiran sumber dari klien, berkas hasil dari admin, dan lampiran chat
+ * disimpan di PRIVATE_BLOB.
  *
  * - `service-source/` boleh diunggah semua user yang login (lampiran brief).
  * - `service-result/` hanya admin/superadmin (hasil pekerjaan).
+ * - `service-chat/` boleh diunggah kedua pihak (lampiran di ruang obrolan).
  */
-const ALLOWED_FOLDERS = ["service-source/", "service-result/"];
+const ALLOWED_FOLDERS = ["service-source/", "service-result/", "service-chat/"];
 
 export async function POST(request: Request): Promise<NextResponse> {
   const body = (await request.json()) as HandleUploadPresignedBody;
@@ -54,9 +55,6 @@ export async function POST(request: Request): Promise<NextResponse> {
             addRandomSuffix: true,
           },
         };
-      },
-      onUploadCompleted: async ({ blob }) => {
-        console.log("Upload pesanan jasa selesai:", blob.url);
       },
     });
 

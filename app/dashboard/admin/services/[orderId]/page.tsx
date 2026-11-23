@@ -1,6 +1,6 @@
 import { PageTitle } from "@/components/context/dashboard-page-title";
 import { ServiceOrderRoom } from "@/components/services/service-order-room";
-import { getServiceOrderForAdmin } from "@/lib/actions/services";
+import { getServiceAttachments, getServiceOrderForAdmin } from "@/lib/actions/services";
 import { ROUTES } from "@/lib/constants";
 import { readServiceMessages } from "@/lib/service-access";
 import { currentUser } from "@clerk/nextjs/server";
@@ -29,11 +29,17 @@ export default async function AdminServiceOrderDetailPage({
   if (!order) notFound();
 
   const messages = await readServiceMessages(order.order_id);
+  const attachments = await getServiceAttachments(order.order_id);
 
   return (
     <>
       <PageTitle title="Ruang Pesanan Jasa" />
-      <ServiceOrderRoom order={order} initialMessages={messages} viewer="admin" />
+      <ServiceOrderRoom
+        order={order}
+        initialMessages={messages}
+        attachments={attachments}
+        viewer="admin"
+      />
     </>
   );
 }

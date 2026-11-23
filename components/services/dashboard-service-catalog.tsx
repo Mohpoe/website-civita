@@ -17,6 +17,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toast";
@@ -25,20 +26,34 @@ import {
   toggleServiceAction,
   upsertServiceAction,
 } from "@/lib/actions/services";
-import { formatRupiah } from "@/lib/utils";
+import { cn, formatRupiah } from "@/lib/utils";
 import type { Service } from "@/types/global";
 import {
   Loader2Icon,
   PencilIcon,
   PlusIcon,
+  SearchIcon,
   Settings2Icon,
   Trash2Icon,
+  XIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, useTransition, type FormEvent } from "react";
+import { useMemo, useState, useTransition, type FormEvent } from "react";
 
 interface DashboardServiceCatalogProps {
   services: Service[];
+}
+
+const LANGUAGE_OPTIONS = [
+  { code: "id", label: "Bahasa Indonesia" },
+  { code: "en", label: "English" },
+] as const;
+
+type StatusFilter = "all" | "active" | "inactive";
+
+function toPriceNumber(value: string | undefined): number {
+  const digits = (value ?? "").replace(/[^\d]/g, "");
+  return digits ? Number(digits) : 0;
 }
 
 export function DashboardServiceCatalog({ services }: DashboardServiceCatalogProps) {
@@ -50,20 +65,41 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("50000");
+  const [prices, setPrices] = useState<Record<string, string>>({});
   const [sortOrder, setSortOrder] = useState("0");
   const [isActive, setIsActive] = useState(true);
   const [languages, setLanguages] = useState<string[]>(["id", "en"]);
 
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Service | null>(null);
+
+  const filteredServices = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+
+    return services.filter((service) => {
+      if (statusFilter === "active" && !service.is_active) return false;
+      if (statusFilter === "inactive" && service.is_active) return false;
+      if (!needle) return true;
+
+      return (
+        service.name.toLowerCase().includes(needle) ||
+        service.slug.toLowerCase().includes(needle) ||
+        service.description.toLowerCase().includes(needle)
+      );
+    });
+  }, [services, query, statusFilter]);
+
+  const activeCount = services.filter((service) => service.is_active).length;
 
   const openCreate = () => {
     setEditing(null);
     setName("");
     setSlug("");
     setDescription("");
-    setPrice("50000");
+    setPrices({ id: "50000", en: "50000" });
     setSortOrder(String(services.length * 10 + 10));
     setIsActive(true);
     setLanguages(["id", "en"]);
@@ -75,7 +111,14 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
     setName(service.name);
     setSlug(service.slug);
     setDescription(service.description);
-    setPrice(String(service.price));
+    setPrices(
+      Object.fromEntries(
+        service.languages.map((code) => [
+          code,
+          String(service.prices[code] ?? service.price),
+        ]),
+      ),
+    );
     setSortOrder(String(service.sort_order));
     setIsActive(service.is_active);
     setLanguages(service.languages);
@@ -83,15 +126,32 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
   };
 
   const toggleLanguage = (code: string) => {
-    setLanguages((previous) =>
-      previous.includes(code)
-        ? previous.filter((item) => item !== code)
-        : [...previous, code],
-    );
+    if (languages.includes(code)) {
+      setLanguages((previous) => previous.filter((item) => item !== code));
+      return;
+    }
+
+    // Saat bahasa baru diaktifkan, isi harga dengan harga bahasa lain agar
+    // admin hanya perlu menyesuaikan, bukan mengisi dari nol.
+    const fallback = prices.id || prices.en || "50000";
+    setPrices((current) => (current[code] ? current : { ...current, [code]: fallback }));
+    setLanguages((previous) => [...previous, code]);
   };
+
+  const pricesValid =
+    languages.length > 0 && languages.every((code) => toPriceNumber(prices[code]) >= 1000);
 
   const submitForm = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!pricesValid) {
+      toast.add({
+        type: "error",
+        description: "Isi harga minimal Rp1.000 untuk setiap bahasa yang dipilih.",
+        priority: "high",
+      });
+      return;
+    }
+
     const formData = new FormData(event.currentTarget);
 
     startTransition(async () => {
@@ -153,8 +213,8 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
                 <Settings2Icon className="size-5" /> Kelola Layanan
               </CardTitle>
               <CardDescription>
-                {services.filter((service) => service.is_active).length} layanan aktif dari{" "}
-                {services.length} total. Harga di sini yang dipakai saat klien membayar.
+                {activeCount} layanan aktif dari {services.length} total. Harga per bahasa di
+                sini yang dipakai saat klien membayar.
               </CardDescription>
             </div>
             <Button onClick={openCreate} className="shrink-0">
@@ -163,7 +223,74 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
           </div>
         </CardHeader>
 
-        <CardContent>
+        <CardContent className="flex flex-col gap-4">
+          {services.length > 0 ? (
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <InputGroup className="sm:max-w-sm">
+                <InputGroupAddon>
+                  <SearchIcon />
+                </InputGroupAddon>
+                <InputGroupInput
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Cari nama, kode, atau deskripsi layanan"
+                  aria-label="Cari layanan"
+                />
+                {query ? (
+                  <InputGroupAddon align="inline-end">
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      aria-label="Hapus pencarian"
+                      onClick={() => setQuery("")}
+                    >
+                      <XIcon />
+                    </Button>
+                  </InputGroupAddon>
+                ) : null}
+              </InputGroup>
+
+              <div className="flex flex-wrap items-center gap-1.5">
+                {(
+                  [
+                    { key: "all", label: "Semua", count: services.length },
+                    { key: "active", label: "Aktif", count: activeCount },
+                    {
+                      key: "inactive",
+                      label: "Nonaktif",
+                      count: services.length - activeCount,
+                    },
+                  ] as const
+                ).map((item) => (
+                  <button
+                    key={item.key}
+                    type="button"
+                    aria-pressed={statusFilter === item.key}
+                    onClick={() => setStatusFilter(item.key)}
+                    className={cn(
+                      "inline-flex h-8 items-center gap-1.5 rounded-md border px-2.5 text-xs font-medium transition-colors",
+                      statusFilter === item.key
+                        ? "border-foreground bg-foreground text-background"
+                        : "border-border bg-background hover:bg-muted",
+                    )}
+                  >
+                    {item.label}
+                    <span
+                      className={cn(
+                        "rounded-full px-1.5 text-[10px]",
+                        statusFilter === item.key
+                          ? "bg-background/20"
+                          : "bg-muted text-muted-foreground",
+                      )}
+                    >
+                      {item.count}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
           {services.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-border px-6 py-16 text-center">
               <Settings2Icon className="size-10 text-muted-foreground" />
@@ -177,62 +304,101 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
                 <PlusIcon className="size-4" /> Tambah layanan
               </Button>
             </div>
+          ) : filteredServices.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-border px-6 py-12 text-center">
+              <SearchIcon className="size-8 text-muted-foreground" />
+              <div>
+                <p className="font-medium">Tidak ada layanan yang cocok.</p>
+                <p className="text-sm text-muted-foreground">
+                  Coba kata kunci lain atau ubah filter status.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setQuery("");
+                  setStatusFilter("all");
+                }}
+              >
+                Reset pencarian
+              </Button>
+            </div>
           ) : (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              {services.map((service) => (
-                <div key={service.id} className="flex flex-col gap-3 rounded-lg border bg-card p-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="truncate font-semibold">{service.name}</p>
-                      <p className="truncate text-[11px] text-muted-foreground">Kode: {service.slug}</p>
+              {filteredServices.map((service) => {
+                const distinctPrices = new Set(
+                  service.languages.map((code) => service.prices[code] ?? service.price),
+                );
+
+                return (
+                  <div key={service.id} className="flex flex-col gap-3 rounded-lg border bg-card p-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="truncate font-semibold">{service.name}</p>
+                        <p className="truncate text-[11px] text-muted-foreground">Kode: {service.slug}</p>
+                      </div>
+                      <Badge variant={service.is_active ? "default" : "secondary"}>
+                        {service.is_active ? "Aktif" : "Nonaktif"}
+                      </Badge>
                     </div>
-                    <Badge variant={service.is_active ? "default" : "secondary"}>
-                      {service.is_active ? "Aktif" : "Nonaktif"}
-                    </Badge>
-                  </div>
 
-                  <p className="line-clamp-3 flex-1 text-xs leading-relaxed text-muted-foreground">
-                    {service.description || "Tanpa deskripsi."}
-                  </p>
+                    <p className="line-clamp-3 flex-1 text-xs leading-relaxed text-muted-foreground">
+                      {service.description || "Tanpa deskripsi."}
+                    </p>
 
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-sm font-bold">{formatRupiah(service.price)}</span>
-                    <span className="text-[11px] text-muted-foreground">
-                      {service.languages.map((code) => code.toUpperCase()).join(" · ")}
-                    </span>
-                  </div>
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-baseline gap-1.5">
+                        {distinctPrices.size > 1 ? (
+                          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            Mulai dari
+                          </span>
+                        ) : null}
+                        <span className="text-sm font-bold">{formatRupiah(service.price)}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {service.languages.map((code) => (
+                          <span
+                            key={code}
+                            className="rounded-full border px-2 py-0.5 text-[10px] text-muted-foreground"
+                          >
+                            {code.toUpperCase()} {formatRupiah(service.prices[code] ?? service.price)}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
 
-                  <div className="mt-auto flex items-center justify-between gap-2 border-t pt-3">
-                    <Switch
-                      checked={service.is_active}
-                      disabled={isPending}
-                      onCheckedChange={() => toggleActive(service)}
-                      aria-label={service.is_active ? "Sembunyikan layanan" : "Tampilkan layanan"}
-                    />
-                    <div className="flex items-center gap-1.5">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="size-8"
-                        onClick={() => openEdit(service)}
-                      >
-                        <PencilIcon className="size-4" />
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="icon"
-                        className="size-8"
-                        onClick={() => {
-                          setDeleteTarget(service);
-                          setIsAlertOpen(true);
-                        }}
-                      >
-                        <Trash2Icon className="size-4" />
-                      </Button>
+                    <div className="mt-auto flex items-center justify-between gap-2 border-t pt-3">
+                      <Switch
+                        checked={service.is_active}
+                        disabled={isPending}
+                        onCheckedChange={() => toggleActive(service)}
+                        aria-label={service.is_active ? "Sembunyikan layanan" : "Tampilkan layanan"}
+                      />
+                      <div className="flex items-center gap-1.5">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="size-8"
+                          onClick={() => openEdit(service)}
+                        >
+                          <PencilIcon className="size-4" />
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          className="size-8"
+                          onClick={() => {
+                            setDeleteTarget(service);
+                            setIsAlertOpen(true);
+                          }}
+                        >
+                          <Trash2Icon className="size-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>
@@ -243,7 +409,8 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
           <DialogHeader>
             <DialogTitle>{editing ? "Ubah Layanan" : "Tambah Layanan"}</DialogTitle>
             <DialogDescription>
-              Harga ini yang akan ditagihkan saat klien membayar.
+              Isi harga untuk setiap bahasa yang aktif. Harga ini yang akan ditagihkan saat
+              klien membayar.
             </DialogDescription>
           </DialogHeader>
 
@@ -293,39 +460,10 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
                 />
               </Field>
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field>
-                  <FieldLabel htmlFor="servicePrice">Harga (Rp)</FieldLabel>
-                  <Input
-                    id="servicePrice"
-                    name="price"
-                    inputMode="numeric"
-                    value={price}
-                    onChange={(event) => setPrice(event.target.value)}
-                    required
-                  />
-                  <FieldDescription>Minimal Rp1.000.</FieldDescription>
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor="serviceOrder">Urutan tampil</FieldLabel>
-                  <Input
-                    id="serviceOrder"
-                    name="sortOrder"
-                    type="number"
-                    min={0}
-                    value={sortOrder}
-                    onChange={(event) => setSortOrder(event.target.value)}
-                  />
-                </Field>
-              </div>
-
               <Field>
                 <FieldLabel>Bahasa tersedia</FieldLabel>
                 <div className="flex flex-wrap gap-2">
-                  {[
-                    { code: "id", label: "Bahasa Indonesia" },
-                    { code: "en", label: "English" },
-                  ].map((item) => (
+                  {LANGUAGE_OPTIONS.map((item) => (
                     <button
                       key={item.code}
                       type="button"
@@ -340,7 +478,46 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
                     </button>
                   ))}
                 </div>
+                <FieldDescription>
+                  Harga wajib diisi untuk setiap bahasa yang dipilih.
+                </FieldDescription>
               </Field>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {LANGUAGE_OPTIONS.filter((item) => languages.includes(item.code)).map((item) => (
+                  <Field key={item.code}>
+                    <FieldLabel htmlFor={`servicePrice-${item.code}`}>
+                      Harga {item.label} (Rp)
+                    </FieldLabel>
+                    <Input
+                      id={`servicePrice-${item.code}`}
+                      name={`price_${item.code}`}
+                      inputMode="numeric"
+                      value={prices[item.code] ?? ""}
+                      onChange={(event) =>
+                        setPrices((previous) => ({
+                          ...previous,
+                          [item.code]: event.target.value,
+                        }))
+                      }
+                      required
+                    />
+                    <FieldDescription>Minimal Rp1.000.</FieldDescription>
+                  </Field>
+                ))}
+
+                <Field>
+                  <FieldLabel htmlFor="serviceOrder">Urutan tampil</FieldLabel>
+                  <Input
+                    id="serviceOrder"
+                    name="sortOrder"
+                    type="number"
+                    min={0}
+                    value={sortOrder}
+                    onChange={(event) => setSortOrder(event.target.value)}
+                  />
+                </Field>
+              </div>
 
               <Field orientation="horizontal">
                 <FieldLabel htmlFor="serviceActive">Tampilkan di halaman utama</FieldLabel>
@@ -356,7 +533,7 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
               <DialogClose render={<Button type="button" variant="outline" />} disabled={isPending}>
                 Batal
               </DialogClose>
-              <Button type="submit" disabled={isPending || languages.length === 0}>
+              <Button type="submit" disabled={isPending || !pricesValid}>
                 {isPending ? <Loader2Icon className="size-4 animate-spin" /> : null}
                 {editing ? "Simpan Perubahan" : "Tambah Layanan"}
               </Button>

@@ -21,15 +21,53 @@ interface ServiceFileRow {
   service_name: string;
 }
 
-function safeFileName(order: ServiceFileRow, kind: "source" | "result"): string {
-  const fromColumn = (kind === "source" ? order.source_file_name : order.result_file_name) || "";
-  const trimmed = fromColumn.trim();
-  if (trimmed) {
-    return trimmed.replace(/[\\/:*?"<>|]/g, "_");
-  }
+interface AttachmentRow {
+  user_id: string;
+  file_url: string | null;
+  file_name: string | null;
+}
 
+interface MessageAttachmentRow {
+  user_id: string;
+  attachment_url: string | null;
+  attachment_name: string | null;
+}
+
+function sanitizeFileName(value: string): string {
+  return value.trim().replace(/[\\/:*?"<>|]/g, "_");
+}
+
+function fallbackFileName(order: ServiceFileRow, kind: "source" | "result"): string {
   const baseName = order.service_name.replace(/[^a-zA-Z0-9]+/g, "_").replace(/^_+|_+$/g, "");
   return `${baseName || "Berkas_Pesanan"}${kind === "result" ? "_hasil" : "_lampiran"}.pdf`;
+}
+
+async function streamPrivateBlob(
+  fileUrl: string | null,
+  fileName: string,
+): Promise<NextResponse> {
+  if (!fileUrl) {
+    return NextResponse.json({ error: "Berkas tidak tersedia." }, { status: 404 });
+  }
+
+  const result = await get(fileUrl, {
+    access: "private",
+    storeId: process.env.PRIVATE_BLOB_STORE_ID,
+  });
+
+  if (result?.statusCode !== 200) {
+    return new NextResponse("File tidak ditemukan di penyimpanan server", { status: 404 });
+  }
+
+  return new NextResponse(result.stream, {
+    headers: {
+      "Content-Type": result.blob.contentType || "application/octet-stream",
+      "Content-Disposition": `attachment; filename="${sanitizeFileName(fileName)}"`,
+      "X-Content-Type-Options": "nosniff",
+      "Cache-Control": "private, no-cache",
+      "ETag": result.headers.get("etag") || "",
+    },
+  });
 }
 
 export async function GET(req: Request) {
@@ -49,13 +87,69 @@ export async function GET(req: Request) {
     );
   }
 
+  const role = user.publicMetadata.role as string | undefined;
+  const isAdmin = role === "admin" || role === "superadmin";
+
   try {
     const { searchParams } = new URL(req.url);
     const orderId = searchParams.get("orderId");
-    const kind = searchParams.get("file") === "source" ? "source" : "result";
+    const attachmentId = searchParams.get("attachmentId");
+    const messageId = searchParams.get("messageId");
+
     if (!orderId) {
       return NextResponse.json({ error: "Order ID required" }, { status: 400 });
     }
+
+    // #region Lampiran pesanan (bisa lebih dari satu)
+    if (attachmentId) {
+      const rows = (await sql`
+        SELECT o.user_id, a.file_url, a.file_name
+        FROM service_order_attachments AS a
+        JOIN service_orders AS o ON o.order_id = a.order_id
+        WHERE a.id = ${attachmentId} AND a.order_id = ${orderId}
+        LIMIT 1
+      `) as AttachmentRow[];
+
+      if (rows.length === 0) {
+        return NextResponse.json({ error: "Lampiran tidak ditemukan." }, { status: 404 });
+      }
+      if (rows[0].user_id !== user.id && !isAdmin) {
+        return NextResponse.json({ error: "Akses ditolak." }, { status: 403 });
+      }
+
+      return streamPrivateBlob(
+        rows[0].file_url,
+        rows[0].file_name || "Lampiran.pdf",
+      );
+    }
+    // #endregion
+
+    // #region Lampiran pada chat
+    if (messageId) {
+      const rows = (await sql`
+        SELECT o.user_id, m.attachment_url, m.attachment_name
+        FROM service_messages AS m
+        JOIN service_orders AS o ON o.order_id = m.order_id
+        WHERE m.id = ${messageId} AND m.order_id = ${orderId}
+        LIMIT 1
+      `) as MessageAttachmentRow[];
+
+      if (rows.length === 0) {
+        return NextResponse.json({ error: "Lampiran tidak ditemukan." }, { status: 404 });
+      }
+      if (rows[0].user_id !== user.id && !isAdmin) {
+        return NextResponse.json({ error: "Akses ditolak." }, { status: 403 });
+      }
+
+      return streamPrivateBlob(
+        rows[0].attachment_url,
+        rows[0].attachment_name || "Lampiran.pdf",
+      );
+    }
+    // #endregion
+
+    // #region Berkas hasil / lampiran lama
+    const kind = searchParams.get("file") === "source" ? "source" : "result";
 
     const rows = (await sql`
       SELECT user_id, status, result_file_url, result_file_name,
@@ -70,8 +164,6 @@ export async function GET(req: Request) {
     }
 
     const order = rows[0];
-    const role = user.publicMetadata.role as string | undefined;
-    const isAdmin = role === "admin" || role === "superadmin";
 
     if (order.user_id !== user.id && !isAdmin) {
       return NextResponse.json({ error: "Akses ditolak." }, { status: 403 });
@@ -87,6 +179,9 @@ export async function GET(req: Request) {
     }
 
     const fileUrl = kind === "source" ? order.source_file_url : order.result_file_url;
+    const fileName =
+      (kind === "source" ? order.source_file_name : order.result_file_name) ||
+      fallbackFileName(order, kind);
 
     if (!fileUrl) {
       return NextResponse.json(
@@ -100,24 +195,8 @@ export async function GET(req: Request) {
       );
     }
 
-    const result = await get(fileUrl, {
-      access: "private",
-      storeId: process.env.PRIVATE_BLOB_STORE_ID,
-    });
-
-    if (result?.statusCode !== 200) {
-      return new NextResponse("File tidak ditemukan di penyimpanan server", { status: 404 });
-    }
-
-    return new NextResponse(result.stream, {
-      headers: {
-        "Content-Type": result.blob.contentType || "application/octet-stream",
-        "Content-Disposition": `attachment; filename="${safeFileName(order, kind)}"`,
-        "X-Content-Type-Options": "nosniff",
-        "Cache-Control": "private, no-cache",
-        "ETag": result.headers.get("etag") || "",
-      },
-    });
+    return streamPrivateBlob(fileUrl, fileName);
+    // #endregion
   } catch (error) {
     console.error("Download pesanan jasa error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

@@ -1,11 +1,11 @@
 "use server";
 
 import { ROUTES } from "@/lib/constants";
-import { SERVICES_TAG } from "@/lib/service-catalog";
+import { normalizeService, SERVICES_TAG, type ServiceRow } from "@/lib/service-catalog";
 import { slugify } from "@/lib/slug";
 import { getServiceAccess } from "@/lib/service-access";
 import { sql } from "@/lib/utils";
-import type { ActionState, Service, ServiceOrder } from "@/types/global";
+import type { ActionState, Service, ServiceAttachment, ServiceOrder } from "@/types/global";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { del } from "@vercel/blob";
 import { randomUUID } from "crypto";
@@ -13,6 +13,15 @@ import { revalidatePath, revalidateTag } from "next/cache";
 
 const ADMIN_ROLES = ["admin", "superadmin"];
 const SUPERADMIN = "superadmin";
+
+const LANGUAGE_LABELS: Record<string, string> = {
+  id: "Bahasa Indonesia",
+  en: "English",
+};
+
+function languageLabel(code: string): string {
+  return LANGUAGE_LABELS[code] ?? code.toUpperCase();
+}
 
 function text(formData: FormData, key: string, max: number): string {
   const raw = formData.get(key);
@@ -65,17 +74,13 @@ export async function getServices(): Promise<Service[]> {
 
   try {
     const rows = (await sql`
-      SELECT id, slug, name, description, price, languages,
+      SELECT id, slug, name, description, price, prices, languages,
              is_active, sort_order, created_at, updated_at
       FROM services
       ORDER BY sort_order ASC, name ASC
-    `) as Service[];
+    `) as ServiceRow[];
 
-    return rows.map((row) => ({
-      ...row,
-      price: Number(row.price),
-      languages: Array.isArray(row.languages) ? row.languages : ["id"],
-    }));
+    return rows.map(normalizeService);
   } catch (error) {
     console.error("Gagal mengambil katalog layanan:", error);
     return [];
@@ -94,8 +99,6 @@ export async function upsertServiceAction(
   const existingId = text(formData, "id", 64);
   const name = text(formData, "name", 120);
   const description = text(formData, "description", 600);
-  const rawPrice = text(formData, "price", 20).replace(/[^\d]/g, "");
-  const price = Number(rawPrice);
   const rawOrder = Number(text(formData, "sortOrder", 10));
   const isActive = formData.get("isActive") === "true";
   const languages = formData
@@ -105,12 +108,26 @@ export async function upsertServiceAction(
   if (name.length < 2) {
     return { success: false, message: "Nama layanan minimal 2 karakter." };
   }
-  if (!Number.isFinite(price) || price < 1000) {
-    return { success: false, message: "Harga minimal Rp1.000." };
-  }
   if (languages.length === 0) {
     return { success: false, message: "Pilih minimal satu bahasa." };
   }
+
+  // Harga wajib diisi untuk setiap bahasa yang dicentang supaya klien tidak
+  // tertagih harga bahasa lain tanpa sepengetahuan admin.
+  const prices: Record<string, number> = {};
+  for (const code of languages) {
+    const amount = Number(text(formData, `price_${code}`, 20).replace(/[^\d]/g, ""));
+    if (!Number.isFinite(amount) || amount < 1000) {
+      return {
+        success: false,
+        message: `Harga ${languageLabel(code)} minimal Rp1.000.`,
+      };
+    }
+    prices[code] = amount;
+  }
+
+  // `price` menyimpan harga terendah untuk label "mulai dari" dan sorting.
+  const price = Math.min(...Object.values(prices));
 
   const slug = slugify(text(formData, "slug", 80) || name, 80);
   if (!slug) {
@@ -122,9 +139,10 @@ export async function upsertServiceAction(
 
   try {
     await sql`
-      INSERT INTO services (id, slug, name, description, price, languages, is_active, sort_order, updated_at)
+      INSERT INTO services (id, slug, name, description, price, prices, languages, is_active, sort_order, updated_at)
       VALUES (
         ${id}, ${slug}, ${name}, ${description}, ${price},
+        ${JSON.stringify(prices)}::jsonb,
         ${JSON.stringify(languages)}::jsonb, ${isActive}, ${sortOrder}, now()
       )
       ON CONFLICT (id) DO UPDATE SET
@@ -132,6 +150,7 @@ export async function upsertServiceAction(
         name = EXCLUDED.name,
         description = EXCLUDED.description,
         price = EXCLUDED.price,
+        prices = EXCLUDED.prices,
         languages = EXCLUDED.languages,
         is_active = EXCLUDED.is_active,
         sort_order = EXCLUDED.sort_order,
@@ -272,6 +291,32 @@ export async function getServiceOrderForAdmin(orderId: string): Promise<ServiceO
   } catch (error) {
     console.error("Gagal mengambil pesanan jasa:", error);
     return null;
+  }
+}
+
+/**
+ * Lampiran milik sebuah pesanan. Hak akses mengikuti aturan ruang pesanan:
+ * pemilik dan admin/superadmin saja.
+ */
+export async function getServiceAttachments(orderId: string): Promise<ServiceAttachment[]> {
+  if (!orderId) return [];
+
+  const access = await getServiceAccess(orderId);
+  if (!access) return [];
+
+  try {
+    const rows = (await sql`
+      SELECT id, order_id, file_url, file_name,
+             file_size::int AS file_size, created_at
+      FROM service_order_attachments
+      WHERE order_id = ${orderId}
+      ORDER BY created_at ASC
+    `) as ServiceAttachment[];
+
+    return rows;
+  } catch (error) {
+    console.error("Gagal mengambil lampiran pesanan jasa:", error);
+    return [];
   }
 }
 

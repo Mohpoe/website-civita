@@ -88,7 +88,10 @@ export interface Service {
   slug: string;
   name: string;
   description: string;
+  /** Harga terendah dari semua bahasa aktif; dipakai untuk label "mulai dari". */
   price: number;
+  /** Harga per kode bahasa, mis. `{ id: 75000, en: 95000 }`. */
+  prices: Record<string, number>;
   languages: string[];
   is_active: boolean;
   sort_order: number;
@@ -110,6 +113,7 @@ export interface ServiceOrder {
   amount: number;
   status: ServiceOrderStatus;
   brief: string | null;
+  whatsapp: string | null;
   source_file_url: string | null;
   source_file_name: string | null;
   result_file_url: string | null;
@@ -127,6 +131,19 @@ export interface ServiceMessage {
   sender_id: string;
   sender_role: "user" | "admin";
   body: string;
+  attachment_url: string | null;
+  attachment_name: string | null;
+  attachment_size: number | null;
+  created_at: string;
+}
+
+/** Satu berkas lampiran milik pesanan jasa (CV lama, portofolio, dsb.). */
+export interface ServiceAttachment {
+  id: string;
+  order_id: string;
+  file_url: string;
+  file_name: string | null;
+  file_size: number | null;
   created_at: string;
 }
 
