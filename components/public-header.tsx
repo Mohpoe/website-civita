@@ -16,9 +16,9 @@ import { PUBLIC_NAV_LINKS, ROUTES } from "@/lib/constants";
 import { PDF_TOOLS } from "@/lib/pdf-tools";
 import { cn } from "@/lib/utils";
 import { Menu as MenuIcon, Monitor, Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
 import Image from "next/image";
 import Link from "next/link";
-import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { SiWhatsapp } from "react-icons/si";
 
