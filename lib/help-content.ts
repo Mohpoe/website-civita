@@ -127,9 +127,9 @@ export const HELP_ARTICLES: HelpArticle[] = [
   {
     slug: "jasa",
     title: "Cara Memesan Jasa dan Memantau Progres",
-    shortTitle: "Jasa Kustom",
+    shortTitle: "Jasa Bikin CV",
     description:
-      "Alur pemesanan jasa, mengirim data, berkomunikasi dengan admin, sampai mengunduh hasil.",
+      "Alur pemesanan, mengirim data, berkomunikasi dengan admin, sampai mengunduh hasil.",
     icon: FileText,
     accent: "butter",
     readTime: "5 menit",

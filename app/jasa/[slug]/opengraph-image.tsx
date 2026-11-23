@@ -2,7 +2,7 @@ import { getServiceBySlug } from "@/lib/service-catalog";
 import { formatRupiah } from "@/lib/utils";
 import { ImageResponse } from "next/og";
 
-export const alt = "Layanan jasa berkas lamaran CIVITA";
+export const alt = "Layanan jasa bikin berkas lamaran CIVITA";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -62,7 +62,7 @@ export default async function ServiceOpenGraphImage({
               letterSpacing: -1,
             }}
           >
-            {service?.name ?? "Jasa berkas lamaran"}
+            {service?.name ?? "Jasa bikin berkas lamaran"}
           </span>
           <span style={{ fontSize: 26, color: "#5a534b", lineHeight: 1.4 }}>
             {(service?.description ?? "Dikerjakan custom sesuai pengalamanmu.").slice(

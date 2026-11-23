@@ -96,7 +96,7 @@ export default async function ServicesPage({
             Katalog Jasa
           </span>
           <h1 className="mt-4 max-w-2xl text-3xl font-bold tracking-tight text-ink sm:text-4xl">
-            Jasa berkas lamaran, dari CV sampai surat resign.
+            Jasa bikin berkas lamaran, dari CV sampai surat resign.
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-soft md:text-base">
             Semua dikerjakan custom dari riwayat pendidikan, pengalaman, dan

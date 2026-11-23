@@ -72,7 +72,7 @@ export function ServiceDetail({
     "@type": "Service",
     name: service.name,
     description: service.description,
-    serviceType: "Jasa berkas lamaran kerja",
+    serviceType: "Jasa bikin berkas lamaran kerja",
     provider: {
       "@type": "Organization",
       name: APP_CONFIG.NAME,

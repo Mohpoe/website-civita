@@ -177,7 +177,7 @@ export default async function HomePage() {
             <div>
               <span className="nb-sm inline-flex items-center gap-2 rounded-full bg-sage px-3 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-on-accent">
                 <Sparkles className="size-3.5" />
-                Jasa berkas lamaran · ID & EN
+                Jasa bikin CV · ID & EN
               </span>
 
               <h1 className="mt-5 max-w-xl text-[2rem] leading-[1.12] font-bold tracking-tight text-ink sm:text-4xl lg:text-5xl">
