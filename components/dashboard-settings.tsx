@@ -16,7 +16,7 @@ import {
   ImageUp,
   LayoutTemplate,
   Loader2,
-  MessageCircle,
+  Info,
   Save,
   Share2,
 } from "lucide-react";
@@ -272,7 +272,7 @@ export default function DashboardSettings({ settings }: DashboardSettingsProps) 
 
       <div className="flex flex-col items-start justify-between gap-3 rounded-lg border bg-muted/30 p-4 sm:flex-row sm:items-center">
         <p className="flex items-center gap-2 text-sm text-muted-foreground">
-          <MessageCircle className="size-4" />
+          <Info className="size-4" />
           Perubahan langsung tampil di halaman utama setelah disimpan.
         </p>
         <Button type="submit" disabled={isPending || isUploading} className="min-w-40">

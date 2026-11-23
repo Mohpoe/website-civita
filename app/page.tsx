@@ -26,7 +26,7 @@ import {
   FileCheck2,
   Languages,
   Mail,
-  MessageCircle,
+  MessagesSquare,
   PencilRuler,
   RefreshCcw,
   ShieldCheck,
@@ -54,7 +54,7 @@ const TRUST_ITEMS = [
 
 const PROCESS_STEPS = [
   {
-    icon: MessageCircle,
+    icon: MessagesSquare,
     title: "Konsultasi",
     description: "Ceritakan posisi dan perusahaan yang dilamar. Kami bantu pilih jenis berkas yang paling pas.",
   },

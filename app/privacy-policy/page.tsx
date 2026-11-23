@@ -2,8 +2,9 @@ import { PublicPageShell } from "@/components/public-page-shell";
 import { buttonVariants } from "@/components/ui/button";
 import { APP_CONFIG, ROUTES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-import { Mail, MessageCircle, Shield } from "lucide-react";
+import { Mail, Shield } from "lucide-react";
 import Link from "next/link";
+import { SiWhatsapp } from "react-icons/si";
 
 const TOC = [
   { id: "informasi-dikumpulkan", label: "1. Informasi yang Dikumpulkan" },
@@ -326,7 +327,7 @@ export default function PrivacyPolicyPage() {
                       "nb-sm nb-press h-10 bg-ink px-4 text-xs font-semibold text-paper hover:bg-ink",
                     )}
                   >
-                    <MessageCircle className="mr-1.5 size-4" /> Hubungi admin
+                    <SiWhatsapp className="mr-1.5 size-4" /> Hubungi admin
                   </Link>
                 </div>
               </div>

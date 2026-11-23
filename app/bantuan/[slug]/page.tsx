@@ -10,11 +10,11 @@ import {
   ArrowRight,
   Clock,
   Mail,
-  MessageCircle,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { SiWhatsapp } from "react-icons/si";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -217,7 +217,7 @@ export default async function HelpArticlePage({ params }: PageProps) {
                     rel="noreferrer"
                     className="nb-sm nb-press inline-flex h-10 items-center gap-2 rounded-md border-2 border-ink bg-paper px-4 text-xs font-bold text-ink"
                   >
-                    <MessageCircle className="size-4" /> WhatsApp
+                    <SiWhatsapp className="size-4" /> WhatsApp
                   </a>
                   <a
                     href={APP_CONFIG.LINKS.EMAIL}
