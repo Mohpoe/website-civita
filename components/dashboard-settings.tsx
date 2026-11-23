@@ -73,8 +73,27 @@ export default function DashboardSettings({ settings }: DashboardSettingsProps) 
     }
   };
 
+  // Base UI `Input` tidak boleh menerima `defaultValue` baru setelah mount.
+  // Form di-remount saat nilai server berubah (mis. setelah simpan + refresh)
+  // supaya input uncontrolled selalu mulai dari nilai terbaru.
+  const formKey = [
+    settings.brandName,
+    settings.tagline,
+    settings.description,
+    settings.emailPrimary,
+    settings.emailSupport,
+    settings.whatsappNumber,
+    settings.instagramUrl,
+    settings.linkedinUrl,
+    settings.twitterHandle,
+    settings.logoUrl,
+    settings.heroHeadline,
+    settings.heroSubheadline,
+    settings.consultMessage,
+  ].join("\u0000");
+
   return (
-    <form action={formAction} className="flex flex-col gap-4 md:gap-6">
+    <form key={formKey} action={formAction} className="flex flex-col gap-4 md:gap-6">
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3 xl:gap-6">
         <Card className="xl:col-span-2">
           <CardHeader>
