@@ -22,6 +22,7 @@ export async function generateMetadata({
     title: service.name,
     description: service.description,
     path: `${ROUTES.SERVICES}/${service.slug}`,
+    ogImage: `${ROUTES.SERVICES}/${service.slug}/opengraph-image`,
   });
 }
 

@@ -19,6 +19,11 @@ type PageMetadataInput = {
   path: string;
   ogTitle?: string;
   ogDescription?: string;
+  /**
+   * Path gambar OG khusus halaman. Dipakai halaman dinamis yang punya
+   * `opengraph-image.tsx` sendiri, misalnya detail jasa atau produk.
+   */
+  ogImage?: string;
   noIndex?: boolean;
 };
 
@@ -34,11 +39,20 @@ export function createPageMetadata({
   path,
   ogTitle,
   ogDescription,
+  ogImage,
   noIndex = false,
 }: PageMetadataInput): Metadata {
   const url = path === "/" ? APP_CONFIG.URL : `${APP_CONFIG.URL}${path}`;
-  const socialTitle = ogTitle ?? `${title} | ${APP_CONFIG.NAME}`;
-  const socialDescription = ogDescription ?? description;
+  const socialTitle = (ogTitle ?? `${title} | ${APP_CONFIG.NAME}`)
+    .replace(/\s+/g, " ")
+    .trim();
+  const socialDescription = (ogDescription ?? description)
+    .replace(/\s+/g, " ")
+    .trim();
+  const image = ogImage
+    ? { url: ogImage, width: 1200, height: 630, alt: socialTitle }
+    : OG_IMAGE;
+  const imageUrl = ogImage ?? OG_IMAGE.url;
 
   return {
     title,
@@ -53,7 +67,7 @@ export function createPageMetadata({
       siteName: APP_CONFIG.NAME,
       title: socialTitle,
       description: socialDescription,
-      images: [OG_IMAGE],
+      images: [image],
     },
     twitter: {
       card: "summary_large_image",
@@ -61,7 +75,7 @@ export function createPageMetadata({
       creator: APP_CONFIG.SOCIAL.TWITTER,
       title: socialTitle,
       description: socialDescription,
-      images: [OG_IMAGE.url],
+      images: [imageUrl],
     },
     ...(noIndex
       ? {

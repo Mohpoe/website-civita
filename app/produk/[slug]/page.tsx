@@ -23,27 +23,19 @@ export async function generateMetadata({
   }
 
   const path = `/produk/${product.slug || product.id}`;
-  const metadata = createPageMetadata({
+
+  // Gambar OG dibuat oleh `opengraph-image.tsx` di folder ini supaya semua
+  // pratinjau tautan produk memakai template neo-brutalis yang sama. Jangan
+  // menimpa `images` di sini, karena metadata akan mengalahkan file convention.
+  return createPageMetadata({
     title: product.title,
     description:
       product.short_desc ||
       product.long_desc ||
       "Template digital siap pakai untuk kebutuhan lamaran kerja.",
     path,
+    ogImage: `${path}/opengraph-image`,
   });
-
-  if (product.image_url) {
-    metadata.openGraph = {
-      ...(metadata.openGraph ?? {}),
-      images: [{ url: product.image_url, alt: product.title }],
-    };
-    metadata.twitter = {
-      ...(metadata.twitter ?? {}),
-      images: [product.image_url],
-    };
-  }
-
-  return metadata;
 }
 
 export default async function ProductDetailPage({

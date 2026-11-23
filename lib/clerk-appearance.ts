@@ -1,24 +1,8 @@
-import { idID } from "@clerk/localizations";
 import type { ClerkAppearanceTheme } from "@clerk/nextjs/types";
 import { neobrutalism } from "@clerk/ui/themes";
 import { APP_CONFIG, ROUTES } from "@/lib/constants";
 
-/**
- * Beberapa placeholder formulir belum diterjemahkan oleh locale `idID`
- * bawaan Clerk, sehingga jatuh kembali ke bahasa Inggris.
- * Tambalan ini melengkapi string yang paling sering terlihat pada alur auth.
- */
-export const civitaLocalization = {
-  ...idID,
-  formFieldInputPlaceholder__emailAddress: "Masukkan alamat email",
-  formFieldInputPlaceholder__emailAddress_username: "Masukkan email atau nama pengguna",
-  formFieldInputPlaceholder__firstName: "Masukkan nama depan",
-  formFieldInputPlaceholder__lastName: "Masukkan nama belakang",
-  formFieldInputPlaceholder__password: "Masukkan kata sandi",
-  formFieldInputPlaceholder__phoneNumber: "Masukkan nomor telepon",
-  formFieldInputPlaceholder__signUpPassword: "Buat kata sandi",
-  formFieldInputPlaceholder__username: "Masukkan nama pengguna",
-};
+export { civitaLocalization } from "@/lib/clerk-localization";
 
 const ink = "var(--ink)";
 const inkSoft = "var(--ink-soft)";
