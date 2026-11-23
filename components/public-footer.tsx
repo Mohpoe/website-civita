@@ -26,15 +26,15 @@ export function PublicFooter({
   const serviceLinks =
     services.length > 0
       ? [
-          { label: "Semua Jasa", href: ROUTES.SERVICES },
-          ...services
-            .slice(0, 4)
-            .map((service) => ({
-              label: service.name,
-              href: `${ROUTES.SERVICES}/${service.slug}`,
-            })),
-          { label: "Template Digital", href: ROUTES.PRODUCTS },
-        ]
+        { label: "Semua Jasa", href: ROUTES.SERVICES },
+        ...services
+          .slice(0, 4)
+          .map((service) => ({
+            label: service.name,
+            href: `${ROUTES.SERVICES}/${service.slug}`,
+          })),
+        { label: "Template Digital", href: ROUTES.PRODUCTS },
+      ]
       : FALLBACK_SERVICE_LINKS;
 
   return (
@@ -144,16 +144,19 @@ export function PublicFooter({
             .
           </p>
 
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-wrap items-center gap-2">
             <Link href={ROUTES.HELP} className="hover:text-ink">
               Bantuan
             </Link>
+            •
             <Link href={ROUTES.TERMS} className="hover:text-ink">
               Syarat & Ketentuan
             </Link>
+            •
             <Link href={ROUTES.POLICY} className="hover:text-ink">
               Kebijakan Privasi
             </Link>
+            •
             <a href={links.consult} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 hover:text-ink">
               <SiWhatsapp className="size-3.5" /> Konsultasi
             </a>
