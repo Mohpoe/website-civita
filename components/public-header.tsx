@@ -66,7 +66,7 @@ function PublicMobileMenu() {
   const closeMenu = () => setOpen(false);
 
   useEffect(() => {
-    const desktopQuery = window.matchMedia("(min-width: 768px)");
+    const desktopQuery = window.matchMedia("(min-width: 1024px)");
     const handleBreakpointChange = () => {
       if (desktopQuery.matches) setOpen(false);
     };
@@ -78,7 +78,7 @@ function PublicMobileMenu() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger
-        className="nb-sm inline-flex h-10 w-10 items-center justify-center rounded-md bg-paper text-ink md:hidden"
+        className="nb-sm inline-flex h-10 w-10 items-center justify-center rounded-md bg-paper text-ink lg:hidden"
         aria-label="Buka menu navigasi"
       >
         <MenuIcon className="h-5 w-5" />
