@@ -251,6 +251,33 @@
   height: 0;
 }
 
+/* Scrollbar tipis yang menyatu dengan tema untuk area isi dialog.
+   Track transparan + thumb semi-transparan agar sudut rounded tetap bersih. */
+.dialog-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--ink-soft) 55%, transparent) transparent;
+  scrollbar-gutter: stable;
+}
+
+.dialog-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dialog-scroll::-webkit-scrollbar-track {
+  background: transparent;
+  border: 0;
+}
+
+.dialog-scroll::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--ink-soft) 55%, transparent);
+  border: 0;
+  border-radius: 9999px;
+}
+
+.dialog-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-soft);
+}
+
 /* Scrollbar tipis untuk area menu di drawer mobile. */
 .civita-menu-scroll {
   scrollbar-width: thin;

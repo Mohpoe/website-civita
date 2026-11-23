@@ -345,42 +345,43 @@ export function ServiceOrderDialog({
         }}
       >
         <DialogContent
-          className="w-full sm:max-w-2xl"
+          className="flex max-h-[calc(100dvh-2rem)] w-full flex-col overflow-hidden rounded-xl sm:max-h-[calc(100dvh-3rem)] sm:max-w-2xl"
           showCloseButton={!isSubmitting}
         >
-          <DialogHeader>
+          <DialogHeader className="shrink-0">
             <DialogTitle>Pesan {service.name}</DialogTitle>
             <DialogDescription>
-              Lengkapi data di bawah. Setelah pesanan dibuat, kamu bisa menjelaskan detail
-              tambahan lewat ruang obrolan pesanan.
+              Lengkapi data, lalu bayar. Detail tambahan bisa lanjut lewat chat pesanan.
             </DialogDescription>
           </DialogHeader>
 
-          <Separator className="py-0" />
+          <Separator className="shrink-0 py-0" />
 
-          <form
-            id="serviceOrderForm"
-            className="flex flex-col gap-5"
-            onSubmit={(event) => {
-              event.preventDefault();
-              void submit();
-            }}
-          >
-            <FieldGroup>
+          <div className="dialog-scroll -mx-4 min-h-0 flex-1 overflow-y-auto px-4">
+            <form
+              id="serviceOrderForm"
+              className="flex flex-col gap-5"
+              onSubmit={(event) => {
+                event.preventDefault();
+                void submit();
+              }}
+            >
+              <FieldGroup>
               <Field>
-                <FieldLabel htmlFor="orderWhatsapp">Nomor WhatsApp</FieldLabel>
-                <Input
-                  id="orderWhatsapp"
-                  value={whatsapp}
-                  onChange={(event) => setWhatsapp(event.target.value)}
-                  inputMode="tel"
-                  autoComplete="tel"
-                  maxLength={20}
-                  placeholder="0812xxxxxxx"
+                <FieldLabel htmlFor="orderBrief">
+                  Ceritakan kebutuhanmu <span className="text-destructive">*</span>
+                </FieldLabel>
+                <Textarea
+                  id="orderBrief"
+                  value={brief}
+                  onChange={(event) => setBrief(event.target.value)}
+                  rows={5}
+                  maxLength={5000}
+                  placeholder="Contoh: CV ATS 1 halaman + surat lamaran untuk posisi Digital Marketing."
                   required
                 />
                 <FieldDescription>
-                  Dipakai admin hanya jika ada hal penting soal pesananmu.
+                  Min. 10 karakter — sebut posisi & hal yang mau ditonjolkan.
                 </FieldDescription>
               </Field>
 
@@ -421,18 +422,21 @@ export function ServiceOrderDialog({
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="orderBrief">Ceritakan kebutuhanmu</FieldLabel>
-                <Textarea
-                  id="orderBrief"
-                  value={brief}
-                  onChange={(event) => setBrief(event.target.value)}
-                  rows={5}
-                  maxLength={5000}
-                  placeholder="Mis. Saya melamar posisi Digital Marketing di PT ABC. Pengalaman 3 tahun di agency, ingin CV ATS satu halaman plus surat lamaran."
+                <FieldLabel htmlFor="orderWhatsapp">
+                  Nomor WhatsApp <span className="text-destructive">*</span>
+                </FieldLabel>
+                <Input
+                  id="orderWhatsapp"
+                  value={whatsapp}
+                  onChange={(event) => setWhatsapp(event.target.value)}
+                  inputMode="tel"
+                  autoComplete="tel"
+                  maxLength={20}
+                  placeholder="0812xxxxxxx"
                   required
                 />
                 <FieldDescription>
-                  Minimal 10 karakter. Sebutkan posisi, perusahaan, dan hal yang ingin ditonjolkan.
+                  Hanya dipakai admin jika ada info penting.
                 </FieldDescription>
               </Field>
 
@@ -483,7 +487,7 @@ export function ServiceOrderDialog({
                     className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border bg-muted/20 px-4 py-4 text-sm text-muted-foreground transition-colors hover:bg-muted/40 disabled:opacity-60"
                   >
                     <FileUpIcon className="size-5" />
-                    Tambah CV lama / portofolio / berkas pendukung
+                    Unggah CV lama / portofolio
                   </button>
                 ) : null}
 
@@ -499,7 +503,7 @@ export function ServiceOrderDialog({
                   }}
                 />
                 <FieldDescription>
-                  Maksimal {MAX_FILES} berkas, 15 MB per berkas (PDF, DOC, DOCX, ZIP, JPG, PNG).
+                  Maks. {MAX_FILES} berkas · 15 MB/berkas · PDF/DOC/DOCX/ZIP/JPG/PNG
                 </FieldDescription>
               </Field>
             </FieldGroup>
@@ -507,9 +511,8 @@ export function ServiceOrderDialog({
             <div className="flex items-start gap-2 rounded-lg border border-dashed bg-muted/30 p-3 text-xs leading-relaxed text-muted-foreground">
               <MessageSquareIcon className="mt-0.5 size-4 shrink-0" />
               <span>
-                Ada informasi lain yang ingin dijelaskan lebih detail? Setelah pemesanan,
-                gunakan <strong className="text-foreground">ruang obrolan pesanan</strong> untuk
-                mengobrol langsung dengan admin, termasuk mengirim berkas tambahan.
+                Perlu detail tambahan? Lanjutkan via{' '}
+                <strong className="text-foreground">chat pesanan</strong> setelah order.
               </span>
             </div>
 
@@ -532,19 +535,19 @@ export function ServiceOrderDialog({
               <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
                 <AlertTriangleIcon className="mt-0.5 size-4 shrink-0" />
                 <span>
-                  Pembayaran gagal dimuat. Periksa koneksi lalu buka ulang dialog ini.
+                  Pembayaran gagal dimuat. Buka ulang dialog.
                 </span>
               </div>
             ) : null}
 
-            <p className="flex items-start gap-2 text-[11px] leading-relaxed text-muted-foreground">
-              <ShieldCheckIcon className="mt-0.5 size-3.5 shrink-0" />
-              Pembayaran diproses Midtrans. Berkas hanya dipakai untuk menyusun berkas
-              lamaranmu dan hasilnya bisa diunduh dari ruang pesanan.
+            <p className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
+              <ShieldCheckIcon className="size-3.5" />
+              Pembayaran aman via Midtrans
             </p>
           </form>
+          </div>
 
-          <DialogFooter className="pt-4">
+          <DialogFooter className="shrink-0 pt-4">
             <Button
               type="button"
               variant="outline"
