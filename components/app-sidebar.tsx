@@ -97,7 +97,7 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
             ...(isSuperadmin
               ? [
                 {
-                  title: "Kelola Layanan",
+                  title: "Kelola Jasa",
                   url: ROUTES.DASHBOARD.SERVICE_CATALOG,
                   icon: <Grid2X2PlusIcon />,
                 },
