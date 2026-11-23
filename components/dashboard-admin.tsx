@@ -1147,7 +1147,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
               </DialogDescription>
             </DialogHeader>
             <Separator className="py-0" />
-            <div className="-mx-4 no-scrollbar max-h-[60vh] overflow-y-auto px-4">
+            <div className="-mx-4 max-h-[60vh] overflow-y-auto px-4">
               {/* Satu form untuk Create & Update */}
               <form
                 id="productForm"
@@ -1445,74 +1445,76 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                           />
                           <div className="relative rounded-sm hover:underline hover:underline-offset-4">
                             <span>Klik di sini untuk unggah file</span>
-                            <Input
-                              required={!productToUpdate && !selectedFile && !uploadedFileUrl}
-                              className="sr-only"
-                              id="fileUrl"
-                              type="file"
-                              disabled={upsertIsPending || isUploadingFile}
-                              onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (!file) return;
+                            <div>
+                              <Input
+                                required={!productToUpdate && !selectedFile && !uploadedFileUrl}
+                                className="sr-only"
+                                id="fileUrl"
+                                type="file"
+                                disabled={upsertIsPending || isUploadingFile}
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (!file) return;
 
-                                // Validasi ukuran file maksimal 50 MB (sama dengan batas di /api/upload)
-                                const MAX_FILE_SIZE = 50 * 1024 * 1024;
-                                if (file.size > MAX_FILE_SIZE) {
-                                  toast.add({
-                                    type: "error",
-                                    description: "Ukuran file terlalu besar. Maksimal 50 MB.",
+                                  // Validasi ukuran file maksimal 50 MB (sama dengan batas di /api/upload)
+                                  const MAX_FILE_SIZE = 50 * 1024 * 1024;
+                                  if (file.size > MAX_FILE_SIZE) {
+                                    toast.add({
+                                      type: "error",
+                                      description: "Ukuran file terlalu besar. Maksimal 50 MB.",
+                                    });
+                                    e.target.value = "";
+                                    return;
+                                  }
+
+                                  if (uploadedFileUrl && uploadedFileUrl !== productToUpdate?.file_url) {
+                                    deleteBlobFileAction(uploadedFileUrl); // Jalankan di background
+                                  }
+
+                                  const ext = file.name.split('.').pop()?.toUpperCase() || "FILE";
+                                  const readableSize = formatBytes(file.size);
+                                  setSelectedFile({
+                                    name: file.name,
+                                    size: readableSize,
+                                    type: ext,
                                   });
-                                  e.target.value = "";
-                                  return;
-                                }
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    fileFormat: ext,
+                                    fileSize: readableSize,
+                                  }));
 
-                                if (uploadedFileUrl && uploadedFileUrl !== productToUpdate?.file_url) {
-                                  deleteBlobFileAction(uploadedFileUrl); // Jalankan di background
-                                }
+                                  setIsUploadingFile(true);
+                                  setUploadProgress(0);
+                                  toast.add({ description: "Memulai proses unggah..." });
 
-                                const ext = file.name.split('.').pop()?.toUpperCase() || "FILE";
-                                const readableSize = formatBytes(file.size);
-                                setSelectedFile({
-                                  name: file.name,
-                                  size: readableSize,
-                                  type: ext,
-                                });
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  fileFormat: ext,
-                                  fileSize: readableSize,
-                                }));
+                                  try {
+                                    // PROSES CLIENT UPLOAD LANGSUNG KE VERCEL
+                                    const newBlob = await uploadPresigned(`products/${sanitizeFileName(file.name)}`, file, {
+                                      access: "private",
+                                      handleUploadUrl: "/api/upload",
+                                      onUploadProgress: (progressEvent) => {
+                                        const percentage = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+                                        setUploadProgress(percentage);
+                                      },
+                                    });
 
-                                setIsUploadingFile(true);
-                                setUploadProgress(0);
-                                toast.add({ description: "Memulai proses unggah..." });
+                                    // Simpan URL yang didapat ke state
+                                    setUploadedFileUrl(newBlob.url);
 
-                                try {
-                                  // PROSES CLIENT UPLOAD LANGSUNG KE VERCEL
-                                  const newBlob = await uploadPresigned(`products/${sanitizeFileName(file.name)}`, file, {
-                                    access: "private",
-                                    handleUploadUrl: "/api/upload",
-                                    onUploadProgress: (progressEvent) => {
-                                      const percentage = Math.round((progressEvent.loaded / progressEvent.total) * 100);
-                                      setUploadProgress(percentage);
-                                    },
-                                  });
-
-                                  // Simpan URL yang didapat ke state
-                                  setUploadedFileUrl(newBlob.url);
-
-                                  toast.add({ type: "success", description: "File berhasil diunggah!" });
-                                } catch (error) {
-                                  console.error(error);
-                                  toast.add({ type: "error", description: "Gagal mengunggah file. Coba lagi." });
-                                  setSelectedFile(null);
-                                  setUploadedFileUrl(null);
-                                } finally {
-                                  setIsUploadingFile(false);
-                                  e.target.value = "";
-                                }
-                              }}
-                            />
+                                    toast.add({ type: "success", description: "File berhasil diunggah!" });
+                                  } catch (error) {
+                                    console.error(error);
+                                    toast.add({ type: "error", description: "Gagal mengunggah file. Coba lagi." });
+                                    setSelectedFile(null);
+                                    setUploadedFileUrl(null);
+                                  } finally {
+                                    setIsUploadingFile(false);
+                                    e.target.value = "";
+                                  }
+                                }}
+                              />
+                            </div>
                           </div>
                           {/* <p className="text-pretty pl-1">untuk di-upload</p> */}
                         </div>

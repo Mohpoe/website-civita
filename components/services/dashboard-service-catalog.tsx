@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition, type FormEvent } from "react";
+import { Separator } from "../ui/separator";
 
 interface DashboardServiceCatalogProps {
   services: Service[];
@@ -405,7 +406,7 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="w-full sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>{editing ? "Ubah Layanan" : "Tambah Layanan"}</DialogTitle>
             <DialogDescription>
@@ -413,132 +414,134 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
               klien membayar.
             </DialogDescription>
           </DialogHeader>
+          <Separator className="py-0" />
+          <div className="-mx-4 max-h-[60vh] overflow-y-auto px-4">
+            <form onSubmit={submitForm} className="flex flex-col gap-4" id="serviceForm">
+              <input type="hidden" name="id" value={editing?.id ?? ""} />
+              <input type="hidden" name="isActive" value={String(isActive)} />
+              {languages.map((code) => (
+                <input key={code} type="hidden" name="languages" value={code} />
+              ))}
 
-          <form onSubmit={submitForm} className="flex flex-col gap-4">
-            <input type="hidden" name="id" value={editing?.id ?? ""} />
-            <input type="hidden" name="isActive" value={String(isActive)} />
-            {languages.map((code) => (
-              <input key={code} type="hidden" name="languages" value={code} />
-            ))}
-
-            <FieldGroup>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field>
-                  <FieldLabel htmlFor="serviceName">Nama layanan</FieldLabel>
-                  <Input
-                    id="serviceName"
-                    name="name"
-                    value={name}
-                    onChange={(event) => setName(event.target.value)}
-                    required
-                    maxLength={120}
-                  />
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor="serviceSlug">Kode layanan</FieldLabel>
-                  <Input
-                    id="serviceSlug"
-                    name="slug"
-                    value={slug}
-                    onChange={(event) => setSlug(event.target.value)}
-                    placeholder="Terisi otomatis dari nama"
-                    maxLength={80}
-                  />
-                  <FieldDescription>Dipakai di alamat tautan layanan. Kosongkan untuk mengisi otomatis.</FieldDescription>
-                </Field>
-              </div>
-
-              <Field>
-                <FieldLabel htmlFor="serviceDescription">Deskripsi</FieldLabel>
-                <Textarea
-                  id="serviceDescription"
-                  name="description"
-                  value={description}
-                  onChange={(event) => setDescription(event.target.value)}
-                  rows={3}
-                  maxLength={600}
-                />
-              </Field>
-
-              <Field>
-                <FieldLabel>Bahasa tersedia</FieldLabel>
-                <div className="flex flex-wrap gap-2">
-                  {LANGUAGE_OPTIONS.map((item) => (
-                    <button
-                      key={item.code}
-                      type="button"
-                      onClick={() => toggleLanguage(item.code)}
-                      className={
-                        languages.includes(item.code)
-                          ? "inline-flex h-9 items-center rounded-md border border-foreground bg-foreground px-3 text-sm font-medium text-background"
-                          : "inline-flex h-9 items-center rounded-md border border-border bg-background px-3 text-sm font-medium hover:bg-muted"
-                      }
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
-                <FieldDescription>
-                  Harga wajib diisi untuk setiap bahasa yang dipilih.
-                </FieldDescription>
-              </Field>
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {LANGUAGE_OPTIONS.filter((item) => languages.includes(item.code)).map((item) => (
-                  <Field key={item.code}>
-                    <FieldLabel htmlFor={`servicePrice-${item.code}`}>
-                      Harga {item.label} (Rp)
-                    </FieldLabel>
+              <FieldGroup>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <Field>
+                    <FieldLabel htmlFor="serviceName">Nama layanan</FieldLabel>
                     <Input
-                      id={`servicePrice-${item.code}`}
-                      name={`price_${item.code}`}
-                      inputMode="numeric"
-                      value={prices[item.code] ?? ""}
-                      onChange={(event) =>
-                        setPrices((previous) => ({
-                          ...previous,
-                          [item.code]: event.target.value,
-                        }))
-                      }
+                      id="serviceName"
+                      name="name"
+                      value={name}
+                      onChange={(event) => setName(event.target.value)}
                       required
+                      maxLength={120}
                     />
-                    <FieldDescription>Minimal Rp1.000.</FieldDescription>
                   </Field>
-                ))}
+                  <Field>
+                    <FieldLabel htmlFor="serviceSlug">Kode layanan</FieldLabel>
+                    <Input
+                      id="serviceSlug"
+                      name="slug"
+                      value={slug}
+                      onChange={(event) => setSlug(event.target.value)}
+                      placeholder="Terisi otomatis dari nama"
+                      maxLength={80}
+                    />
+                    <FieldDescription>Dipakai di alamat tautan layanan. Kosongkan untuk mengisi otomatis.</FieldDescription>
+                  </Field>
+                </div>
 
                 <Field>
-                  <FieldLabel htmlFor="serviceOrder">Urutan tampil</FieldLabel>
-                  <Input
-                    id="serviceOrder"
-                    name="sortOrder"
-                    type="number"
-                    min={0}
-                    value={sortOrder}
-                    onChange={(event) => setSortOrder(event.target.value)}
+                  <FieldLabel htmlFor="serviceDescription">Deskripsi</FieldLabel>
+                  <Textarea
+                    id="serviceDescription"
+                    name="description"
+                    value={description}
+                    onChange={(event) => setDescription(event.target.value)}
+                    rows={3}
+                    maxLength={600}
                   />
                 </Field>
-              </div>
 
-              <Field orientation="horizontal">
-                <FieldLabel htmlFor="serviceActive">Tampilkan di halaman utama</FieldLabel>
-                <Switch
-                  id="serviceActive"
-                  checked={isActive}
-                  onCheckedChange={(checked) => setIsActive(checked)}
-                />
-              </Field>
-            </FieldGroup>
+                <Field>
+                  <FieldLabel>Bahasa tersedia</FieldLabel>
+                  <div className="flex flex-wrap gap-2">
+                    {LANGUAGE_OPTIONS.map((item) => (
+                      <button
+                        key={item.code}
+                        type="button"
+                        onClick={() => toggleLanguage(item.code)}
+                        className={
+                          languages.includes(item.code)
+                            ? "inline-flex h-9 items-center rounded-md border border-foreground bg-foreground px-3 text-sm font-medium text-background"
+                            : "inline-flex h-9 items-center rounded-md border border-border bg-background px-3 text-sm font-medium hover:bg-muted"
+                        }
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                  <FieldDescription>
+                    Harga wajib diisi untuk setiap bahasa yang dipilih.
+                  </FieldDescription>
+                </Field>
 
-            <DialogFooter>
-              <DialogClose render={<Button type="button" variant="outline" />} disabled={isPending}>
-                Batal
-              </DialogClose>
-              <Button type="submit" disabled={isPending || !pricesValid}>
-                {isPending ? <Loader2Icon className="size-4 animate-spin" /> : null}
-                {editing ? "Simpan Perubahan" : "Tambah Layanan"}
-              </Button>
-            </DialogFooter>
-          </form>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {LANGUAGE_OPTIONS.filter((item) => languages.includes(item.code)).map((item) => (
+                    <Field key={item.code}>
+                      <FieldLabel htmlFor={`servicePrice-${item.code}`}>
+                        Harga {item.label} (Rp)
+                      </FieldLabel>
+                      <Input
+                        id={`servicePrice-${item.code}`}
+                        name={`price_${item.code}`}
+                        inputMode="numeric"
+                        value={prices[item.code] ?? ""}
+                        onChange={(event) =>
+                          setPrices((previous) => ({
+                            ...previous,
+                            [item.code]: event.target.value,
+                          }))
+                        }
+                        required
+                      />
+                      <FieldDescription>Minimal Rp1.000.</FieldDescription>
+                    </Field>
+                  ))}
+
+                  <Field>
+                    <FieldLabel htmlFor="serviceOrder">Urutan tampil</FieldLabel>
+                    <Input
+                      id="serviceOrder"
+                      name="sortOrder"
+                      type="number"
+                      min={0}
+                      value={sortOrder}
+                      onChange={(event) => setSortOrder(event.target.value)}
+                    />
+                  </Field>
+                </div>
+
+                <Field orientation="horizontal">
+                  <FieldLabel htmlFor="serviceActive">Tampilkan di halaman utama</FieldLabel>
+                  <Switch
+                    id="serviceActive"
+                    checked={isActive}
+                    onCheckedChange={(checked) => setIsActive(checked)}
+                  />
+                </Field>
+              </FieldGroup>
+            </form>
+          </div>
+
+          <DialogFooter>
+            <DialogClose render={<Button type="button" variant="outline" />} disabled={isPending}>
+              Batal
+            </DialogClose>
+            <Button form="serviceForm" type="submit" disabled={isPending || !pricesValid}>
+              {isPending ? <Loader2Icon className="size-4 animate-spin" /> : null}
+              {editing ? "Simpan Perubahan" : "Tambah Layanan"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
