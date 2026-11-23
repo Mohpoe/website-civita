@@ -3,11 +3,11 @@
 import { ROUTES } from "@/lib/constants";
 import { PRODUCTS_TAG } from "@/lib/products";
 import { slugify } from "@/lib/slug";
-import { isSupportedThumbnail, sanitizeFileName, sql } from "@/lib/utils";
+import { fileExtension, formatFileSize, isSupportedThumbnail, sanitizeFileName, sql } from "@/lib/utils";
 import { productSchema } from "@/lib/zod-schemas";
 import { Product, ActionState } from "@/types/global";
 import { auth, currentUser } from "@clerk/nextjs/server";
-import { copy, del, putImage } from "@vercel/blob";
+import { copy, del, head, putImage } from "@vercel/blob";
 import { randomUUID } from "crypto";
 import { revalidatePath, revalidateTag } from "next/cache";
 
@@ -144,8 +144,25 @@ export async function upsertProductAction(state: ActionState | null, formData: F
   // #endregion
 
   const requestedSlug = String(formData.get("slug") ?? "").trim();
-  const requestedFormat = String(formData.get("fileFormat") ?? "").trim();
-  const requestedSize = String(formData.get("fileSize") ?? "").trim();
+
+  // Format dan ukuran berkas dibaca dari metadata unggahan supaya admin tidak
+  // perlu mengetik manual. Nilai dari form hanya cadangan kalau metadata gagal
+  // dibaca (misalnya karena gangguan jaringan ke Vercel Blob).
+  let detectedFormat = String(formData.get("fileFormat") ?? "").trim();
+  let detectedSize = String(formData.get("fileSize") ?? "").trim();
+
+  if (finalFileUrl) {
+    try {
+      const blob = await head(finalFileUrl, {
+        storeId: process.env.PRIVATE_BLOB_STORE_ID,
+        oidcToken: process.env.VERCEL_OIDC_TOKEN,
+      });
+      detectedFormat = fileExtension(blob.pathname) || detectedFormat;
+      detectedSize = formatFileSize(blob.size) || detectedSize;
+    } catch (error) {
+      console.error("Gagal membaca metadata berkas produk:", error);
+    }
+  }
 
   const rawData = {
     title: formData.get("title"),
@@ -157,8 +174,8 @@ export async function upsertProductAction(state: ActionState | null, formData: F
     longDesc: formData.get("longDesc"),
     imageUrl: finalImageUrl,
     fileUrl: finalFileUrl,
-    fileFormat: requestedFormat,
-    fileSize: requestedSize,
+    fileFormat: detectedFormat,
+    fileSize: detectedSize,
     features: featuresArray,
   };
 

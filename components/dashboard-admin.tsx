@@ -199,6 +199,11 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
   // 3. Populate form saat dialog dibuka untuk EDIT (reliable via useEffect)
   useEffect(() => {
     if (isDialogOpen && productToUpdate) {
+      const existingFileName =
+        productToUpdate.file_url?.split("/").pop() || "";
+      const existingFormat =
+        existingFileName.split(".").pop()?.toUpperCase() || "FILE";
+
       // eslint-disable-next-line react-hooks/set-state-in-effect -- mengisi form sekali saat dialog edit dibuka
       setFormData({
         title: productToUpdate.title,
@@ -211,18 +216,18 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
         features: Array.isArray(productToUpdate.features)
           ? productToUpdate.features.join("\n")
           : "",
-        fileFormat: productToUpdate.file_format || "",
+        fileFormat:
+          productToUpdate.file_format ||
+          (productToUpdate.file_url ? existingFormat : ""),
         fileSize: productToUpdate.file_size || "",
       });
       setImagePreview(productToUpdate.image_url || null);
       setFormError(null);
       if (productToUpdate.file_url) {
-        const fileName = productToUpdate.file_url.split('/').pop() || "file-produk";
-        const ext = fileName.split('.').pop()?.toUpperCase() || "FILE";
         setSelectedFile({
-          name: fileName,
-          size: "Sudah tersimpan",
-          type: ext,
+          name: existingFileName || "file-produk",
+          size: productToUpdate.file_size || "Ukuran belum tercatat",
+          type: productToUpdate.file_format || existingFormat,
         });
         setUploadedFileUrl(productToUpdate.file_url);
       } else {
@@ -510,19 +515,6 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                       setProductToUpdate(product);
                       setImagePreview(product.image_url || null);
                       setIsDialogOpen(true);
-                      if (product.file_url) {
-                        const fileName = product.file_url.split('/').pop() || "file-produk";
-                        const ext = fileName.split('.').pop()?.toUpperCase() || "FILE";
-                        setSelectedFile({
-                          name: fileName,
-                          size: "Sudah tersimpan",
-                          type: ext,
-                        });
-                        setUploadedFileUrl(product.file_url);
-                      } else {
-                        setSelectedFile(null);
-                        setUploadedFileUrl(null);
-                      }
                     }}>
                       <SquarePenIcon />
                       Edit Produk
@@ -1408,40 +1400,13 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                   }
 
                   {
-                    // #region Info Berkas (opsional)
-                    <FieldGroup className="grid md:grid-cols-2 gap-4">
-                      <Field>
-                        <FieldLabel htmlFor="fileFormat">Format Berkas</FieldLabel>
-                        <Input
-                          id="fileFormat"
-                          name="fileFormat"
-                          placeholder="Misalnya PDF atau DOCX + PDF"
-                          value={formData.fileFormat}
-                          onChange={(e) => setFormData({ ...formData, fileFormat: e.target.value })}
-                          maxLength={40}
-                          disabled={upsertIsPending || isUploadingFile}
-                        />
-                      </Field>
-                      <Field>
-                        <FieldLabel htmlFor="fileSize">Ukuran Berkas</FieldLabel>
-                        <Input
-                          id="fileSize"
-                          name="fileSize"
-                          placeholder="Misalnya 2.4 MB"
-                          value={formData.fileSize}
-                          onChange={(e) => setFormData({ ...formData, fileSize: e.target.value })}
-                          maxLength={40}
-                          disabled={upsertIsPending || isUploadingFile}
-                        />
-                      </Field>
-                    </FieldGroup>
-                    // #endregion
-                  }
-
-                  {
                     // #region Upload File
                     <Field>
                       <FieldLabel htmlFor="fileUrl">Berkas Produk Digital <span className="text-destructive">*</span></FieldLabel>
+
+                      {/* Format dan ukuran diisi otomatis dari berkas yang diunggah. */}
+                      <input type="hidden" name="fileFormat" value={formData.fileFormat} />
+                      <input type="hidden" name="fileSize" value={formData.fileSize} />
 
                       {(selectedFile || isUploadingFile) && (
                         <Attachment className="mt-3">
@@ -1506,11 +1471,17 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                                 }
 
                                 const ext = file.name.split('.').pop()?.toUpperCase() || "FILE";
+                                const readableSize = formatBytes(file.size);
                                 setSelectedFile({
                                   name: file.name,
-                                  size: formatBytes(file.size),
+                                  size: readableSize,
                                   type: ext,
                                 });
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  fileFormat: ext,
+                                  fileSize: readableSize,
+                                }));
 
                                 setIsUploadingFile(true);
                                 setUploadProgress(0);
@@ -1549,6 +1520,10 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                       {/* <p className="flex items-center justify-between text-pretty text-muted-foreground text-xs leading-5">
                       Recommended max. size: 10 MB, Accepted file types: XLSX, XLS, CSV.
                     </p> */}
+
+                      <FieldDescription className="text-xs">
+                        Format dan ukuran berkas dibaca otomatis dari file yang diunggah.
+                      </FieldDescription>
 
                       <input type="hidden" name="oldFileUrl" value={productToUpdate?.file_url || ""} />
                       <input type="hidden" name="finalFileUrl" value={uploadedFileUrl || ""} />

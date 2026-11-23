@@ -30,6 +30,33 @@ export const isSupportedThumbnail = (file: { name: string; type: string }) => {
 };
 
 /**
+ * Ubah ukuran berkas (byte) menjadi teks ringkas, mis. "2.4 MB".
+ * Dipakai untuk metadata produk yang dibaca langsung dari Vercel Blob.
+ */
+export const formatFileSize = (bytes: number, decimals = 1) => {
+  if (!bytes) return "";
+
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  const exponent = Math.min(
+    Math.floor(Math.log(bytes) / Math.log(1024)),
+    units.length - 1,
+  );
+  const value = bytes / Math.pow(1024, exponent);
+
+  return `${parseFloat(value.toFixed(decimals))} ${units[exponent]}`;
+};
+
+/** Ambil ekstensi berkas dari pathname atau URL, mis. "produk.pdf" -> "PDF". */
+export const fileExtension = (pathname: string) => {
+  const name = pathname.split("?")[0].split("#")[0].split("/").pop() ?? "";
+  const lastDot = name.lastIndexOf(".");
+
+  if (lastDot <= 0 || lastDot === name.length - 1) return "";
+
+  return name.slice(lastDot + 1).toUpperCase().slice(0, 12);
+};
+
+/**
  * Ubah nama file menjadi ASCII yang aman dipakai sebagai pathname Vercel Blob.
  *
  * Token upload Vercel Blob membandingkan pathname secara persis, tetapi payload
