@@ -66,6 +66,8 @@
 }
 
 :root {
+  color-scheme: light;
+
   /* Token Shadcn memakai palet landing supaya dashboard, alat PDF, dan
      halaman legal terasa satu keluarga dengan halaman publik. */
   --card: #fffdf9;
@@ -125,6 +127,8 @@
 }
 
 .dark {
+  color-scheme: dark;
+
   --background: var(--paper);
   --foreground: var(--ink);
   --card: #24211d;
