@@ -583,7 +583,7 @@ function HeadlineWithMarker({ text }: { text: string }) {
       {head}{" "}
       <span className="relative inline-block">
         <span aria-hidden="true" className="absolute inset-x-0 bottom-1 h-2.5 bg-coral/80 sm:h-3" />
-        <span className="relative text-on-accent">{tail}</span>
+        <span className="relative">{tail}</span>
       </span>
     </>
   );
