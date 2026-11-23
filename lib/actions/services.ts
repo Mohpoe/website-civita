@@ -192,6 +192,45 @@ export async function toggleServiceAction(formData: FormData): Promise<ActionSta
   }
 }
 
+/**
+ * Simpan urutan tampil layanan. `orderedIds` sudah dalam urutan final dari
+ * drag-and-drop; `sort_order` dinormalisasi menjadi 0..n-1.
+ */
+export async function reorderServicesAction(orderedIds: string[]): Promise<ActionState> {
+  const guard = await requireRole([SUPERADMIN]);
+  if (!guard.ok) {
+    return { success: false, message: "Hanya superadmin yang dapat mengubah urutan layanan." };
+  }
+
+  const ids = Array.from(
+    new Set(
+      (Array.isArray(orderedIds) ? orderedIds : []).filter(
+        (id): id is string => typeof id === "string" && id.trim().length > 0,
+      ),
+    ),
+  ).slice(0, 200);
+
+  if (ids.length === 0) {
+    return { success: false, message: "Tidak ada layanan untuk diurutkan." };
+  }
+
+  try {
+    for (let index = 0; index < ids.length; index += 1) {
+      await sql`
+        UPDATE services
+        SET sort_order = ${index}, updated_at = now()
+        WHERE id = ${ids[index]}
+      `;
+    }
+
+    revalidateServices();
+    return { success: true, message: "Urutan layanan berhasil disimpan." };
+  } catch (error) {
+    console.error("Gagal menyimpan urutan layanan:", error);
+    return { success: false, message: "Gagal menyimpan urutan layanan." };
+  }
+}
+
 export async function deleteServiceAction(formData: FormData): Promise<ActionState> {
   const guard = await requireRole([SUPERADMIN]);
   if (!guard.ok) {

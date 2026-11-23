@@ -256,7 +256,6 @@
 .dialog-scroll {
   scrollbar-width: thin;
   scrollbar-color: color-mix(in srgb, var(--ink-soft) 55%, transparent) transparent;
-  scrollbar-gutter: stable;
 }
 
 .dialog-scroll::-webkit-scrollbar {

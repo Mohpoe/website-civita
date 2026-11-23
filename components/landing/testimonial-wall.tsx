@@ -536,7 +536,7 @@ function LightboxBody({
         </div>
       </div>
 
-      <div className="h-[58vh] overflow-auto rounded-md border-2 border-ink bg-paper-2 sm:h-[64vh]">
+      <div className="dialog-scroll h-[58vh] overflow-auto rounded-md border-2 border-ink bg-paper-2 sm:h-[64vh]">
         {/* eslint-disable-next-line @next/next/no-img-element -- rasio asli screenshot tidak tersimpan, jadi gambar dibiarkan mengikuti ukuran aslinya */}
         <img
           src={testimonial.image_url}

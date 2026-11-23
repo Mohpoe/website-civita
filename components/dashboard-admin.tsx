@@ -1147,7 +1147,7 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
               </DialogDescription>
             </DialogHeader>
             <Separator className="py-0" />
-            <div className="-mx-4 max-h-[60vh] overflow-y-auto px-4">
+            <div className="dialog-scroll -mx-4 max-h-[60vh] overflow-y-auto px-4">
               {/* Satu form untuk Create & Update */}
               <form
                 id="productForm"

@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Switch } from "@/components/ui/switch";
@@ -23,12 +23,33 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toast";
 import {
   deleteServiceAction,
+  reorderServicesAction,
   toggleServiceAction,
   upsertServiceAction,
 } from "@/lib/actions/services";
 import { cn, formatRupiah } from "@/lib/utils";
 import type { Service } from "@/types/global";
 import {
+  closestCenter,
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import {
+  ArrowUpDownIcon,
+  CheckIcon,
+  GripVerticalIcon,
   Loader2Icon,
   PencilIcon,
   PlusIcon,
@@ -57,6 +78,54 @@ function toPriceNumber(value: string | undefined): number {
   return digits ? Number(digits) : 0;
 }
 
+/** Baris layanan yang bisa diseret saat mode "Atur Urutan". */
+function SortableServiceRow({
+  service,
+  index,
+}: {
+  service: Service;
+  index: number;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: service.id });
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={cn(
+        "flex items-center gap-3 rounded-lg border bg-card p-3",
+        isDragging && "relative z-10 opacity-90 shadow-md",
+      )}
+    >
+      <button
+        type="button"
+        className="touch-none rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        aria-label={`Geser ${service.name}`}
+        {...attributes}
+        {...listeners}
+      >
+        <GripVerticalIcon className="size-4" />
+      </button>
+
+      <span className="w-6 shrink-0 text-center text-xs font-bold tabular-nums text-muted-foreground">
+        {index + 1}
+      </span>
+
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-semibold">{service.name}</p>
+        <p className="truncate text-[11px] text-muted-foreground">
+          {service.slug} · {formatRupiah(service.price)}
+        </p>
+      </div>
+
+      <Badge variant={service.is_active ? "default" : "secondary"}>
+        {service.is_active ? "Aktif" : "Nonaktif"}
+      </Badge>
+    </div>
+  );
+}
+
 export function DashboardServiceCatalog({ services }: DashboardServiceCatalogProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -76,6 +145,15 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
 
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Service | null>(null);
+
+  const [isReordering, setIsReordering] = useState(false);
+  const [orderedServices, setOrderedServices] = useState<Service[]>([]);
+  const [isSavingOrder, setIsSavingOrder] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   const filteredServices = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -204,6 +282,48 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
     });
   };
 
+  const startReorder = () => {
+    setOrderedServices(services);
+    setIsReordering(true);
+  };
+
+  const cancelReorder = () => {
+    setIsReordering(false);
+    setOrderedServices([]);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    setOrderedServices((items) => {
+      const oldIndex = items.findIndex((item) => item.id === active.id);
+      const newIndex = items.findIndex((item) => item.id === over.id);
+      if (oldIndex < 0 || newIndex < 0) return items;
+      return arrayMove(items, oldIndex, newIndex);
+    });
+  };
+
+  const saveOrder = async () => {
+    if (isSavingOrder || orderedServices.length === 0) return;
+
+    setIsSavingOrder(true);
+    try {
+      const result = await reorderServicesAction(orderedServices.map((item) => item.id));
+
+      if (result.success) {
+        toast.add({ type: "success", description: result.message });
+        setIsReordering(false);
+        setOrderedServices([]);
+        router.refresh();
+      } else {
+        toast.add({ type: "error", description: result.message, priority: "high" });
+      }
+    } finally {
+      setIsSavingOrder(false);
+    }
+  };
+
   return (
     <>
       <Card>
@@ -218,14 +338,40 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
                 sini yang dipakai saat klien membayar.
               </CardDescription>
             </div>
-            <Button onClick={openCreate} className="shrink-0">
-              <PlusIcon className="size-4" /> Tambah Layanan
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              {services.length > 1 ? (
+                isReordering ? (
+                  <>
+                    <Button variant="outline" onClick={cancelReorder} disabled={isSavingOrder}>
+                      Batal
+                    </Button>
+                    <Button onClick={() => void saveOrder()} disabled={isSavingOrder}>
+                      {isSavingOrder ? (
+                        <Loader2Icon className="size-4 animate-spin" />
+                      ) : (
+                        <CheckIcon className="size-4" />
+                      )}
+                      Simpan Urutan
+                    </Button>
+                  </>
+                ) : (
+                  <Button variant="outline" onClick={startReorder}>
+                    <ArrowUpDownIcon className="size-4" /> Atur Urutan
+                  </Button>
+                )
+              ) : null}
+
+              {!isReordering ? (
+                <Button onClick={openCreate}>
+                  <PlusIcon className="size-4" /> Tambah Layanan
+                </Button>
+              ) : null}
+            </div>
           </div>
         </CardHeader>
 
         <CardContent className="flex flex-col gap-4">
-          {services.length > 0 ? (
+          {services.length > 0 && !isReordering ? (
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <InputGroup className="sm:max-w-sm">
                 <InputGroupAddon>
@@ -292,7 +438,35 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
             </div>
           ) : null}
 
-          {services.length === 0 ? (
+          {isReordering ? (
+            <div className="flex flex-col gap-3">
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                Seret pegangan di kiri untuk mengubah urutan tampil. Perubahan baru tersimpan
+                setelah menekan <strong className="text-foreground">Simpan Urutan</strong>.
+              </p>
+
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={orderedServices.map((service) => service.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="flex flex-col gap-2">
+                    {orderedServices.map((service, index) => (
+                      <SortableServiceRow
+                        key={service.id}
+                        service={service}
+                        index={index}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            </div>
+          ) : services.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-border px-6 py-16 text-center">
               <Settings2Icon className="size-10 text-muted-foreground" />
               <div>
@@ -410,15 +584,31 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
           <DialogHeader>
             <DialogTitle>{editing ? "Ubah Layanan" : "Tambah Layanan"}</DialogTitle>
             <DialogDescription>
-              Isi harga untuk setiap bahasa yang aktif. Harga ini yang akan ditagihkan saat
-              klien membayar.
+              Atur nama, bahasa, dan harga layanan di katalog.
             </DialogDescription>
           </DialogHeader>
+
           <Separator className="py-0" />
-          <div className="-mx-4 max-h-[60vh] overflow-y-auto px-4">
+
+          <div className="flex items-center justify-between gap-3 rounded-lg border bg-muted/40 px-3 py-2.5">
+            <div>
+              <p className="text-sm font-medium">Ditampilkan di katalog</p>
+              <p className="text-[11px] text-muted-foreground">
+                Nonaktifkan untuk menyembunyikan layanan dari halaman publik.
+              </p>
+            </div>
+            <Switch
+              id="serviceActive"
+              checked={isActive}
+              onCheckedChange={(checked) => setIsActive(checked)}
+            />
+          </div>
+
+          <div className="dialog-scroll -mx-4 max-h-[60vh] overflow-y-auto px-4">
             <form onSubmit={submitForm} className="flex flex-col gap-4" id="serviceForm">
               <input type="hidden" name="id" value={editing?.id ?? ""} />
               <input type="hidden" name="isActive" value={String(isActive)} />
+              <input type="hidden" name="sortOrder" value={sortOrder} />
               {languages.map((code) => (
                 <input key={code} type="hidden" name="languages" value={code} />
               ))}
@@ -426,32 +616,38 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
               <FieldGroup>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <Field>
-                    <FieldLabel htmlFor="serviceName">Nama layanan</FieldLabel>
+                    <FieldLabel htmlFor="serviceName">
+                      Nama layanan <span className="text-destructive">*</span>
+                    </FieldLabel>
                     <Input
                       id="serviceName"
                       name="name"
                       value={name}
                       onChange={(event) => setName(event.target.value)}
+                      placeholder="mis. CV ATS Friendly"
                       required
                       maxLength={120}
                     />
                   </Field>
                   <Field>
-                    <FieldLabel htmlFor="serviceSlug">Kode layanan</FieldLabel>
+                    <FieldLabel htmlFor="serviceSlug">
+                      Kode layanan <span className="text-muted-foreground">· opsional</span>
+                    </FieldLabel>
                     <Input
                       id="serviceSlug"
                       name="slug"
                       value={slug}
                       onChange={(event) => setSlug(event.target.value)}
-                      placeholder="Terisi otomatis dari nama"
+                      placeholder="otomatis dari nama (mis. cv-ats)"
                       maxLength={80}
                     />
-                    <FieldDescription>Dipakai di alamat tautan layanan. Kosongkan untuk mengisi otomatis.</FieldDescription>
                   </Field>
                 </div>
 
                 <Field>
-                  <FieldLabel htmlFor="serviceDescription">Deskripsi</FieldLabel>
+                  <FieldLabel htmlFor="serviceDescription">
+                    Deskripsi <span className="text-muted-foreground">· opsional</span>
+                  </FieldLabel>
                   <Textarea
                     id="serviceDescription"
                     name="description"
@@ -459,6 +655,7 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
                     onChange={(event) => setDescription(event.target.value)}
                     rows={3}
                     maxLength={600}
+                    placeholder="Ringkas manfaat & siapa yang cocok (maks. 600 karakter)."
                   />
                 </Field>
 
@@ -480,16 +677,13 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
                       </button>
                     ))}
                   </div>
-                  <FieldDescription>
-                    Harga wajib diisi untuk setiap bahasa yang dipilih.
-                  </FieldDescription>
                 </Field>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {LANGUAGE_OPTIONS.filter((item) => languages.includes(item.code)).map((item) => (
                     <Field key={item.code}>
                       <FieldLabel htmlFor={`servicePrice-${item.code}`}>
-                        Harga {item.label} (Rp)
+                        Harga {item.label} (Rp) <span className="text-destructive">*</span>
                       </FieldLabel>
                       <Input
                         id={`servicePrice-${item.code}`}
@@ -502,38 +696,20 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
                             [item.code]: event.target.value,
                           }))
                         }
+                        placeholder="mis. 75000"
                         required
                       />
-                      <FieldDescription>Minimal Rp1.000.</FieldDescription>
                     </Field>
                   ))}
-
-                  <Field>
-                    <FieldLabel htmlFor="serviceOrder">Urutan tampil</FieldLabel>
-                    <Input
-                      id="serviceOrder"
-                      name="sortOrder"
-                      type="number"
-                      min={0}
-                      value={sortOrder}
-                      onChange={(event) => setSortOrder(event.target.value)}
-                    />
-                  </Field>
                 </div>
-
-                <Field orientation="horizontal">
-                  <FieldLabel htmlFor="serviceActive">Tampilkan di halaman utama</FieldLabel>
-                  <Switch
-                    id="serviceActive"
-                    checked={isActive}
-                    onCheckedChange={(checked) => setIsActive(checked)}
-                  />
-                </Field>
               </FieldGroup>
             </form>
           </div>
 
           <DialogFooter>
+            <p className="mr-auto text-[11px] text-muted-foreground">
+              <span className="text-destructive">*</span> wajib · opsional boleh dikosongkan
+            </p>
             <DialogClose render={<Button type="button" variant="outline" />} disabled={isPending}>
               Batal
             </DialogClose>
