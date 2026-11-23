@@ -81,7 +81,7 @@ export const ROUTES = {
 /** Menu utama yang dipakai bersama oleh navbar desktop dan drawer mobile. */
 export const PUBLIC_NAV_LINKS = [
   { label: "Beranda", href: ROUTES.ROOT },
-  { label: "Layanan", href: ROUTES.SERVICES },
+  { label: "Jasa", href: ROUTES.SERVICES },
   { label: "Produk", href: ROUTES.PRODUCTS },
   { label: "Alat PDF", href: "/#tools" },
   { label: "Testimoni", href: "/#testimoni" },
