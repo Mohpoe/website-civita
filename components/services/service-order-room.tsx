@@ -448,7 +448,7 @@ export function ServiceOrderRoom({
         {isAdmin ? <ServiceResultPanel order={order} /> : null}
       </div>
 
-      <div className="xl:sticky xl:top-24">
+      <div className="xl:sticky xl:top-20">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
