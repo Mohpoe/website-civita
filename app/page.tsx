@@ -1,3 +1,4 @@
+import { FaqAccordion } from "@/components/faq-accordion";
 import { ServiceOrderLink } from "@/components/landing/service-order-link";
 import { TestimonialWall } from "@/components/landing/testimonial-wall";
 import { PublicFooter } from "@/components/public-footer";
@@ -27,7 +28,6 @@ import {
   Mail,
   MessageCircle,
   PencilRuler,
-  Plus,
   RefreshCcw,
   ShieldCheck,
   Sparkles,
@@ -487,17 +487,13 @@ export default async function HomePage() {
               </a>
             </div>
 
-            <div className="flex flex-col gap-2.5">
-              {FAQ_ITEMS.map((item) => (
-                <details key={item.question} className="nb group rounded-lg bg-paper p-4">
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-ink [&::-webkit-details-marker]:hidden">
-                    {item.question}
-                    <Plus className="size-4 shrink-0 transition-transform group-open:rotate-45" />
-                  </summary>
-                  <p className="mt-3 text-xs leading-relaxed text-ink-soft">{item.answer}</p>
-                </details>
-              ))}
-            </div>
+            <FaqAccordion
+              items={FAQ_ITEMS}
+              variant="card"
+              className="gap-2.5"
+              triggerClassName="py-4 text-sm font-semibold"
+              contentClassName="pb-4 text-xs"
+            />
           </div>
         </section>
 

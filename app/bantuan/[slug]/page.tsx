@@ -1,3 +1,4 @@
+import { FaqAccordion } from "@/components/faq-accordion";
 import { PublicPageShell } from "@/components/public-page-shell";
 import { buttonVariants } from "@/components/ui/button";
 import { APP_CONFIG, ROUTES } from "@/lib/constants";
@@ -7,7 +8,6 @@ import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
   ArrowRight,
-  ChevronDown,
   Clock,
   Mail,
   MessageCircle,
@@ -197,19 +197,7 @@ export default async function HelpArticlePage({ params }: PageProps) {
                 <h2 className="mb-3 text-xl font-bold tracking-tight md:text-2xl">
                   Pertanyaan Umum
                 </h2>
-                <div className="divide-y-2 divide-ink/10">
-                  {article.faqs.map((faq) => (
-                    <details key={faq.question} className="group py-4 first:pt-0 last:pb-0">
-                      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-bold md:text-base">
-                        {faq.question}
-                        <ChevronDown className="size-4 shrink-0 transition-transform group-open:rotate-180" />
-                      </summary>
-                      <p className="mt-2 text-sm leading-relaxed text-ink-soft md:text-base">
-                        {faq.answer}
-                      </p>
-                    </details>
-                  ))}
-                </div>
+                <FaqAccordion items={article.faqs} />
               </section>
 
               <section className="nb flex flex-col gap-4 rounded-lg bg-lilac p-6 text-on-accent sm:flex-row sm:items-center sm:justify-between">

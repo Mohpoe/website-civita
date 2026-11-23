@@ -1,3 +1,4 @@
+import { FaqAccordion } from "@/components/faq-accordion";
 import { PublicPageShell } from "@/components/public-page-shell";
 import { buttonVariants } from "@/components/ui/button";
 import { APP_CONFIG, ROUTES } from "@/lib/constants";
@@ -171,20 +172,8 @@ export default function HelpHubPage() {
             >
               Pertanyaan yang sering muncul
             </h2>
-            <div className="nb mt-5 divide-y-2 divide-ink/10 rounded-lg bg-paper p-5 md:p-6">
-              {QUICK_FAQ.map((item) => (
-                <details key={item.question} className="group py-4 first:pt-0 last:pb-0">
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-bold md:text-base">
-                    {item.question}
-                    <span className="flex size-6 shrink-0 items-center justify-center rounded-md border-2 border-ink text-lg leading-none transition-transform group-open:rotate-45">
-                      +
-                    </span>
-                  </summary>
-                  <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                    {item.answer}
-                  </p>
-                </details>
-              ))}
+            <div className="nb mt-5 rounded-lg bg-paper p-5 md:p-6">
+              <FaqAccordion items={QUICK_FAQ} />
             </div>
           </section>
 

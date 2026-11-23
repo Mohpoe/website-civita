@@ -1,4 +1,4 @@
-import { ChevronDown } from "lucide-react";
+import { FaqAccordion } from "@/components/faq-accordion";
 
 export type PdfToolGuideProps = {
   toolName: string;
@@ -59,19 +59,7 @@ export function PdfToolGuide({ toolName, steps, faqs }: PdfToolGuideProps) {
         <h2 className="mb-3 text-2xl font-bold tracking-tight md:text-3xl">
           Pertanyaan Umum
         </h2>
-        <div className="divide-y-2 divide-ink/10">
-          {faqs.map((faq) => (
-            <details key={faq.question} className="group py-4">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold">
-                <h3 className="text-base md:text-lg">{faq.question}</h3>
-                <ChevronDown className="size-5 shrink-0 transition-transform group-open:rotate-180" />
-              </summary>
-              <p className="mt-2 text-sm leading-relaxed text-ink-soft md:text-base">
-                {faq.answer}
-              </p>
-            </details>
-          ))}
-        </div>
+        <FaqAccordion items={faqs} />
       </section>
     </div>
   );
