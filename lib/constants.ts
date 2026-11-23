@@ -57,10 +57,8 @@ export const ROUTES = {
   POLICY: "/privacy-policy",
   DASHBOARD: {
     HOME: "/dashboard",
-    ORDERS: "/dashboard/pesanan",
     ORDER_PRODUCTS: "/dashboard/pesanan/produk",
     ORDER_SERVICES: "/dashboard/pesanan/jasa",
-    SERVICE_NEW: "/dashboard/pesanan/jasa/new",
     ADMIN: "/dashboard/admin",
     CATEGORY: "/dashboard/admin/category",
     REPORT: "/dashboard/admin/report",

@@ -1,6 +1,8 @@
 'use client'; // Wajib untuk komponen error di Next.js App Router
 
+import { buttonVariants } from '@/components/ui/button';
 import { APP_CONFIG, ROUTES } from '@/lib/constants';
+import { cn } from '@/lib/utils';
 import { AlertOctagon, Home, RefreshCcw } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect } from 'react';
@@ -13,65 +15,82 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Anda bisa menyambungkan ini ke layanan reporting seperti Sentry
+    // Bisa disambungkan ke layanan reporting seperti Sentry.
     console.error(error);
   }, [error]);
 
   return (
-    <div className="min-h-screen w-full bg-[#fdfaf8] dark:bg-[#171311] flex items-center justify-center p-6 selection:bg-[#f68e51] dark:selection:bg-[#d16f34] selection:text-foreground bg-[radial-gradient(color-mix(in_srgb,currentColor_30%,transparent)_1px,transparent_1px)] dark:bg-[radial-gradient(color-mix(in_srgb,currentColor_13%,transparent)_1px,transparent_1px)] [background-size:20px_20px]">
+    <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-paper p-6 text-ink selection:bg-coral selection:text-on-accent bg-[radial-gradient(color-mix(in_srgb,var(--ink)_12%,transparent)_1px,transparent_1px)] [background-size:20px_20px]">
+      {/* Ornamen latar neobrutal dengan token tema. */}
+      <div className="pointer-events-none absolute -bottom-12 -left-10 size-44 rounded-full border-2 border-ink bg-sage opacity-25" />
+      <div className="pointer-events-none absolute -top-10 right-8 size-28 rotate-12 border-2 border-ink bg-coral opacity-25" />
 
-      {/* Kontainer Utama Neobrutalism */}
-      <div className="relative w-full max-w-lg bg-[#fdfaf8] dark:bg-[#171311] border-[4px] border-foreground shadow-[12px_12px_0px_0px] shadow-foreground rounded-2xl p-8 md:p-10 z-10">
-
-        {/* Ornamen Dekoratif Neobrutalism (Badge Oranye) */}
-        <div className="absolute -top-4 -right-4 bg-[#f68e51] dark:bg-[#d16f34] border-[3px] border-foreground shadow-[4px_4px_0px_0px] shadow-foreground px-4 py-1 transform rotate-6 z-20">
-          <span className="font-black text-black uppercase tracking-widest text-sm">
+      <div className="relative z-10 w-full max-w-lg rounded-xl border-2 border-ink bg-paper p-8 shadow-[10px_10px_0_0_var(--ink)] md:p-10">
+        {/* Badge dekoratif */}
+        <div className="absolute -right-3 -top-4 rotate-6 border-2 border-ink bg-coral px-4 py-1 shadow-[3px_3px_0_0_var(--ink)]">
+          <span className="font-heading text-xs font-bold uppercase tracking-widest text-on-accent">
             Status: Gawat
           </span>
         </div>
 
-        {/* Ikon Error */}
-        <div className="w-20 h-20 bg-[#ef3936] dark:bg-[#c9302c] border-[4px] border-foreground shadow-[6px_6px_0px_0px] shadow-foreground rounded-full flex items-center justify-center mb-8">
-          <AlertOctagon className="w-10 h-10 text-white" strokeWidth={2.5} />
+        {/* Ikon error */}
+        <div className="mb-7 flex size-16 items-center justify-center rounded-full border-2 border-ink bg-coral shadow-[4px_4px_0_0_var(--ink)]">
+          <AlertOctagon className="size-8 text-on-accent" strokeWidth={2.5} />
         </div>
 
-        {/* Tipografi Super Tebal */}
-        <h1 className="text-5xl md:text-6xl font-black leading-none tracking-tight mb-4 uppercase">
+        <h1 className="font-heading text-4xl font-bold uppercase leading-none tracking-tight text-ink md:text-5xl">
           Yaaah, <br />
-          <span className="text-[#ef3936] dark:text-[#c9302c] underline decoration-foreground decoration-[4px] underline-offset-8">
+          <span className="text-coral-deep underline decoration-ink decoration-4 underline-offset-8">
             Error
-          </span> Nih!
+          </span>{' '}
+          Nih!
         </h1>
 
-        <p className="text-lg text-foreground/80 font-medium mb-8 border-l-[4px] border-[#f68e51] dark:border-[#d16f34] pl-4">
-          <em>Ubur-ubur ikan lele, error nih le!</em> Kamu bisa refresh atau hubungi admin di <a href={APP_CONFIG.LINKS.EMAIL} className="font-bold underline decoration-2 underline-offset-2 text-[#ef3936] dark:text-[#c9302c]">email</a> atau <a href={`${APP_CONFIG.LINKS.WHATSAPP}`} target="_blank" rel="noopener noreferrer" className="font-bold underline decoration-2 underline-offset-2 text-[#ef3936] dark:text-[#c9302c]">WhatsApp</a>.
+        <p className="mt-6 border-l-4 border-coral pl-4 text-base font-medium leading-relaxed text-ink-soft">
+          <em>Ubur-ubur ikan lele, error nih le!</em> Kamu bisa refresh atau hubungi admin di{' '}
+          <a
+            href={APP_CONFIG.LINKS.EMAIL}
+            className="font-bold text-coral-deep underline decoration-2 underline-offset-2"
+          >
+            email
+          </a>{' '}
+          atau{' '}
+          <a
+            href={APP_CONFIG.LINKS.WHATSAPP}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-bold text-coral-deep underline decoration-2 underline-offset-2"
+          >
+            WhatsApp
+          </a>
+          .
         </p>
 
-        {/* Area Tombol */}
-        <div className="flex flex-col sm:flex-row gap-4">
-          {/* Tombol Utama - Merah */}
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <button
+            type="button"
             onClick={() => reset()}
-            className="flex-1 flex items-center justify-center gap-2 bg-[#ef3936] dark:bg-[#c9302c] text-white font-black uppercase tracking-wide border-[3px] border-foreground shadow-[6px_6px_0px_0px] shadow-foreground px-6 py-4 transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px] active:translate-x-[6px] active:translate-y-[6px] active:shadow-none"
+            className={cn(
+              buttonVariants({ variant: 'default' }),
+              'nb-press h-11 flex-1 px-5 text-sm font-semibold',
+            )}
           >
-            <RefreshCcw className="w-5 h-5" strokeWidth={3} />
+            <RefreshCcw className="size-5" strokeWidth={2.5} />
             Coba Lagi
           </button>
 
-          {/* Tombol Sekunder - Oranye */}
           <Link
             href={ROUTES.ROOT}
-            className="flex-1 flex items-center justify-center gap-2 bg-[#f68e51] dark:bg-[#d16f34] text-black font-black uppercase tracking-wide border-[3px] border-foreground shadow-[6px_6px_0px_0px] shadow-foreground px-6 py-4 transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px] active:translate-x-[6px] active:translate-y-[6px] active:shadow-none"
+            className={cn(
+              buttonVariants({ variant: 'outline' }),
+              'nb-press h-11 flex-1 px-5 text-sm font-semibold',
+            )}
           >
-            <Home className="w-5 h-5" strokeWidth={3} />
+            <Home className="size-5" strokeWidth={2.5} />
             Ke Beranda
           </Link>
         </div>
       </div>
-
-      {/* Ornamen Latar Belakang (Aksen Tambahan) */}
-      <div className="fixed bottom-10 left-10 w-24 h-24 bg-[#f68e51] dark:bg-[#d16f34] border-[4px] border-foreground rounded-full -z-0 opacity-20 pointer-events-none"></div>
-      <div className="fixed top-20 right-20 w-32 h-32 bg-[#ef3936] dark:bg-[#c9302c] border-[4px] border-foreground -z-0 opacity-20 transform rotate-12 pointer-events-none"></div>
     </div>
   );
 }

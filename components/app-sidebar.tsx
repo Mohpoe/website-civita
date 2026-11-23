@@ -83,11 +83,6 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
               url: ROUTES.DASHBOARD.CATEGORY,
               icon: <TagPlusIcon />,
             },
-            {
-              title: "Laporan Penjualan",
-              url: ROUTES.DASHBOARD.REPORT,
-              icon: <SquareTextIcon />,
-            },
           ],
         },
         {
@@ -108,6 +103,17 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
                 },
               ]
               : []),
+          ],
+        },
+        {
+          id: "laporan",
+          label: "Laporan",
+          items: [
+            {
+              title: "Laporan Penjualan",
+              url: ROUTES.DASHBOARD.REPORT,
+              icon: <SquareTextIcon />,
+            },
           ],
         },
         {

@@ -173,6 +173,7 @@ export interface ReportChartData {
   success_revenue: number;
   failed_revenue: number;
   success_orders: number;
+  pending_orders: number;
   failed_orders: number;
 }
 
@@ -180,6 +181,15 @@ export interface TopProduct {
   id: string;
   title: string;
   category: string;
+  sold_count: number;
+  revenue: number;
+}
+
+/** Layanan terlaris pada laporan jasa; satu baris per layanan + bahasa. */
+export interface TopService {
+  id: string;
+  name: string;
+  language: string | null;
   sold_count: number;
   revenue: number;
 }
@@ -193,4 +203,46 @@ export interface ReportOrderHistory {
   created_at: string;
   clerk_user_deleted_at: string | null;
   product_title: string | null;
+}
+
+/** Riwayat pesanan jasa untuk tabel laporan. */
+export interface ServiceOrderHistory {
+  order_id: string;
+  user_id: string | null;
+  email: string | null;
+  service_name: string;
+  service_slug: string | null;
+  language: string;
+  amount: number;
+  status: string;
+  whatsapp: string | null;
+  created_at: string;
+}
+
+/** KPI gabungan produk digital + jasa, sekaligus rincian per jenis. */
+export interface CombinedReportKPI extends ReportKPI {
+  product_revenue: number;
+  service_revenue: number;
+  product_orders: number;
+  service_orders: number;
+  product_success: number;
+  service_success: number;
+}
+
+export type ReportType = "produk" | "jasa";
+
+export interface SalesReportData {
+  product: {
+    kpi: ReportKPI;
+    chart: ReportChartData[];
+    topProducts: TopProduct[];
+    orderHistory: ReportOrderHistory[];
+  };
+  service: {
+    kpi: ReportKPI;
+    chart: ReportChartData[];
+    topServices: TopService[];
+    orderHistory: ServiceOrderHistory[];
+  };
+  combined: CombinedReportKPI;
 }

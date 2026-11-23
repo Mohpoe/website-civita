@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toast";
 import { ROUTES } from "@/lib/constants";
@@ -343,8 +344,11 @@ export function ServiceOrderDialog({
           onOpenChange(next);
         }}
       >
-        <DialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col gap-4 overflow-hidden sm:max-h-[calc(100dvh-3rem)] sm:max-w-2xl">
-          <DialogHeader className="shrink-0 pr-8">
+        <DialogContent
+          className="w-full sm:max-w-2xl"
+          showCloseButton={!isSubmitting}
+        >
+          <DialogHeader>
             <DialogTitle>Pesan {service.name}</DialogTitle>
             <DialogDescription>
               Lengkapi data di bawah. Setelah pesanan dibuat, kamu bisa menjelaskan detail
@@ -352,15 +356,17 @@ export function ServiceOrderDialog({
             </DialogDescription>
           </DialogHeader>
 
+          <Separator className="py-0" />
+
           <form
-            className="flex min-h-0 flex-1 flex-col gap-4"
+            id="serviceOrderForm"
+            className="flex flex-col gap-5"
             onSubmit={(event) => {
               event.preventDefault();
               void submit();
             }}
           >
-            <div className="min-h-0 flex-1 overflow-y-auto pr-1">
-              <FieldGroup>
+            <FieldGroup>
               <Field>
                 <FieldLabel htmlFor="orderWhatsapp">Nomor WhatsApp</FieldLabel>
                 <Input
@@ -536,27 +542,30 @@ export function ServiceOrderDialog({
               Pembayaran diproses Midtrans. Berkas hanya dipakai untuk menyusun berkas
               lamaranmu dan hasilnya bisa diunduh dari ruang pesanan.
             </p>
-            </div>
-
-            <DialogFooter className="mx-0 mb-0 shrink-0">
-              <Button
-                type="button"
-                variant="outline"
-                disabled={isBusy}
-                onClick={() => onOpenChange(false)}
-              >
-                Batal
-              </Button>
-              <Button type="submit" disabled={isBusy || snapState !== "ready"}>
-                {isSubmitting ? (
-                  <Loader2Icon className="size-4 animate-spin" />
-                ) : (
-                  <CreditCardIcon className="size-4" />
-                )}
-                {isSubmitting ? "Memproses..." : `Bayar ${formatRupiah(price)}`}
-              </Button>
-            </DialogFooter>
           </form>
+
+          <DialogFooter className="pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isBusy}
+              onClick={() => onOpenChange(false)}
+            >
+              Batal
+            </Button>
+            <Button
+              type="submit"
+              form="serviceOrderForm"
+              disabled={isBusy || snapState !== "ready"}
+            >
+              {isSubmitting ? (
+                <Loader2Icon className="size-4 animate-spin" />
+              ) : (
+                <CreditCardIcon className="size-4" />
+              )}
+              {isSubmitting ? "Memproses..." : `Bayar ${formatRupiah(price)}`}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
