@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toast";
 import type { ServiceMessage, ServiceOrder } from "@/types/global";
+import { ROUTES } from "@/lib/constants";
 import { cn, formatRupiah } from "@/lib/utils";
 import {
   CheckCircle2Icon,
@@ -282,7 +283,7 @@ export function ServiceOrderRoom({ order, initialMessages, viewer }: ServiceOrde
                     : "Menunggu pembayaran"}
               </span>
               <Link
-                href={isAdmin ? "/dashboard/admin/services" : "/dashboard/services"}
+                href={isAdmin ? "/dashboard/admin/services" : ROUTES.DASHBOARD.ORDER_SERVICES}
                 className="font-medium text-foreground underline underline-offset-4"
               >
                 Kembali ke daftar

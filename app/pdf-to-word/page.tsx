@@ -3,8 +3,7 @@ import { FileType2Icon } from "lucide-react";
 import PdfToWordTool from "@/components/pdf-to-word-tool";
 import { PdfToolGuide } from "@/components/pdf-tool-guide";
 import { PdfToolsCrossNav } from "@/components/pdf-tools-cross-nav";
-import { PublicFooter } from "@/components/public-footer";
-import { PublicNavigation } from "@/components/public-header";
+import { PublicPageShell } from "@/components/public-page-shell";
 import { ROUTES } from "@/lib/constants";
 import { createPageMetadata } from "@/lib/seo";
 
@@ -19,32 +18,23 @@ export const metadata: Metadata = createPageMetadata({
 
 export default function PdfToWordPage() {
   return (
-    <div className="font-mono text-foreground antialiased min-h-screen bg-background">
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-        :root { --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
-        body { font-family: var(--font-mono); }
-        `,
-        }}
-      />
-      <PublicNavigation />
-      <main className="pt-32 pb-20 px-4 md:px-6">
-        <div className="max-w-4xl mx-auto space-y-8">
-          <div className="text-center space-y-4">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-red text-white border-2 border-foreground text-sm font-black shadow-[2px_2px_0px_0px] shadow-foreground">
-              <FileType2Icon className="w-4 h-4" />
+    <PublicPageShell>
+      <main className="px-4 pt-28 pb-16 sm:px-6 md:pt-32">
+        <div className="mx-auto max-w-4xl space-y-8">
+          <header className="space-y-4">
+            <span className="nb-sm inline-flex items-center gap-2 rounded-full bg-coral px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest text-on-accent">
+              <FileType2Icon className="size-4" />
               PDF to Word
-            </div>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tighter">
+            </span>
+            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
               Konversi PDF ke Word
             </h1>
-            <p className="text-foreground/80 font-medium text-lg max-w-2xl mx-auto">
+            <p className="max-w-2xl text-sm leading-relaxed text-ink-soft md:text-base">
               Ubah PDF menjadi dokumen Word yang bisa diedit. Tata letak, tabel,
               dan gambar dipertahankan sebisa mungkin.
             </p>
-          </div>
-          <div className="bg-card border-4 border-foreground rounded-[2rem] shadow-[6px_6px_0px_0px] shadow-foreground p-4 md:p-8">
+          </header>
+          <div className="nb rounded-lg bg-paper p-4 md:p-8">
             <PdfToWordTool />
           </div>
           <PdfToolGuide
@@ -86,7 +76,6 @@ export default function PdfToWordPage() {
           <PdfToolsCrossNav currentHref={ROUTES.PDF_TOOLS.PDF_TO_WORD} />
         </div>
       </main>
-      <PublicFooter />
-    </div>
+    </PublicPageShell>
   );
 }

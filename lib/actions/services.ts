@@ -52,7 +52,7 @@ function revalidateServices() {
   revalidatePath(ROUTES.ROOT);
   revalidatePath(ROUTES.SERVICES);
   revalidatePath(`${ROUTES.SERVICES}/[slug]`, "page");
-  revalidatePath(ROUTES.DASHBOARD.SERVICES);
+  revalidatePath(ROUTES.DASHBOARD.ORDER_SERVICES);
   revalidatePath(ROUTES.DASHBOARD.ADMIN_SERVICES);
   revalidatePath(ROUTES.DASHBOARD.SERVICE_CATALOG);
 }
@@ -299,7 +299,7 @@ export async function sendServiceMessageAction(
       VALUES (${randomUUID()}, ${orderId}, ${access.userId}, ${access.role}, ${message})
     `;
 
-    revalidatePath(`${ROUTES.DASHBOARD.SERVICES}/${orderId}`);
+    revalidatePath(`${ROUTES.DASHBOARD.ORDER_SERVICES}/${orderId}`);
     revalidatePath(`${ROUTES.DASHBOARD.ADMIN_SERVICES}/${orderId}`);
     return { success: true, message: "Pesan terkirim." };
   } catch (error) {
@@ -371,7 +371,7 @@ export async function attachServiceResultAction(
       `;
     }
 
-    revalidatePath(`${ROUTES.DASHBOARD.SERVICES}/${orderId}`);
+    revalidatePath(`${ROUTES.DASHBOARD.ORDER_SERVICES}/${orderId}`);
     revalidatePath(`${ROUTES.DASHBOARD.ADMIN_SERVICES}/${orderId}`);
     revalidatePath(ROUTES.DASHBOARD.ADMIN_SERVICES);
     return { success: true, message: "Berkas hasil berhasil dikirim ke klien." };
@@ -417,7 +417,7 @@ export async function deleteServiceResultAction(orderId: string): Promise<Action
       `;
     }
 
-    revalidatePath(`${ROUTES.DASHBOARD.SERVICES}/${orderId}`);
+    revalidatePath(`${ROUTES.DASHBOARD.ORDER_SERVICES}/${orderId}`);
     revalidatePath(`${ROUTES.DASHBOARD.ADMIN_SERVICES}/${orderId}`);
     return { success: true, message: "Berkas hasil dihapus." };
   } catch (error) {

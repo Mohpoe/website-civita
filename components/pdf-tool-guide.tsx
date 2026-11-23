@@ -29,7 +29,7 @@ export function PdfToolGuide({ toolName, steps, faqs }: PdfToolGuideProps) {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -37,17 +37,17 @@ export function PdfToolGuide({ toolName, steps, faqs }: PdfToolGuideProps) {
         }}
       />
 
-      <section className="bg-card border-4 border-foreground rounded-[2rem] shadow-[6px_6px_0px_0px] shadow-foreground p-6 md:p-8">
-        <h2 className="text-2xl md:text-3xl font-black tracking-tight mb-5">
+      <section className="nb rounded-lg bg-paper p-6 md:p-8">
+        <h2 className="mb-5 text-2xl font-bold tracking-tight md:text-3xl">
           Cara Menggunakan {toolName}
         </h2>
         <ol className="space-y-4">
           {steps.map((step, index) => (
             <li key={step} className="flex items-start gap-3">
-              <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 border-foreground bg-brand-orange text-sm font-black">
+              <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md border-2 border-ink bg-butter text-sm font-bold text-on-accent">
                 {index + 1}
               </span>
-              <p className="font-medium leading-relaxed text-foreground/80">
+              <p className="text-sm leading-relaxed text-ink-soft md:text-base">
                 {step}
               </p>
             </li>
@@ -55,18 +55,18 @@ export function PdfToolGuide({ toolName, steps, faqs }: PdfToolGuideProps) {
         </ol>
       </section>
 
-      <section className="bg-card border-4 border-foreground rounded-[2rem] shadow-[6px_6px_0px_0px] shadow-foreground p-6 md:p-8">
-        <h2 className="text-2xl md:text-3xl font-black tracking-tight mb-3">
+      <section className="nb rounded-lg bg-paper p-6 md:p-8">
+        <h2 className="mb-3 text-2xl font-bold tracking-tight md:text-3xl">
           Pertanyaan Umum
         </h2>
-        <div className="divide-y-2 divide-foreground/10">
+        <div className="divide-y-2 divide-ink/10">
           {faqs.map((faq) => (
             <details key={faq.question} className="group py-4">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-bold">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold">
                 <h3 className="text-base md:text-lg">{faq.question}</h3>
-                <ChevronDown className="h-5 w-5 shrink-0 transition-transform group-open:rotate-180" />
+                <ChevronDown className="size-5 shrink-0 transition-transform group-open:rotate-180" />
               </summary>
-              <p className="mt-2 font-medium leading-relaxed text-foreground/80">
+              <p className="mt-2 text-sm leading-relaxed text-ink-soft md:text-base">
                 {faq.answer}
               </p>
             </details>

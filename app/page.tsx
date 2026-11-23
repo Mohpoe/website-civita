@@ -544,7 +544,7 @@ export default async function HomePage() {
         </section>
       </main>
 
-      <PublicFooter />
+      <PublicFooter services={services} />
     </div>
   );
 }

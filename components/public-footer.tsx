@@ -9,18 +9,33 @@ import Link from "next/link";
 import { SiInstagram as Instagram, SiWhatsapp } from "react-icons/si";
 import { TfiLinkedin } from "react-icons/tfi";
 
-const SERVICE_LINKS = [
+const FALLBACK_SERVICE_LINKS = [
   { label: "Semua Jasa", href: "/jasa" },
-  { label: "CV ATS Friendly", href: "/jasa/cv-ats" },
-  { label: "Resume ATS", href: "/jasa/resume-ats" },
-  { label: "Surat Lamaran", href: "/jasa/surat-lamaran" },
-  { label: "Cover Letter", href: "/jasa/cover-letter" },
   { label: "Template Digital", href: "/produk" },
 ];
 
-export function PublicFooter() {
+export function PublicFooter({
+  services = [],
+}: {
+  /** Layanan aktif dari database; dipakai agar tautan footer tidak basi. */
+  services?: { name: string; slug: string }[];
+}) {
   const { settings, links } = useSiteSettings();
   const year = new Date().getFullYear();
+
+  const serviceLinks =
+    services.length > 0
+      ? [
+          { label: "Semua Jasa", href: ROUTES.SERVICES },
+          ...services
+            .slice(0, 4)
+            .map((service) => ({
+              label: service.name,
+              href: `${ROUTES.SERVICES}/${service.slug}`,
+            })),
+          { label: "Template Digital", href: ROUTES.PRODUCTS },
+        ]
+      : FALLBACK_SERVICE_LINKS;
 
   return (
     <footer className="border-t-2 border-ink bg-paper px-4 pt-12 pb-8 sm:px-6">
@@ -88,9 +103,9 @@ export function PublicFooter() {
             <h2 className="text-[11px] font-semibold uppercase tracking-widest text-ink-soft">
               Layanan
             </h2>
-            {SERVICE_LINKS.map((link) => (
+            {serviceLinks.map((link) => (
               <Link
-                key={link.label}
+                key={link.href}
                 href={link.href}
                 className="w-max text-sm text-ink transition-colors hover:text-coral-deep"
               >
@@ -130,6 +145,9 @@ export function PublicFooter() {
           </p>
 
           <div className="flex flex-wrap items-center gap-4">
+            <Link href={ROUTES.HELP} className="hover:text-ink">
+              Bantuan
+            </Link>
             <Link href={ROUTES.TERMS} className="hover:text-ink">
               Syarat & Ketentuan
             </Link>

@@ -1,4 +1,5 @@
 import { APP_CONFIG, ROUTES } from '@/lib/constants';
+import { HELP_ARTICLES } from '@/lib/help-content';
 import { getActiveProducts } from '@/lib/products';
 import { getActiveServices } from '@/lib/service-catalog';
 import type { MetadataRoute } from 'next';
@@ -58,6 +59,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: PAGE_URL(path),
       changeFrequency: 'monthly' as const,
       priority: 0.9,
+    })),
+    {
+      url: PAGE_URL(ROUTES.HELP),
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
+    ...HELP_ARTICLES.map((article) => ({
+      url: PAGE_URL(`${ROUTES.HELP}/${article.slug}`),
+      changeFrequency: 'monthly' as const,
+      priority: 0.5,
     })),
     {
       url: PAGE_URL(ROUTES.POLICY),

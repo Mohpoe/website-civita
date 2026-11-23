@@ -1,18 +1,12 @@
-import { PageTitle } from "@/components/context/dashboard-page-title";
-import DashboardHelp from "@/components/dashboard-help";
-import { Metadata } from "next";
+import { ROUTES } from "@/lib/constants";
+import { redirect } from "next/navigation";
 
-const mainTitle = "Panduan Pengguna";
-
-export const metadata: Metadata = {
-  title: mainTitle,
-}
-
-export default function HelpPage() {
-  return (
-    <>
-      <PageTitle title={mainTitle} />
-      <DashboardHelp />
-    </>
-  );
+/**
+ * Panduan pengguna kini berupa halaman publik `/bantuan`.
+ *
+ * Alamat lama tetap dipertahankan sebagai pengalihan supaya tautan lama dan
+ * bookmark tidak berakhir di halaman kosong.
+ */
+export default function DashboardHelpRedirectPage() {
+  redirect(ROUTES.HELP);
 }

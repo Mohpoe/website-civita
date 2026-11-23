@@ -10,29 +10,40 @@ export function PdfToolsCrossNav({ currentHref }: { currentHref: string }) {
 
   return (
     <section aria-label="Alat PDF lainnya" className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-lg md:text-xl font-black tracking-tight">Alat PDF Lainnya</h2>
-        <Link href="/#tools" className="text-sm font-bold underline decoration-2 underline-offset-4 hover:text-brand-red">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-xl font-bold tracking-tight">Alat PDF Lainnya</h2>
+        <Link
+          href="/#tools"
+          className="text-xs font-semibold text-ink underline decoration-2 underline-offset-4 hover:text-coral-deep"
+        >
           Lihat semua
         </Link>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {others.map((tool) => {
           const Icon = tool.icon;
           return (
             <Link
               key={tool.id}
               href={tool.href}
-              className="group flex items-center gap-3 p-4 rounded-2xl border-2 border-foreground bg-background shadow-[3px_3px_0px_0px] shadow-foreground hover:translate-y-[1px] hover:shadow-[2px_2px_0px_0px] transition-all"
+              className="nb-sm nb-hover group flex items-center gap-3 rounded-lg bg-paper p-4"
             >
-              <div className={`w-10 h-10 shrink-0 rounded-xl border-2 border-foreground flex items-center justify-center shadow-[2px_2px_0px_0px] shadow-foreground ${tool.accent === "red" ? "bg-brand-red text-white" : "bg-brand-orange text-black"}`}>
-                <Icon className="w-5 h-5" />
+              <div
+                className={`flex size-10 shrink-0 items-center justify-center rounded-md border-2 border-ink text-on-accent ${
+                  tool.accent === "red" ? "bg-coral" : "bg-butter"
+                }`}
+              >
+                <Icon className="size-5" />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="font-black text-sm leading-tight">{tool.name}</div>
-                <div className="text-xs font-medium text-foreground/70 leading-snug mt-0.5">{tool.shortName}</div>
+                <div className="text-sm font-bold leading-tight">
+                  {tool.name}
+                </div>
+                <div className="mt-0.5 text-xs leading-snug text-ink-soft">
+                  {tool.shortName}
+                </div>
               </div>
-              <ArrowRight className="w-4 h-4 shrink-0 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+              <ArrowRight className="size-4 shrink-0 opacity-60 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
             </Link>
           );
         })}

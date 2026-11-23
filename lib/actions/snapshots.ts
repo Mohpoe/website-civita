@@ -122,7 +122,7 @@ export async function restoreSnapshotAction(snapshotId: string) {
     await sql`DELETE FROM product_snapshots WHERE id = ${snapshotId}`;
 
     revalidatePath(ROUTES.DASHBOARD.HOME);
-    revalidatePath(ROUTES.DASHBOARD.INVENTORY);
+    revalidatePath(ROUTES.DASHBOARD.ORDER_PRODUCTS);
     revalidatePath(ROUTES.DASHBOARD.ADMIN);
 
     return {

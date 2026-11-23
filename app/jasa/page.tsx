@@ -1,4 +1,5 @@
 import { ServiceCard } from "@/components/services/service-card";
+import { CatalogPagination } from "@/components/products/catalog-pagination";
 import { buttonVariants } from "@/components/ui/button";
 import { ROUTES } from "@/lib/constants";
 import { getActiveServices } from "@/lib/service-catalog";
@@ -24,6 +25,8 @@ const SORTS = [
 
 type SortValue = (typeof SORTS)[number]["value"];
 
+const PAGE_SIZE = 9;
+
 function first(value: string | string[] | undefined): string {
   return Array.isArray(value) ? (value[0] ?? "") : (value ?? "");
 }
@@ -36,6 +39,7 @@ export default async function ServicesPage({
   const params = await searchParams;
   const query = first(params.q).trim();
   const requestedSort = first(params.urut).trim();
+  const requestedPage = Math.max(1, Number(first(params.halaman)) || 1);
   const sort: SortValue = SORTS.some((item) => item.value === requestedSort)
     ? (requestedSort as SortValue)
     : "urutan";
@@ -56,16 +60,27 @@ export default async function ServicesPage({
     return a.sort_order - b.sort_order;
   });
 
-  const buildHref = (overrides: { q?: string; urut?: string } = {}) => {
+  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+  const currentPage = Math.min(requestedPage, totalPages);
+  const startIndex = (currentPage - 1) * PAGE_SIZE;
+  const pageItems = sorted.slice(startIndex, startIndex + PAGE_SIZE);
+
+  const buildHref = (
+    overrides: { q?: string; urut?: string; halaman?: number } = {},
+  ) => {
     const next = {
       q: query,
       urut: sort,
+      halaman: 1,
       ...overrides,
     };
     const search = new URLSearchParams();
 
     if (next.q) search.set("q", next.q);
     if (next.urut && next.urut !== "urutan") search.set("urut", next.urut);
+    if (next.halaman && next.halaman > 1) {
+      search.set("halaman", String(next.halaman));
+    }
 
     const value = search.toString();
     return value ? `${ROUTES.SERVICES}?${value}` : ROUTES.SERVICES;
@@ -189,11 +204,17 @@ export default async function ServicesPage({
           </div>
         ) : (
           <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {sorted.map((service) => (
+            {pageItems.map((service) => (
               <ServiceCard key={service.id} service={service} />
             ))}
           </div>
         )}
+
+        <CatalogPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          buildHref={(page) => buildHref({ halaman: page })}
+        />
 
         <div className="nb mt-10 flex flex-col items-start justify-between gap-3 rounded-lg bg-butter px-4 py-4 text-on-accent sm:flex-row sm:items-center">
           <div>

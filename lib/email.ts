@@ -1,7 +1,7 @@
 "use server";
 
 import { Resend } from 'resend';
-import { APP_CONFIG } from './constants';
+import { APP_CONFIG, ROUTES } from './constants';
 
 // Inisialisasi client Resend menggunakan API key dari .env
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -95,7 +95,7 @@ export async function sendServiceOrderPaidEmail({
   orderId,
   serviceName,
 }: SendServiceOrderEmailParams) {
-  const orderLink = `${APP_CONFIG.URL}/dashboard/services/${orderId}`;
+  const orderLink = `${APP_CONFIG.URL}${ROUTES.DASHBOARD.ORDER_SERVICES}/${orderId}`;
 
   try {
     const { data, error } = await resend.emails.send({

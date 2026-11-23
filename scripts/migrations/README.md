@@ -14,6 +14,7 @@ selalu di branch development lebih dulu, lalu di production.
 ```powershell
 node --env-file=.env.local scripts/run-migration.mjs 001_site_settings_testimonials.sql
 node --env-file=.env.local scripts/run-migration.mjs 002_services_orders_chat.sql
+node --env-file=.env.local scripts/run-migration.mjs 003_product_catalog.sql
 ```
 
 Skrip membaca `NEONDB_DATABASE_URL` dari `.env.local`. Driver HTTP Neon
@@ -26,7 +27,8 @@ dilewati otomatis oleh skrip (tetap aman saat dijalankan manual).
 2. Buka **SQL Editor**.
 3. Salin seluruh isi `001_site_settings_testimonials.sql`, jalankan.
 4. Salin seluruh isi `002_services_orders_chat.sql`, jalankan.
-5. Verifikasi:
+5. Salin seluruh isi `003_product_catalog.sql`, jalankan.
+6. Verifikasi:
 
 ```sql
 SELECT table_name
@@ -35,11 +37,18 @@ WHERE table_schema = 'public'
   AND table_name IN ('site_settings', 'testimonials', 'services', 'service_orders', 'service_messages');
 
 SELECT slug, name, price, is_active FROM services ORDER BY sort_order;
+
+SELECT count(*) FILTER (WHERE slug IS NULL OR slug = '') AS produk_tanpa_slug,
+       count(*) AS total_produk
+FROM products;
 ```
 
-Keduanya memakai `CREATE TABLE IF NOT EXISTS`, `CREATE INDEX IF NOT EXISTS`,
-dan `ON CONFLICT DO NOTHING`, sehingga aman diulang tanpa menimpa harga atau
-pengaturan yang sudah diubah superadmin.
+Hasil terakhir harus menunjukkan `produk_tanpa_slug = 0`.
+
+Ketiganya memakai `CREATE TABLE IF NOT EXISTS`, `CREATE INDEX IF NOT EXISTS`,
+`ALTER TABLE ... ADD COLUMN IF NOT EXISTS`, dan `ON CONFLICT DO NOTHING`,
+sehingga aman diulang tanpa menimpa harga atau pengaturan yang sudah diubah
+superadmin.
 
 ## Catatan
 

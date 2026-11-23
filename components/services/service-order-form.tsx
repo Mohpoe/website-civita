@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toast";
+import { ROUTES } from "@/lib/constants";
 import { cn, formatRupiah, sanitizeFileName } from "@/lib/utils";
 import type { Service } from "@/types/global";
 import { uploadPresigned } from "@vercel/blob/client";
@@ -127,7 +128,7 @@ export function ServiceOrderForm({
         return;
       }
 
-      const detailUrl = `/dashboard/services/${data.orderId}`;
+      const detailUrl = `${ROUTES.DASHBOARD.ORDER_SERVICES}/${data.orderId}`;
 
       if (!window.snap) {
         toast.add({

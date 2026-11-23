@@ -8,5 +8,5 @@ import { redirect } from "next/navigation";
  * tanpa login dan lebih mudah dibagikan.
  */
 export default function DashboardPage() {
-  redirect(ROUTES.DASHBOARD.INVENTORY);
+  redirect(ROUTES.DASHBOARD.ORDER_PRODUCTS);
 }

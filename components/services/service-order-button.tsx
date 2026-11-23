@@ -2,6 +2,7 @@
 
 import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ROUTES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { SignInButton, useAuth } from "@clerk/nextjs";
 import { ArrowRight, Lock } from "lucide-react";
@@ -21,7 +22,7 @@ export function ServiceOrderButton({
   detailPath: string;
 }) {
   const { isLoaded, isSignedIn } = useAuth();
-  const href = `/dashboard/services/new?service=${encodeURIComponent(slug)}`;
+  const href = `${ROUTES.DASHBOARD.SERVICE_NEW}?service=${encodeURIComponent(slug)}`;
 
   const classes = cn(
     buttonVariants({ variant: "default" }),

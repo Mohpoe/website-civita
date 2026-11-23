@@ -2,6 +2,7 @@
 
 import { NavAdminGroups, type AdminNavGroup } from "@/components/nav-admin-groups"
 import { NavMain } from "@/components/nav-main"
+import { NavOrderGroup } from "@/components/nav-order-group"
 import { NavUser } from "@/components/nav-user"
 import { useSiteSettings } from "@/components/site-settings-provider"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail, useSidebar } from "@/components/ui/sidebar"
@@ -43,25 +44,23 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
           <BriefcaseBusinessIcon />
         ),
       },
+    ],
+    navOrders: [
       {
-        title: "Pesanan Saya",
-        url: ROUTES.DASHBOARD.INVENTORY,
-        icon: (
-          <PackageIcon />
-        ),
+        title: "Produk",
+        url: ROUTES.DASHBOARD.ORDER_PRODUCTS,
+        icon: <PackageIcon />,
       },
       {
-        title: "Pesanan Jasa",
-        url: ROUTES.DASHBOARD.SERVICES,
-        icon: (
-          <InboxIcon />
-        ),
+        title: "Jasa",
+        url: ROUTES.DASHBOARD.ORDER_SERVICES,
+        icon: <InboxIcon />,
       },
     ],
     navSecondary: [
       {
-        title: "Panduan",
-        url: ROUTES.DASHBOARD.HELP,
+        title: "Bantuan",
+        url: ROUTES.HELP,
         icon: (
           <HelpCircleIcon />
         ),
@@ -198,6 +197,7 @@ export function AppSidebar({ hasNewProducts, ...props }: React.ComponentProps<ty
       <Separator />
       <SidebarContent>
         <NavMain items={data.navMain} />
+        <NavOrderGroup items={data.navOrders} />
         <NavAdminGroups groups={data.navAdmin} />
         <NavDocuments items={data.documents} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />

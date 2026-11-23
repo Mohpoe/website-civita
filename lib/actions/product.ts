@@ -255,7 +255,7 @@ export async function upsertProductAction(state: ActionState | null, formData: F
 
     revalidateProductPages(slug);
     revalidatePath(ROUTES.DASHBOARD.HOME);
-    revalidatePath(ROUTES.DASHBOARD.INVENTORY);
+    revalidatePath(ROUTES.DASHBOARD.ORDER_PRODUCTS);
     revalidatePath(ROUTES.DASHBOARD.ADMIN);
     return { success: true, message: "Data produk berhasil disimpan!" };
   } catch (error) {
@@ -368,7 +368,7 @@ export async function deleteProductAction(formData: FormData) {
 
       revalidateProductPages(product.slug ?? product.id);
       revalidatePath(ROUTES.DASHBOARD.HOME);
-      revalidatePath(ROUTES.DASHBOARD.INVENTORY);
+      revalidatePath(ROUTES.DASHBOARD.ORDER_PRODUCTS);
       revalidatePath(ROUTES.DASHBOARD.ADMIN);
       return {
         success: true,
@@ -405,7 +405,7 @@ export async function deleteProductAction(formData: FormData) {
 
       revalidateProductPages(product.slug ?? product.id);
       revalidatePath(ROUTES.DASHBOARD.HOME);
-      revalidatePath(ROUTES.DASHBOARD.INVENTORY);
+      revalidatePath(ROUTES.DASHBOARD.ORDER_PRODUCTS);
       revalidatePath(ROUTES.DASHBOARD.ADMIN);
       return { success: true, message: "Produk dan berkas berhasil dihapus." };
     }

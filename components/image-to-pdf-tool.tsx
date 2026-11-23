@@ -100,7 +100,7 @@ function SortableImageItem({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 border border-input rounded-lg bg-background hover:bg-muted/50 transition-colors"
+      className="flex items-center gap-2 rounded-md border-2 border-ink/15 bg-paper p-2.5 transition-colors hover:bg-paper-2 sm:gap-3 sm:p-3"
     >
       <button
         type="button"

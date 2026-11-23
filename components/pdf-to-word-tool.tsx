@@ -452,7 +452,7 @@ export default function PdfToWordTool() {
 
       {!file && !result && (
         <div
-          className="flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-foreground/40 bg-muted/30 px-4 py-10 text-center transition-colors hover:bg-muted/60 cursor-pointer"
+          className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-ink/40 bg-paper-2/60 px-4 py-10 text-center transition-colors hover:bg-paper-2"
           onClick={() => inputRef.current?.click()}
         >
           <FileType2Icon className="w-10 h-10 text-foreground/60" />
@@ -474,7 +474,7 @@ export default function PdfToWordTool() {
       )}
 
       {file && (
-        <div className="flex flex-col gap-3 rounded-2xl border-2 border-foreground bg-background p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 rounded-lg border-2 border-ink bg-paper p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-center gap-3">
             <FileTextIcon className="h-8 w-8 shrink-0 text-destructive" />
             <div className="min-w-0">
@@ -507,7 +507,7 @@ export default function PdfToWordTool() {
       )}
 
       {phase === "done" && result && (
-        <div className="space-y-4 rounded-2xl border-2 border-foreground bg-background p-5">
+        <div className="space-y-4 rounded-lg border-2 border-ink bg-paper p-5">
           <div className="flex items-center gap-2">
             <CheckCircle2Icon className="h-5 w-5 text-green-600" />
             <p className="font-bold">Konversi berhasil</p>
@@ -552,7 +552,7 @@ export default function PdfToWordTool() {
               )}
             </div>
           ) : (
-            <div className="rounded-xl border-2 border-amber-500 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-900">
+            <div className="rounded-md border-2 border-ink/40 bg-butter/50 px-4 py-3 text-sm font-medium text-ink">
               Layanan konversi sedang tidak tersedia. Coba lagi beberapa saat
               lagi.
             </div>
@@ -620,7 +620,7 @@ export default function PdfToWordTool() {
         </div>
       )}
 
-      <div className="flex items-start gap-2 rounded-xl bg-muted/50 px-4 py-3 text-xs text-muted-foreground">
+      <div className="flex items-start gap-2 rounded-md bg-paper-2/70 px-4 py-3 text-xs text-ink-soft">
         <InfoIcon className="mt-0.5 h-4 w-4 shrink-0" />
         <p>
           File hanya dipakai untuk konversi ini dan dihapus otomatis.{" "}
@@ -638,7 +638,7 @@ export default function PdfToWordTool() {
 
 function QuotaLimitCta() {
   return (
-    <div className="space-y-2 rounded-xl border-2 border-foreground bg-background px-4 py-3">
+    <div className="space-y-2 rounded-md border-2 border-ink/40 bg-paper px-4 py-3">
       <p className="text-sm font-bold">Kuota gratis Anda sudah habis</p>
       <p className="text-xs text-muted-foreground">
         Masuk dengan akun CIVITA atau lihat produk digital untuk mendapatkan

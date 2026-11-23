@@ -50,7 +50,7 @@ export function ProductBuyPanel({
           Kamu sudah memiliki produk ini.
         </p>
         <Link
-          href={ROUTES.DASHBOARD.INVENTORY}
+          href={ROUTES.DASHBOARD.ORDER_PRODUCTS}
           className={cn(
             buttonVariants({ variant: "outline" }),
             "nb-sm nb-press mt-3 h-10 w-full border-2 border-ink bg-paper text-sm font-semibold text-ink hover:bg-paper-2",
@@ -109,7 +109,7 @@ export function ProductBuyPanel({
           type: "info",
           priority: "high",
         });
-        router.push(ROUTES.DASHBOARD.INVENTORY);
+        router.push(ROUTES.DASHBOARD.ORDER_PRODUCTS);
         router.refresh();
         return;
       }
@@ -125,7 +125,7 @@ export function ProductBuyPanel({
             description: `Produk ${productTitle} sudah bisa diunduh dari Pesanan Saya.`,
             type: "success",
           });
-          router.push(ROUTES.DASHBOARD.INVENTORY);
+          router.push(ROUTES.DASHBOARD.ORDER_PRODUCTS);
           router.refresh();
         },
         onPending: () => {
@@ -134,7 +134,7 @@ export function ProductBuyPanel({
             description: "Selesaikan pembayaran dari halaman Pesanan Saya.",
             type: "info",
           });
-          router.push(ROUTES.DASHBOARD.INVENTORY);
+          router.push(ROUTES.DASHBOARD.ORDER_PRODUCTS);
           router.refresh();
         },
         onError: () => {
