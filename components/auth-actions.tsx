@@ -57,7 +57,10 @@ export function AuthActions({ variant = "desktop", className }: AuthActionsProps
         <Button
           variant="ghost"
           className={cn(
-            "nb-sm nb-press bg-paper text-ink hover:bg-paper-2",
+            // `variant="ghost"` membawa `border-transparent` yang berada di
+            // layer utilities, sehingga menimpa border `.nb-sm` di layer
+            // components. Tentukan ulang warnanya di sini.
+            "nb-sm nb-press border-ink bg-paper text-ink hover:bg-paper-2",
             base,
           )}
         >

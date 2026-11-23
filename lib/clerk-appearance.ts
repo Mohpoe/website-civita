@@ -136,7 +136,10 @@ export const civitaClerkAppearance: ClerkAppearanceTheme = {
   elements: {
     /* Kartu & modal */
     modalBackdrop: {
-      backgroundColor: backdrop,
+      // Samakan dengan Dialog Shadcn situs ini: lapisan hitam 10% + blur.
+      backgroundColor: "color-mix(in srgb, #000 10%, transparent)",
+      backdropFilter: "blur(4px)",
+      WebkitBackdropFilter: "blur(4px)",
     },
     modalContent: {
       backgroundColor: "transparent",
@@ -145,27 +148,30 @@ export const civitaClerkAppearance: ClerkAppearanceTheme = {
       padding: 0,
     },
     modalCloseButton: {
-      backgroundColor: paper,
-      border: `2px solid ${ink} !important`,
-      borderRadius: "9999px",
-      boxShadow: `2px 2px 0 0 ${ink} !important`,
+      backgroundColor: "transparent",
+      border: "2px solid transparent",
+      borderRadius: "calc(var(--radius) * 0.8)",
+      boxShadow: "none",
       color: ink,
-      width: "2rem",
-      height: "2rem",
+      width: "1.75rem",
+      height: "1.75rem",
+      padding: 0,
       "&:hover": {
         backgroundColor: paper2,
-        boxShadow: `3px 3px 0 0 ${ink} !important`,
+        boxShadow: "none",
+        color: ink,
       },
       "&:active": {
-        boxShadow: "none !important",
-        transform: "translate(1px, 1px)",
+        boxShadow: "none",
+        transform: "none",
       },
     },
     cardBox: {
       backgroundColor: paper,
-      border: `2px solid ${ink} !important`,
-      borderRadius: "0.5rem",
-      boxShadow: `3px 3px 0 0 ${ink} !important`,
+      // Dialog Shadcn memakai ring 1px, bukan border tebal + hard shadow.
+      border: "none !important",
+      borderRadius: "calc(var(--radius) * 1.4)",
+      boxShadow: `0 0 0 1px color-mix(in oklab, var(--ink) 10%, transparent) !important`,
       // UserProfile memakai tinggi tetap 44rem dari Clerk; batasi agar kartu
       // tidak meluber ke bawah dan tetap punya jarak simetris di viewport pendek.
       maxHeight: "100%",
@@ -358,8 +364,9 @@ export const civitaClerkAppearance: ClerkAppearanceTheme = {
 
     /* Footer */
     footer: {
-      backgroundColor: paper2,
-      borderTop: `2px solid ${ink}`,
+      // Footer Dialog Shadcn: garis 1px + latar muted 50%.
+      backgroundColor: "color-mix(in oklab, var(--paper-2) 50%, var(--paper))",
+      borderTop: `1px solid var(--border)`,
       padding: "1rem",
       "& div": {
         color: ink,
@@ -394,7 +401,8 @@ export const civitaClerkAppearance: ClerkAppearanceTheme = {
       backgroundColor: "var(--butter)",
       border: `2px solid ${ink}`,
       borderRadius: "9999px",
-      boxShadow: `1px 1px 0 0 ${ink}`,
+      // Container badge dari Clerk memakai `overflow: hidden` setinggi badge,
+      // jadi hard shadow ikut terpotong di sisi bawah.
       color: onAccent,
       fontWeight: 800,
     },
@@ -421,6 +429,9 @@ export const civitaClerkAppearance: ClerkAppearanceTheme = {
       color: ink,
       fontWeight: 700,
       borderRadius: "0.375rem",
+      // Container navbar hanya memberi gap 2px; shadow 3px tiap tombol membuat
+      // menu Profil/Keamanan terlihat menempel.
+      marginBottom: "0.375rem",
       "&:hover": {
         backgroundColor: paper,
       },
@@ -453,9 +464,17 @@ export const civitaClerkAppearance: ClerkAppearanceTheme = {
       backgroundColor: coral,
       color: onAccent,
       paddingInline: "1rem",
+      // Clerk mengubah warna teks menjadi coral muda saat hover, sehingga
+      // nyaris tak terbaca di atas latar coral. Kunci warnanya.
       "&:hover": {
         ...pressable["&:hover"],
         backgroundColor: coral,
+        color: onAccent,
+      },
+      "&:active": {
+        ...pressable["&:active"],
+        backgroundColor: coral,
+        color: onAccent,
       },
     },
     actionCard: {
@@ -503,6 +522,16 @@ export const civitaClerkAppearance: ClerkAppearanceTheme = {
       border: `2px solid ${ink}`,
       borderRadius: "0.375rem",
       boxShadow: `2px 2px 0 0 ${ink}`,
+      // Tombol seperti "Connect account" mewarisi colorPrimary sebagai warna
+      // teks; coral di atas paper terlalu pudar.
+      color: ink,
+      "&:hover": {
+        backgroundColor: paper2,
+        color: ink,
+      },
+      "&:active": {
+        color: ink,
+      },
     },
     menuList: {
       backgroundColor: paper,
