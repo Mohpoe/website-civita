@@ -45,6 +45,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { SiWhatsapp } from "react-icons/si";
 
 interface ServiceOrderRoomProps {
   order: ServiceOrder;
@@ -321,7 +322,7 @@ export function ServiceOrderRoom({
                     rel="noreferrer"
                     className="inline-flex w-fit shrink-0 items-center gap-1.5 whitespace-nowrap font-medium text-foreground underline underline-offset-4"
                   >
-                    <MessageSquareIcon className="size-3.5" /> WhatsApp {order.whatsapp}
+                    <SiWhatsapp className="size-3.5" /> {order.whatsapp}
                   </a>
                 ) : (
                   <span>WhatsApp tidak tersedia</span>
@@ -454,183 +455,183 @@ export function ServiceOrderRoom({
             <CardTitle className="flex items-center gap-2">
               <MessageSquareIcon className="size-5" /> Diskusi &amp; Revisi
             </CardTitle>
-          <CardDescription>
-            {isAdmin
-              ? "Balas klien & kabari progres di sini."
-              : "Tanya progres & minta revisi di sini."}
-          </CardDescription>
-          <CardDescription className="text-[11px]">
-            Balasan muncul otomatis · lampiran maks. 15 MB
-          </CardDescription>
-        </CardHeader>
+            <CardDescription>
+              {isAdmin
+                ? "Balas klien & kabari progres di sini."
+                : "Tanya progres & minta revisi di sini."}
+            </CardDescription>
+            <CardDescription className="text-[11px]">
+              Balasan muncul otomatis · lampiran maks. 15 MB
+            </CardDescription>
+          </CardHeader>
 
-        <CardContent className="flex flex-col gap-3">
-          <div
-            ref={listRef}
-            className="dialog-scroll flex h-[360px] flex-col gap-3 overflow-y-auto rounded-lg border bg-muted/20 p-3 xl:h-[calc(100dvh-21rem)] xl:min-h-[320px] xl:max-h-[620px]"
-          >
-            {messages.length === 0 ? (
-              <p className="m-auto max-w-sm text-center text-sm text-muted-foreground">
-                Belum ada pesan. {isAdmin ? "Sapa klien untuk memulai." : "Sapa admin untuk mulai."}
-              </p>
-            ) : (
-              <MessageGroup className="mt-auto">
-                {messages.map((message) => {
-                  const own = message.sender_role === viewer;
-                  const fromAdmin = message.sender_role === "admin";
-                  const senderLabel = fromAdmin ? "Admin" : "Klien";
+          <CardContent className="flex flex-col gap-3">
+            <div
+              ref={listRef}
+              className="dialog-scroll flex h-[360px] flex-col gap-3 overflow-y-auto rounded-lg border bg-muted/20 p-3 xl:h-[calc(100dvh-19rem)] xl:min-h-[320px] xl:max-h-[620px]"
+            >
+              {messages.length === 0 ? (
+                <p className="m-auto max-w-sm text-center text-sm text-muted-foreground">
+                  Belum ada pesan. {isAdmin ? "Sapa klien untuk memulai." : "Sapa admin untuk mulai."}
+                </p>
+              ) : (
+                <MessageGroup className="mt-auto">
+                  {messages.map((message) => {
+                    const own = message.sender_role === viewer;
+                    const fromAdmin = message.sender_role === "admin";
+                    const senderLabel = fromAdmin ? "Admin" : "Klien";
 
-                  return (
-                    <Message key={message.id} align={own ? "end" : "start"}>
-                      <MessageAvatar>
-                        <Avatar>
-                          <AvatarFallback
-                            className={cn(
-                              "text-xs font-bold",
-                              fromAdmin && "bg-foreground text-background",
-                            )}
-                          >
-                            {fromAdmin ? "AD" : "KL"}
-                          </AvatarFallback>
-                        </Avatar>
-                      </MessageAvatar>
+                    return (
+                      <Message key={message.id} align={own ? "end" : "start"}>
+                        <MessageAvatar>
+                          <Avatar>
+                            <AvatarFallback
+                              className={cn(
+                                "text-xs font-bold",
+                                fromAdmin && "bg-foreground text-background",
+                              )}
+                            >
+                              {fromAdmin ? "AD" : "KL"}
+                            </AvatarFallback>
+                          </Avatar>
+                        </MessageAvatar>
 
-                      <MessageContent>
-                        <MessageHeader>{own ? "Anda" : senderLabel}</MessageHeader>
+                        <MessageContent>
+                          <MessageHeader>{own ? "Anda" : senderLabel}</MessageHeader>
 
-                        {message.body ? (
-                          <Bubble
-                            align={own ? "end" : "start"}
-                            variant={own ? "default" : "outline"}
-                          >
-                            <BubbleContent className="whitespace-pre-wrap">
-                              {message.body}
-                            </BubbleContent>
-                          </Bubble>
-                        ) : null}
+                          {message.body ? (
+                            <Bubble
+                              align={own ? "end" : "start"}
+                              variant={own ? "default" : "outline"}
+                            >
+                              <BubbleContent className="whitespace-pre-wrap">
+                                {message.body}
+                              </BubbleContent>
+                            </Bubble>
+                          ) : null}
 
-                        {message.attachment_url ? (
-                          <Attachment size="sm" className="w-full max-w-sm">
-                            <AttachmentMedia>
-                              <FileTextIcon />
-                            </AttachmentMedia>
-                            <AttachmentContent>
-                              <AttachmentTitle>
-                                {message.attachment_name || "Lampiran"}
-                              </AttachmentTitle>
-                              <AttachmentDescription>
-                                {formatFileSize(message.attachment_size ?? 0) || "Berkas lampiran"}
-                              </AttachmentDescription>
-                            </AttachmentContent>
-                            <AttachmentActions>
-                              <AttachmentAction
-                                nativeButton={false}
-                                render={
-                                  <a
-                                    href={`/api/download/service?orderId=${encodeURIComponent(order.order_id)}&messageId=${encodeURIComponent(message.id)}`}
-                                    aria-label={`Unduh ${message.attachment_name || "lampiran"}`}
-                                  />
-                                }
-                              >
-                                <DownloadIcon />
-                              </AttachmentAction>
-                            </AttachmentActions>
-                          </Attachment>
-                        ) : null}
+                          {message.attachment_url ? (
+                            <Attachment size="sm" className="w-full max-w-sm">
+                              <AttachmentMedia>
+                                <FileTextIcon />
+                              </AttachmentMedia>
+                              <AttachmentContent>
+                                <AttachmentTitle>
+                                  {message.attachment_name || "Lampiran"}
+                                </AttachmentTitle>
+                                <AttachmentDescription>
+                                  {formatFileSize(message.attachment_size ?? 0) || "Berkas lampiran"}
+                                </AttachmentDescription>
+                              </AttachmentContent>
+                              <AttachmentActions>
+                                <AttachmentAction
+                                  nativeButton={false}
+                                  render={
+                                    <a
+                                      href={`/api/download/service?orderId=${encodeURIComponent(order.order_id)}&messageId=${encodeURIComponent(message.id)}`}
+                                      aria-label={`Unduh ${message.attachment_name || "lampiran"}`}
+                                    />
+                                  }
+                                >
+                                  <DownloadIcon />
+                                </AttachmentAction>
+                              </AttachmentActions>
+                            </Attachment>
+                          ) : null}
 
-                        <MessageFooter>{formatTime(message.created_at)}</MessageFooter>
-                      </MessageContent>
-                    </Message>
-                  );
-                })}
-              </MessageGroup>
-            )}
-          </div>
+                          <MessageFooter>{formatTime(message.created_at)}</MessageFooter>
+                        </MessageContent>
+                      </Message>
+                    );
+                  })}
+                </MessageGroup>
+              )}
+            </div>
 
-          {chatFile ? (
-            <Attachment size="sm" className="w-full">
-              <AttachmentMedia>
-                <FileTextIcon />
-              </AttachmentMedia>
-              <AttachmentContent>
-                <AttachmentTitle>{chatFile.name}</AttachmentTitle>
-                <AttachmentDescription>{formatFileSize(chatFile.size)}</AttachmentDescription>
-              </AttachmentContent>
-              <AttachmentActions>
-                <AttachmentAction
-                  aria-label="Hapus lampiran"
-                  disabled={isSending}
-                  onClick={() => setChatFile(null)}
-                >
-                  <XIcon />
-                </AttachmentAction>
-              </AttachmentActions>
-            </Attachment>
-          ) : null}
+            {chatFile ? (
+              <Attachment size="sm" className="w-full">
+                <AttachmentMedia>
+                  <FileTextIcon />
+                </AttachmentMedia>
+                <AttachmentContent>
+                  <AttachmentTitle>{chatFile.name}</AttachmentTitle>
+                  <AttachmentDescription>{formatFileSize(chatFile.size)}</AttachmentDescription>
+                </AttachmentContent>
+                <AttachmentActions>
+                  <AttachmentAction
+                    aria-label="Hapus lampiran"
+                    disabled={isSending}
+                    onClick={() => setChatFile(null)}
+                  >
+                    <XIcon />
+                  </AttachmentAction>
+                </AttachmentActions>
+              </Attachment>
+            ) : null}
 
-          <InputGroup className="items-end">
-            <InputGroupTextarea
-              value={body}
-              onChange={(event) => setBody(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" && !event.shiftKey) {
-                  event.preventDefault();
-                  void sendMessage();
-                }
-              }}
-              rows={2}
-              maxLength={2000}
-              placeholder="Tulis pesan…"
-              title="Enter untuk kirim · Shift+Enter baris baru"
-              className="min-h-11 py-2.5 leading-6"
-            />
-
-            <InputGroupAddon align="inline-end" className="pb-1.5">
-              <input
-                ref={fileInputRef}
-                type="file"
-                className="sr-only"
-                accept=".pdf,.doc,.docx,.zip,.png,.jpg,.jpeg"
-                onChange={(event) => {
-                  const file = event.target.files?.[0];
-                  if (file) void uploadChatFile(file);
+            <InputGroup className="items-end">
+              <InputGroupTextarea
+                value={body}
+                onChange={(event) => setBody(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault();
+                    void sendMessage();
+                  }
                 }}
+                rows={2}
+                maxLength={2000}
+                placeholder="Tulis pesan…"
+                title="Enter untuk kirim · Shift+Enter baris baru"
+                className="min-h-11 py-2.5 leading-6"
               />
 
-              <InputGroupButton
-                size="icon-sm"
-                aria-label="Lampirkan berkas"
-                title="Lampirkan berkas (maks. 15 MB)"
-                disabled={isUploading || isSending}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                {isUploading ? (
-                  <Loader2Icon className="animate-spin" />
-                ) : (
-                  <PaperclipIcon />
-                )}
-              </InputGroupButton>
+              <InputGroupAddon align="inline-end" className="pb-1.5">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  className="sr-only"
+                  accept=".pdf,.doc,.docx,.zip,.png,.jpg,.jpeg"
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    if (file) void uploadChatFile(file);
+                  }}
+                />
 
-              <InputGroupButton
-                variant="default"
-                size="icon-sm"
-                aria-label="Kirim pesan"
-                disabled={isSending || isUploading || (!body.trim() && !chatFile)}
-                onClick={() => void sendMessage()}
-              >
-                {isSending ? <Loader2Icon className="animate-spin" /> : <SendIcon />}
-              </InputGroupButton>
-            </InputGroupAddon>
-          </InputGroup>
+                <InputGroupButton
+                  size="icon-sm"
+                  aria-label="Lampirkan berkas"
+                  title="Lampirkan berkas (maks. 15 MB)"
+                  disabled={isUploading || isSending}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {isUploading ? (
+                    <Loader2Icon className="animate-spin" />
+                  ) : (
+                    <PaperclipIcon />
+                  )}
+                </InputGroupButton>
 
-          <p className="text-[11px] text-muted-foreground">
-            {isUploading
-              ? `Mengunggah lampiran... ${uploadProgress}%`
-              : chatFile
-                ? "Lampiran siap dikirim · maks. 15 MB"
-                : "Enter kirim · Shift+Enter baris baru"}
-          </p>
-        </CardContent>
+                <InputGroupButton
+                  variant="default"
+                  size="icon-sm"
+                  aria-label="Kirim pesan"
+                  disabled={isSending || isUploading || (!body.trim() && !chatFile)}
+                  onClick={() => void sendMessage()}
+                >
+                  {isSending ? <Loader2Icon className="animate-spin" /> : <SendIcon />}
+                </InputGroupButton>
+              </InputGroupAddon>
+            </InputGroup>
+
+            <p className="text-[11px] text-muted-foreground">
+              {isUploading
+                ? `Mengunggah lampiran... ${uploadProgress}%`
+                : chatFile
+                  ? "Lampiran siap dikirim · maks. 15 MB"
+                  : "Enter kirim · Shift+Enter baris baru"}
+            </p>
+          </CardContent>
         </Card>
       </div>
     </div>
