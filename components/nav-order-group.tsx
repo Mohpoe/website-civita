@@ -84,7 +84,7 @@ export function NavOrderGroup({ items }: { items: OrderNavItem[] }) {
             )}
           />
         </Collapsible.Trigger>
-        <Collapsible.Panel className="h-[var(--collapsible-panel-height)] overflow-hidden transition-[height] duration-200 ease-out data-[ending-style]:h-0 data-[starting-style]:h-0">
+        <Collapsible.Panel className="-mx-0.5 -mb-0.5 h-[var(--collapsible-panel-height)] overflow-hidden px-0.5 pb-0.5 transition-[height] duration-200 ease-out data-[ending-style]:h-0 data-[starting-style]:h-0">
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
