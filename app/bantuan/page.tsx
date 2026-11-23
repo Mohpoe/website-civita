@@ -9,11 +9,11 @@ import {
   BookOpen,
   Clock,
   Mail,
-  MessageCircle,
   ShoppingBag,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SiWhatsapp } from "react-icons/si";
 
 export const metadata: Metadata = createPageMetadata({
   title: "Pusat Bantuan",
@@ -99,7 +99,7 @@ export default function HelpHubPage() {
                   "nb-sm nb-press h-10 border-2 border-ink bg-sage px-4 text-xs font-semibold text-on-accent hover:bg-sage",
                 )}
               >
-                <MessageCircle className="mr-1.5 size-4" /> Tanya admin
+                <SiWhatsapp className="mr-1.5 size-4" /> Tanya admin
               </a>
             </div>
           </div>
@@ -205,7 +205,7 @@ export default function HelpHubPage() {
                 rel="noreferrer"
                 className="nb-sm nb-press inline-flex h-10 items-center gap-2 rounded-md border-2 border-ink bg-paper px-4 text-xs font-bold text-ink"
               >
-                <MessageCircle className="size-4" /> WhatsApp
+                <SiWhatsapp className="size-4" /> WhatsApp
               </a>
               <a
                 href={APP_CONFIG.LINKS.EMAIL}
