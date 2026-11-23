@@ -25,9 +25,9 @@ import {
   MessageHeader,
 } from "@/components/ui/message";
 import { toast } from "@/components/ui/toast";
-import type { ServiceAttachment, ServiceMessage, ServiceOrder } from "@/types/global";
 import { ROUTES } from "@/lib/constants";
 import { cn, formatFileSize, formatRupiah, sanitizeFileName } from "@/lib/utils";
+import type { ServiceAttachment, ServiceMessage, ServiceOrder } from "@/types/global";
 import { uploadPresigned } from "@vercel/blob/client";
 import {
   CheckCircle2Icon,
@@ -36,11 +36,11 @@ import {
   FileTextIcon,
   LanguagesIcon,
   Loader2Icon,
+  MailIcon,
   MessageSquareIcon,
   PaperclipIcon,
   SendIcon,
-  UploadCloudIcon,
-  XIcon,
+  XIcon
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -273,8 +273,8 @@ export function ServiceOrderRoom({
   const waHref = order.whatsapp ? whatsappHref(order.whatsapp) : "";
 
   return (
-    <div className="flex flex-col gap-4 md:gap-6">
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.4fr_1fr] xl:gap-6">
+    <div className="grid grid-cols-1 gap-4 xl:grid-cols-2 xl:items-start xl:gap-6">
+      <div className="flex flex-col gap-4">
         <Card>
           <CardHeader>
             <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
@@ -306,6 +306,29 @@ export function ServiceOrderRoom({
               </div>
             </div>
 
+            {isAdmin ? (
+              <div className="flex flex-col gap-2 rounded-lg border bg-muted/20 p-3 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+                <span className="inline-flex min-w-0 items-center gap-1.5">
+                  <MailIcon className="size-3.5 shrink-0" />
+                  <span className="truncate text-foreground">
+                    {order.email || "Email tidak tersedia"}
+                  </span>
+                </span>
+                {order.whatsapp ? (
+                  <a
+                    href={waHref}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex w-fit shrink-0 items-center gap-1.5 whitespace-nowrap font-medium text-foreground underline underline-offset-4"
+                  >
+                    <MessageSquareIcon className="size-3.5" /> WhatsApp {order.whatsapp}
+                  </a>
+                ) : (
+                  <span>WhatsApp tidak tersedia</span>
+                )}
+              </div>
+            ) : null}
+
             <div>
               <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                 Brief
@@ -328,7 +351,7 @@ export function ServiceOrderRoom({
 
             <div>
               <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Lampiran klien
+                Lampiran
               </p>
               {attachments.length > 0 ? (
                 <div className="flex flex-col gap-2">
@@ -370,7 +393,7 @@ export function ServiceOrderRoom({
                 </a>
               ) : (
                 <p className="rounded-lg border border-dashed px-3 py-2 text-xs text-muted-foreground">
-                  Tidak ada lampiran. Berkas tambahan bisa dikirim lewat chat di bawah.
+                  Tidak ada lampiran.
                 </p>
               )}
             </div>
@@ -398,7 +421,7 @@ export function ServiceOrderRoom({
 
               {!isAdmin && order.status === "success" && !hasResult ? (
                 <p className="inline-flex items-center gap-1.5 rounded-md border border-dashed px-3 py-1.5 text-xs text-muted-foreground">
-                  <FileTextIcon className="size-3.5" /> Berkas hasil sedang dikerjakan admin.
+                  <FileTextIcon className="size-3.5" /> Menunggu admin mengirim hasil.
                 </p>
               ) : null}
             </div>
@@ -416,79 +439,39 @@ export function ServiceOrderRoom({
                 href={isAdmin ? "/dashboard/admin/services" : ROUTES.DASHBOARD.ORDER_SERVICES}
                 className="font-medium text-foreground underline underline-offset-4"
               >
-                Kembali ke daftar
+                Kembali
               </Link>
             </div>
           </CardContent>
         </Card>
 
-        <div className="flex flex-col gap-4">
-          {isAdmin ? <ServiceResultPanel order={order} /> : null}
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquareIcon className="size-5" />
-                {isAdmin ? "Kontak klien" : "Butuh bantuan?"}
-              </CardTitle>
-              <CardDescription>
-                {isAdmin
-                  ? "Hubungi klien lewat chat di bawah atau WhatsApp jika mendesak."
-                  : "Gunakan ruang obrolan di bawah untuk bertanya progres, revisi, atau detail tambahan."}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-3 text-sm">
-              {order.email ? (
-                <p className="truncate text-muted-foreground">
-                  Email: <span className="text-foreground">{order.email}</span>
-                </p>
-              ) : null}
-
-              {order.whatsapp ? (
-                <a
-                  href={waHref}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={cn(buttonVariants({ variant: "outline", size: "sm" }), "w-fit")}
-                >
-                  <MessageSquareIcon className="size-3.5" /> WhatsApp {order.whatsapp}
-                </a>
-              ) : (
-                <p className="text-xs text-muted-foreground">
-                  Nomor WhatsApp tidak tersedia untuk pesanan ini.
-                </p>
-              )}
-
-              <p className="text-xs leading-relaxed text-muted-foreground">
-                Balasan chat muncul otomatis dalam beberapa detik. Berkas tambahan bisa
-                dilampirkan langsung di ruang obrolan.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+        {isAdmin ? <ServiceResultPanel order={order} /> : null}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MessageSquareIcon className="size-5" /> Ruang Obrolan
-          </CardTitle>
+      <div className="xl:sticky xl:top-24">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquareIcon className="size-5" /> Diskusi &amp; Revisi
+            </CardTitle>
           <CardDescription>
             {isAdmin
-              ? "Jawab pertanyaan klien dan kabari progres pengerjaan."
-              : "Tanyakan progres, minta revisi, atau kirim berkas tambahan di sini."}
+              ? "Balas klien & kabari progres di sini."
+              : "Tanya progres & minta revisi di sini."}
+          </CardDescription>
+          <CardDescription className="text-[11px]">
+            Balasan muncul otomatis · lampiran maks. 15 MB
           </CardDescription>
         </CardHeader>
 
         <CardContent className="flex flex-col gap-3">
           <div
             ref={listRef}
-            className="flex max-h-[480px] min-h-[260px] flex-col gap-3 overflow-y-auto rounded-lg border bg-muted/20 p-3"
+            className="dialog-scroll flex h-[360px] flex-col gap-3 overflow-y-auto rounded-lg border bg-muted/20 p-3 xl:h-[calc(100dvh-21rem)] xl:min-h-[320px] xl:max-h-[620px]"
           >
             {messages.length === 0 ? (
               <p className="m-auto max-w-sm text-center text-sm text-muted-foreground">
-                Belum ada pesan. {isAdmin ? "Sapa klien" : "Sapa admin"} untuk memulai, atau
-                kirim berkas tambahan bila diperlukan.
+                Belum ada pesan. {isAdmin ? "Sapa klien untuk memulai." : "Sapa admin untuk mulai."}
               </p>
             ) : (
               <MessageGroup className="mt-auto">
@@ -500,10 +483,10 @@ export function ServiceOrderRoom({
                   return (
                     <Message key={message.id} align={own ? "end" : "start"}>
                       <MessageAvatar>
-                        <Avatar size="sm">
+                        <Avatar>
                           <AvatarFallback
                             className={cn(
-                              "text-[10px] font-bold",
+                              "text-xs font-bold",
                               fromAdmin && "bg-foreground text-background",
                             )}
                           >
@@ -597,8 +580,9 @@ export function ServiceOrderRoom({
               }}
               rows={2}
               maxLength={2000}
-              placeholder="Tulis pesan... (Enter untuk kirim, Shift+Enter baris baru)"
-              className="min-h-11"
+              placeholder="Tulis pesan…"
+              title="Enter untuk kirim · Shift+Enter baris baru"
+              className="min-h-11 py-2.5 leading-6"
             />
 
             <InputGroupAddon align="inline-end" className="pb-1.5">
@@ -623,7 +607,7 @@ export function ServiceOrderRoom({
                 {isUploading ? (
                   <Loader2Icon className="animate-spin" />
                 ) : (
-                  <UploadCloudIcon />
+                  <PaperclipIcon />
                 )}
               </InputGroupButton>
 
@@ -642,10 +626,13 @@ export function ServiceOrderRoom({
           <p className="text-[11px] text-muted-foreground">
             {isUploading
               ? `Mengunggah lampiran... ${uploadProgress}%`
-              : "Lampiran maksimal 15 MB per berkas (PDF, DOC, DOCX, ZIP, JPG, PNG)."}
+              : chatFile
+                ? "Lampiran siap dikirim · maks. 15 MB"
+                : "Enter kirim · Shift+Enter baris baru"}
           </p>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 }
