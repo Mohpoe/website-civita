@@ -1,5 +1,7 @@
 "use client";
 
+import DashboardSnapshots from "@/components/dashboard-snapshots";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { deleteBlobFileAction, deleteProductAction, upsertProductAction } from "@/lib/actions/product";
 import { formatRupiah, isSupportedThumbnail, sanitizeFileName } from "@/lib/utils";
 import { Category, Order, Product, ProductSnapshot } from "@/types/global";
@@ -7,6 +9,7 @@ import { columnFilteringFeature, ColumnFiltersState, columnResizingFeature, colu
 import { uploadPresigned } from "@vercel/blob/client";
 import { AlertCircleIcon, BadgeAlertIcon, BadgeCheckIcon, BadgeXIcon, ChevronDownIcon, ChevronFirstIcon, ChevronLastIcon, ChevronLeftIcon, ChevronRightIcon, ChevronsUpDownIcon, ChevronUpIcon, Columns3Icon, DownloadIcon, EyeIcon, FileTextIcon, GhostIcon, ImageIcon, MoreHorizontalIcon, PlusIcon, RefreshCcwIcon, Rows3Icon, SearchIcon, SlidersHorizontalIcon, SquarePenIcon, TagsIcon, Trash2Icon, UploadIcon } from "lucide-react";
 import { useActionState, useEffect, useMemo, useState, useSyncExternalStore, useTransition } from "react";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle } from "./ui/alert-dialog";
 import { Attachment, AttachmentContent, AttachmentDescription, AttachmentMedia, AttachmentTitle } from "./ui/attachment";
 import { Badge } from "./ui/badge";
@@ -25,9 +28,6 @@ import { Switch } from "./ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import { Textarea } from "./ui/textarea";
 import { toast } from "./ui/toast";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import DashboardSnapshots from "@/components/dashboard-snapshots";
-import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 
 interface DashboardAdminProps {
   products: Product[];
@@ -503,14 +503,6 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                       Pilih Menu
                     </DropdownMenuLabel>
 
-                    <DropdownMenuItem
-                      onClick={() => window.open(`/api/download?productId=${product.id}`, '_blank')}
-                      disabled={!product.file_url}
-                    >
-                      <DownloadIcon />
-                      Unduh Berkas
-                    </DropdownMenuItem>
-
                     <DropdownMenuItem onClick={() => {
                       setProductToUpdate(product);
                       setImagePreview(product.image_url || null);
@@ -518,6 +510,14 @@ export default function DashboardAdmin({ products, categories, orders, snapshots
                     }}>
                       <SquarePenIcon />
                       Edit Produk
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                      onClick={() => window.open(`/api/download?productId=${product.id}`, '_blank')}
+                      disabled={!product.file_url}
+                    >
+                      <DownloadIcon />
+                      Unduh Berkas
                     </DropdownMenuItem>
 
                     <DropdownMenuSeparator />
