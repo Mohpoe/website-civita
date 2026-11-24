@@ -12,6 +12,9 @@ export interface ServiceRow {
   description: string;
   price: number | string;
   prices?: unknown;
+  icon?: unknown;
+  accent?: unknown;
+  tags?: unknown;
   languages: unknown;
   is_active: boolean;
   sort_order: number;
@@ -48,10 +51,22 @@ export function normalizeService(row: ServiceRow): Service {
     .map((code) => prices[code])
     .filter((amount) => Number.isFinite(amount) && amount > 0);
 
+  const icon = typeof row.icon === "string" && row.icon.trim() ? row.icon.trim() : null;
+  const accent =
+    typeof row.accent === "string" && row.accent.trim() ? row.accent.trim() : null;
+  const tags = Array.isArray(row.tags)
+    ? row.tags
+      .filter((tag): tag is string => typeof tag === "string" && tag.trim().length > 0)
+      .slice(0, 2)
+    : [];
+
   return {
     ...row,
     price: enabledPrices.length > 0 ? Math.min(...enabledPrices) : fallback,
     prices,
+    icon,
+    accent,
+    tags,
     languages: activeLanguages,
   };
 }
@@ -73,14 +88,14 @@ export async function readServices(onlyActive = false): Promise<Service[]> {
   try {
     const rows = (onlyActive
       ? await sql`
-          SELECT id, slug, name, description, price, prices, languages,
+          SELECT id, slug, name, description, price, prices, icon, accent, tags, languages,
                  is_active, sort_order, created_at, updated_at
           FROM services
           WHERE is_active = true
           ORDER BY sort_order ASC, name ASC
         `
       : await sql`
-          SELECT id, slug, name, description, price, prices, languages,
+          SELECT id, slug, name, description, price, prices, icon, accent, tags, languages,
                  is_active, sort_order, created_at, updated_at
           FROM services
           ORDER BY sort_order ASC, name ASC
@@ -110,7 +125,7 @@ export async function getServiceBySlug(slug: string): Promise<Service | null> {
 
   try {
     const rows = (await sql`
-      SELECT id, slug, name, description, price, prices, languages,
+      SELECT id, slug, name, description, price, prices, icon, accent, tags, languages,
              is_active, sort_order, created_at, updated_at
       FROM services
       WHERE slug = ${slug} AND is_active = true
@@ -130,7 +145,7 @@ export async function getServiceById(id: string): Promise<Service | null> {
 
   try {
     const rows = (await sql`
-      SELECT id, slug, name, description, price, prices, languages,
+      SELECT id, slug, name, description, price, prices, icon, accent, tags, languages,
              is_active, sort_order, created_at, updated_at
       FROM services
       WHERE id = ${id} AND is_active = true

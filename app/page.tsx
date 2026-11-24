@@ -8,12 +8,8 @@ import { buttonVariants } from "@/components/ui/button";
 import { getProducts } from "@/lib/actions/product";
 import { PDF_TOOLS } from "@/lib/pdf-tools";
 import { getActiveServices } from "@/lib/service-catalog";
-import {
-  SERVICE_HIGHLIGHTS,
-  getServiceVisual,
-  type ServiceAccent,
-  type ServiceHighlight,
-} from "@/lib/services";
+import { SERVICE_HIGHLIGHTS } from "@/lib/services";
+import { ACCENT_BG, resolveServiceVisual, type ServiceAccent } from "@/lib/service-visuals";
 import { getSiteSettings } from "@/lib/settings";
 import { getSiteLinks } from "@/lib/site-config";
 import { getActiveTestimonials } from "@/lib/testimonials";
@@ -32,18 +28,11 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { SiWhatsapp } from "react-icons/si";
 
 export const revalidate = 300;
-
-const ACCENT_BG: Record<ServiceAccent, string> = {
-  coral: "bg-coral",
-  sage: "bg-sage",
-  butter: "bg-butter",
-  sky: "bg-sky",
-  lilac: "bg-lilac",
-};
 
 const TRUST_ITEMS = [
   { icon: ShieldCheck, label: "ATS-friendly", detail: "Mudah dibaca sistem" },
@@ -115,7 +104,7 @@ interface LandingServiceCard {
   description: string;
   price: number | null;
   tags: string[];
-  icon: ServiceHighlight["icon"];
+  icon: LucideIcon;
   accent: ServiceAccent;
 }
 
@@ -135,8 +124,7 @@ export default async function HomePage() {
   const serviceCards: LandingServiceCard[] =
     services.length > 0
       ? services.map((service) => {
-          const visual =
-            getServiceVisual(service.id) ?? getServiceVisual(service.slug);
+          const visual = resolveServiceVisual(service);
 
           return {
             id: service.id,
@@ -144,16 +132,32 @@ export default async function HomePage() {
             title: service.name,
             description: service.description,
             price: service.price,
-            tags: visual?.tags ?? service.languages.map((code) => code.toUpperCase()),
-            icon: visual?.icon ?? FileCheck2,
-            accent: visual?.accent ?? "butter",
+            tags: visual.tags,
+            icon: visual.icon,
+            accent: visual.accent,
           };
         })
-      : SERVICE_HIGHLIGHTS.map((service) => ({
-          ...service,
-          slug: service.id,
-          price: null,
-        }));
+      : SERVICE_HIGHLIGHTS.map((service) => {
+          const visual = resolveServiceVisual({
+            id: service.id,
+            slug: service.id,
+            icon: service.iconKey,
+            accent: service.accent,
+            tags: service.tags,
+            languages: ["id", "en"],
+          });
+
+          return {
+            id: service.id,
+            slug: service.id,
+            title: service.title,
+            description: service.description,
+            price: null,
+            tags: visual.tags,
+            icon: visual.icon,
+            accent: visual.accent,
+          };
+        });
 
   return (
     <div className="min-h-screen bg-paper font-mono text-ink">

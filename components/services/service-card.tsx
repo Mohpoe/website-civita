@@ -1,16 +1,8 @@
 import { formatRupiah, cn } from "@/lib/utils";
-import { getServiceVisual, type ServiceAccent } from "@/lib/services";
+import { ACCENT_BG, resolveServiceVisual } from "@/lib/service-visuals";
 import type { Service } from "@/types/global";
-import { ArrowRight, FileCheck2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-
-const ACCENT_BG: Record<ServiceAccent, string> = {
-  coral: "bg-coral",
-  sage: "bg-sage",
-  butter: "bg-butter",
-  sky: "bg-sky",
-  lilac: "bg-lilac",
-};
 
 /** Alamat publik layanan. */
 export function servicePath(service: Pick<Service, "slug">): string {
@@ -22,14 +14,10 @@ export function servicePath(service: Pick<Service, "slug">): string {
  * Seluruh kartu adalah satu tautan ke halaman detail.
  */
 export function ServiceCard({ service }: { service: Service }) {
-  const visual =
-    getServiceVisual(service.id) ?? getServiceVisual(service.slug);
-  const Icon = visual?.icon ?? FileCheck2;
-  const accent = visual?.accent ?? "butter";
-  const tags =
-    visual?.tags && visual.tags.length > 0
-      ? visual.tags
-      : service.languages.map((code) => code.toUpperCase());
+  const visual = resolveServiceVisual(service);
+  const Icon = visual.icon;
+  const accent = visual.accent;
+  const tags = visual.tags;
 
   const distinctPrices = new Set(
     service.languages

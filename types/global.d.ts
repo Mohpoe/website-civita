@@ -92,6 +92,12 @@ export interface Service {
   price: number;
   /** Harga per kode bahasa, mis. `{ id: 75000, en: 95000 }`. */
   prices: Record<string, number>;
+  /** Kunci ikon kurasi (lihat `lib/service-visuals.ts`); null = otomatis. */
+  icon: string | null;
+  /** Kunci warna aksen; null = otomatis. */
+  accent: string | null;
+  /** Tag tampilan, maksimal 2 (dari database). */
+  tags: string[];
   languages: string[];
   is_active: boolean;
   sort_order: number;

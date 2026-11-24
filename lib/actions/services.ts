@@ -2,6 +2,7 @@
 
 import { ROUTES } from "@/lib/constants";
 import { normalizeService, SERVICES_TAG, type ServiceRow } from "@/lib/service-catalog";
+import { isServiceAccent, SERVICE_ICON_MAP } from "@/lib/service-visuals";
 import { slugify } from "@/lib/slug";
 import { getServiceAccess } from "@/lib/service-access";
 import { sql } from "@/lib/utils";
@@ -74,7 +75,7 @@ export async function getServices(): Promise<Service[]> {
 
   try {
     const rows = (await sql`
-      SELECT id, slug, name, description, price, prices, languages,
+      SELECT id, slug, name, description, price, prices, icon, accent, tags, languages,
              is_active, sort_order, created_at, updated_at
       FROM services
       ORDER BY sort_order ASC, name ASC
@@ -99,6 +100,16 @@ export async function upsertServiceAction(
   const existingId = text(formData, "id", 64);
   const name = text(formData, "name", 120);
   const description = text(formData, "description", 600);
+  const rawIcon = text(formData, "icon", 40);
+  const icon = rawIcon === "auto" ? "" : rawIcon;
+  const rawAccent = text(formData, "accent", 16);
+  const accent = rawAccent === "auto" ? "" : rawAccent;
+  const tags = text(formData, "tags", 160)
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((tag) => tag.slice(0, 20));
   const rawOrder = Number(text(formData, "sortOrder", 10));
   const isActive = formData.get("isActive") === "true";
   const languages = formData
@@ -110,6 +121,12 @@ export async function upsertServiceAction(
   }
   if (languages.length === 0) {
     return { success: false, message: "Pilih minimal satu bahasa." };
+  }
+  if (icon && !SERVICE_ICON_MAP[icon]) {
+    return { success: false, message: "Ikon layanan tidak valid." };
+  }
+  if (accent && !isServiceAccent(accent)) {
+    return { success: false, message: "Warna aksen layanan tidak valid." };
   }
 
   // Harga wajib diisi untuk setiap bahasa yang dicentang supaya klien tidak
@@ -139,10 +156,11 @@ export async function upsertServiceAction(
 
   try {
     await sql`
-      INSERT INTO services (id, slug, name, description, price, prices, languages, is_active, sort_order, updated_at)
+      INSERT INTO services (id, slug, name, description, price, prices, icon, accent, tags, languages, is_active, sort_order, updated_at)
       VALUES (
         ${id}, ${slug}, ${name}, ${description}, ${price},
         ${JSON.stringify(prices)}::jsonb,
+        ${icon || null}, ${accent || null}, ${JSON.stringify(tags)}::jsonb,
         ${JSON.stringify(languages)}::jsonb, ${isActive}, ${sortOrder}, now()
       )
       ON CONFLICT (id) DO UPDATE SET
@@ -151,6 +169,9 @@ export async function upsertServiceAction(
         description = EXCLUDED.description,
         price = EXCLUDED.price,
         prices = EXCLUDED.prices,
+        icon = EXCLUDED.icon,
+        accent = EXCLUDED.accent,
+        tags = EXCLUDED.tags,
         languages = EXCLUDED.languages,
         is_active = EXCLUDED.is_active,
         sort_order = EXCLUDED.sort_order,

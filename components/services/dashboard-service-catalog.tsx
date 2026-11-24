@@ -15,9 +15,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toast";
@@ -27,6 +28,13 @@ import {
   toggleServiceAction,
   upsertServiceAction,
 } from "@/lib/actions/services";
+import {
+  ACCENT_BG,
+  SERVICE_ACCENTS,
+  SERVICE_ICONS,
+  SERVICE_ICON_MAP,
+  isServiceAccent,
+} from "@/lib/service-visuals";
 import { cn, formatRupiah } from "@/lib/utils";
 import type { Service } from "@/types/global";
 import {
@@ -55,6 +63,7 @@ import {
   PlusIcon,
   SearchIcon,
   Settings2Icon,
+  SparklesIcon,
   Trash2Icon,
   XIcon,
 } from "lucide-react";
@@ -139,6 +148,9 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
   const [sortOrder, setSortOrder] = useState("0");
   const [isActive, setIsActive] = useState(true);
   const [languages, setLanguages] = useState<string[]>(["id", "en"]);
+  const [iconKey, setIconKey] = useState("auto");
+  const [accentValue, setAccentValue] = useState<string>("auto");
+  const [tagsInput, setTagsInput] = useState("");
 
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
@@ -182,6 +194,9 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
     setSortOrder(String(services.length * 10 + 10));
     setIsActive(true);
     setLanguages(["id", "en"]);
+    setIconKey("auto");
+    setAccentValue("auto");
+    setTagsInput("");
     setIsDialogOpen(true);
   };
 
@@ -201,6 +216,9 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
     setSortOrder(String(service.sort_order));
     setIsActive(service.is_active);
     setLanguages(service.languages);
+    setIconKey(service.icon ?? "auto");
+    setAccentValue(service.accent ?? "auto");
+    setTagsInput(service.tags.join(", "));
     setIsDialogOpen(true);
   };
 
@@ -219,6 +237,14 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
 
   const pricesValid =
     languages.length > 0 && languages.every((code) => toPriceNumber(prices[code]) >= 1000);
+
+  const PreviewIcon =
+    iconKey !== "auto" && SERVICE_ICON_MAP[iconKey]
+      ? SERVICE_ICON_MAP[iconKey]
+      : SparklesIcon;
+  const previewAccentClass = isServiceAccent(accentValue)
+    ? ACCENT_BG[accentValue]
+    : "bg-paper-2";
 
   const submitForm = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -657,6 +683,104 @@ export function DashboardServiceCatalog({ services }: DashboardServiceCatalogPro
                     maxLength={600}
                     placeholder="Ringkas manfaat & siapa yang cocok (maks. 600 karakter)."
                   />
+                </Field>
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <Field>
+                    <FieldLabel htmlFor="serviceIcon">
+                      Ikon <span className="text-muted-foreground">· opsional</span>
+                    </FieldLabel>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={cn(
+                          "flex size-8 shrink-0 items-center justify-center rounded-md border-2 border-ink text-on-accent",
+                          previewAccentClass,
+                        )}
+                      >
+                        <PreviewIcon className="size-4" />
+                      </span>
+                      <Select
+                        name="icon"
+                        value={iconKey}
+                        onValueChange={(value) => setIconKey(value ?? "auto")}
+                        items={[
+                          { value: "auto", label: "Otomatis" },
+                          ...SERVICE_ICONS.map((item) => ({
+                            value: item.key,
+                            label: item.label,
+                          })),
+                        ]}
+                      >
+                        <SelectTrigger id="serviceIcon" className="w-full">
+                          <SelectValue placeholder="Otomatis" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="auto">Otomatis</SelectItem>
+                          {SERVICE_ICONS.map((item) => (
+                            <SelectItem key={item.key} value={item.key}>
+                              {item.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </Field>
+
+                  <Field>
+                    <FieldLabel>
+                      Warna aksen <span className="text-muted-foreground">· opsional</span>
+                    </FieldLabel>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setAccentValue("auto")}
+                        className={cn(
+                          "h-8 rounded-md border-2 px-2.5 text-[11px] font-medium transition-colors",
+                          accentValue === "auto"
+                            ? "border-foreground bg-muted"
+                            : "border-border bg-background hover:bg-muted",
+                        )}
+                      >
+                        Otomatis
+                      </button>
+                      {SERVICE_ACCENTS.map((item) => (
+                        <button
+                          key={item.value}
+                          type="button"
+                          onClick={() => setAccentValue(item.value)}
+                          aria-label={item.label}
+                          title={item.label}
+                          className={cn(
+                            "size-8 rounded-md border-2 transition-transform hover:scale-105",
+                            ACCENT_BG[item.value],
+                            accentValue === item.value
+                              ? "border-foreground ring-2 ring-foreground/20"
+                              : "border-ink/30",
+                          )}
+                        />
+                      ))}
+                    </div>
+                    <input
+                      type="hidden"
+                      name="accent"
+                      value={accentValue === "auto" ? "" : accentValue}
+                    />
+                  </Field>
+                </div>
+
+                <Field>
+                  <FieldLabel htmlFor="serviceTags">
+                    Tag <span className="text-muted-foreground">· opsional</span>
+                  </FieldLabel>
+                  <Input
+                    id="serviceTags"
+                    name="tags"
+                    value={tagsInput}
+                    onChange={(event) => setTagsInput(event.target.value)}
+                    placeholder="mis. ATS, 1 halaman"
+                    maxLength={80}
+                  />
+                  <FieldDescription>Maksimal 2 tag, pisahkan dengan koma.</FieldDescription>
                 </Field>
 
                 <Field>

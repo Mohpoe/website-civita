@@ -9,6 +9,7 @@ selalu di branch development lebih dulu, lalu di production.
 | `002_services_orders_chat.sql` | Tabel `services`, `service_orders`, `service_messages` + seed 8 layanan jasa. |
 | `003_product_catalog.sql` | Kolom `slug`, `file_format`, `file_size` pada `products` + isi slug produk lama dan unique index. |
 | `004_service_pricing_attachments.sql` | Harga per bahasa (`services.prices`), nomor WhatsApp klien, tabel `service_order_attachments`, dan lampiran pada `service_messages`. |
+| `005_service_visuals.sql` | Kolom `icon`, `accent`, dan `tags` (maks. 2) pada `services` + backfill visual 8 layanan seed. |
 
 ## Menjalankan di development
 
@@ -17,6 +18,7 @@ node --env-file=.env.local scripts/run-migration.mjs 001_site_settings_testimoni
 node --env-file=.env.local scripts/run-migration.mjs 002_services_orders_chat.sql
 node --env-file=.env.local scripts/run-migration.mjs 003_product_catalog.sql
 node --env-file=.env.local scripts/run-migration.mjs 004_service_pricing_attachments.sql
+node --env-file=.env.local scripts/run-migration.mjs 005_service_visuals.sql
 ```
 
 Skrip membaca `NEONDB_DATABASE_URL` dari `.env.local`. Driver HTTP Neon
@@ -31,7 +33,8 @@ dilewati otomatis oleh skrip (tetap aman saat dijalankan manual).
 4. Salin seluruh isi `002_services_orders_chat.sql`, jalankan.
 5. Salin seluruh isi `003_product_catalog.sql`, jalankan.
 6. Salin seluruh isi `004_service_pricing_attachments.sql`, jalankan.
-7. Verifikasi:
+7. Salin seluruh isi `005_service_visuals.sql`, jalankan.
+8. Verifikasi:
 
 ```sql
 SELECT table_name
@@ -39,7 +42,7 @@ FROM information_schema.tables
 WHERE table_schema = 'public'
   AND table_name IN ('site_settings', 'testimonials', 'services', 'service_orders', 'service_messages', 'service_order_attachments');
 
-SELECT slug, name, price, prices, is_active FROM services ORDER BY sort_order;
+SELECT slug, name, price, prices, icon, accent, tags, is_active FROM services ORDER BY sort_order;
 
 SELECT count(*) FILTER (WHERE slug IS NULL OR slug = '') AS produk_tanpa_slug,
        count(*) AS total_produk
