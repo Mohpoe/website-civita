@@ -1,13 +1,21 @@
 import { ProductDetail } from "@/components/products/product-detail";
 import {
+  getActiveProducts,
   getProductBySlug,
   getRelatedProducts,
   userOwnsProduct,
 } from "@/lib/products";
-import { createPageMetadata } from "@/lib/seo";
+import { createPageMetadata, truncateSeoTitle } from "@/lib/seo";
 import { currentUser } from "@clerk/nextjs/server";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+
+export const revalidate = 300;
+
+export async function generateStaticParams() {
+  const products = await getActiveProducts();
+  return products.map((product) => ({ slug: product.slug || product.id }));
+}
 
 export async function generateMetadata({
   params,
@@ -28,13 +36,20 @@ export async function generateMetadata({
   // pratinjau tautan produk memakai template neo-brutalis yang sama. Jangan
   // menimpa `images` di sini, karena metadata akan mengalahkan file convention.
   return createPageMetadata({
-    title: product.title,
-    description:
+    title: truncateSeoTitle(product.title, 60),
+    description: `${
       product.short_desc ||
       product.long_desc ||
-      "Template digital siap pakai untuk kebutuhan lamaran kerja.",
+      "Template digital siap pakai untuk kebutuhan lamaran kerja."
+    } Unduh & edit kapan saja.`,
     path,
     ogImage: `${path}/opengraph-image`,
+    keywords: [
+      truncateSeoTitle(product.title, 60),
+      product.category?.name?.trim() || "template cv",
+      "template cv",
+      "template surat lamaran",
+    ],
   });
 }
 

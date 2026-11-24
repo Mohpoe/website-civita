@@ -44,6 +44,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: PAGE_URL(`${ROUTES.PRODUCTS}/${product.slug || product.id}`),
       changeFrequency: 'weekly' as const,
       priority: 0.8,
+      images: product.image_url ? [product.image_url] : undefined,
     })),
     {
       url: PAGE_URL(ROUTES.SERVICES),

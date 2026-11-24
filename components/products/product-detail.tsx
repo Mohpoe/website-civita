@@ -69,12 +69,43 @@ export function ProductDetail({
     },
   };
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Beranda",
+        item: APP_CONFIG.URL,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Produk",
+        item: `${APP_CONFIG.URL}/produk`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: product.title,
+        item: `${APP_CONFIG.URL}${href}`,
+      },
+    ],
+  };
+
   return (
     <main className="bg-paper">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c"),
         }}
       />
 

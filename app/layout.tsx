@@ -24,7 +24,7 @@ const geistMono = Geist_Mono({
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
-  const siteTitle = `${settings.brandName} | Jasa Bikin CV ATS-Friendly & Portfolio Profesional`;
+  const siteTitle = `${settings.brandName} – Jasa Bikin CV ATS-Friendly & Portfolio Profesional`;
   const siteDescription = settings.description;
   const twitterHandle = settings.twitterHandle || APP_CONFIG.SOCIAL.TWITTER;
 
@@ -32,7 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase: new URL(APP_CONFIG.URL),
     title: {
       default: siteTitle,
-      template: `%s | ${settings.brandName}`,
+      template: `%s – ${settings.brandName}`,
     },
     description: siteDescription,
     keywords: [

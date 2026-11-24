@@ -5,6 +5,13 @@ import { createPageMetadata } from "@/lib/seo";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+export const revalidate = 300;
+
+export async function generateStaticParams() {
+  const services = await getActiveServices();
+  return services.map((service) => ({ slug: service.slug }));
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -19,10 +26,16 @@ export async function generateMetadata({
   }
 
   return createPageMetadata({
-    title: service.name,
-    description: service.description,
+    title: `Jasa ${service.name} Profesional`,
+    description: `${service.description} Dikerjakan custom sesuai posisi dan pengalamanmu, rapi dan siap kirim ke HR.`,
     path: `${ROUTES.SERVICES}/${service.slug}`,
     ogImage: `${ROUTES.SERVICES}/${service.slug}/opengraph-image`,
+    keywords: [
+      `jasa ${service.name.toLowerCase()}`,
+      "jasa pembuatan cv",
+      "jasa resume",
+      "jasa surat lamaran",
+    ],
   });
 }
 

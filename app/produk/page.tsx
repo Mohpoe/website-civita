@@ -1,6 +1,7 @@
 import { ProductCard } from "@/components/products/product-card";
 import { CatalogPagination } from "@/components/products/catalog-pagination";
 import { buttonVariants } from "@/components/ui/button";
+import { APP_CONFIG } from "@/lib/constants";
 import { getActiveProducts } from "@/lib/products";
 import { createPageMetadata } from "@/lib/seo";
 import { cn } from "@/lib/utils";
@@ -9,10 +10,18 @@ import { Search, X } from "lucide-react";
 import Link from "next/link";
 
 export const metadata = createPageMetadata({
-  title: "Katalog Produk",
+  title: "Template CV, Resume & Surat Lamaran Siap Edit",
   description:
-    "Template CV, resume, dan surat lamaran siap pakai. Pilih template yang cocok, bayar sekali, lalu unduh kapan saja.",
+    "Download template CV ATS, resume, dan surat lamaran untuk berbagai profesi. Bayar sekali, unduh, lalu edit kapan saja.",
   path: "/produk",
+  keywords: [
+    "template cv",
+    "template cv ats",
+    "template resume",
+    "template surat lamaran",
+    "download template cv",
+    "template cv profesional",
+  ],
 });
 
 export const revalidate = 300;
@@ -121,8 +130,26 @@ export default async function ProductsPage({
   const showingFrom = sorted.length === 0 ? 0 : startIndex + 1;
   const showingTo = Math.min(startIndex + PAGE_SIZE, sorted.length);
 
+  const itemListJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Katalog Template CIVITA",
+    itemListElement: products.map((product, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: product.title,
+      url: `${APP_CONFIG.URL}/produk/${product.slug || product.id}`,
+    })),
+  };
+
   return (
     <main className="bg-paper">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(itemListJsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
       <section className="border-b-2 border-ink bg-paper-2 px-4 pt-28 pb-10 sm:px-6 md:pt-32 md:pb-14">
         <div className="mx-auto max-w-6xl">
           <span className="nb-sm inline-flex items-center rounded-full bg-paper px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-ink">

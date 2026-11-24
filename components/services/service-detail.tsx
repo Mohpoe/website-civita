@@ -86,12 +86,43 @@ export function ServiceDetail({
     },
   };
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Beranda",
+        item: APP_CONFIG.URL,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Jasa",
+        item: `${APP_CONFIG.URL}/jasa`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: service.name,
+        item: `${APP_CONFIG.URL}${href}`,
+      },
+    ],
+  };
+
   return (
     <main className="bg-paper">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c"),
         }}
       />
 

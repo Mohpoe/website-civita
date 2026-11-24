@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { APP_CONFIG } from "@/lib/constants";
 
-export const SITE_TITLE = `${APP_CONFIG.NAME} | Jasa Bikin CV ATS-Friendly & Portfolio Profesional`;
+export const SITE_TITLE = `${APP_CONFIG.NAME} – Jasa Bikin CV ATS-Friendly & Portfolio Profesional`;
 
 export const SITE_DESCRIPTION =
   "Jasa pembuatan CV ATS-friendly, CV kreatif, surat lamaran, dan portfolio profesional. Desain rapi, siap kerja, mulai dari 13K.";
@@ -12,6 +12,17 @@ export const OG_IMAGE = {
   height: 630,
   alt: "Jasa pembuatan CV ATS-friendly, resume, dan surat lamaran profesional",
 };
+
+/** Rapikan spasi dan potong judul panjang di batas kata (untuk judul produk). */
+export function truncateSeoTitle(value: string, max = 60): string {
+  const clean = value.replace(/\s+/g, " ").trim();
+  if (clean.length <= max) return clean;
+
+  const sliced = clean.slice(0, max);
+  const lastSpace = sliced.lastIndexOf(" ");
+  const base = lastSpace > 20 ? sliced.slice(0, lastSpace) : sliced;
+  return `${base.trim()}…`;
+}
 
 type PageMetadataInput = {
   title: string;
@@ -24,6 +35,8 @@ type PageMetadataInput = {
    * `opengraph-image.tsx` sendiri, misalnya detail jasa atau produk.
    */
   ogImage?: string;
+  /** Kata kunci tambahan untuk halaman ini (opsional). */
+  keywords?: string[];
   noIndex?: boolean;
 };
 
@@ -40,13 +53,16 @@ export function createPageMetadata({
   ogTitle,
   ogDescription,
   ogImage,
+  keywords,
   noIndex = false,
 }: PageMetadataInput): Metadata {
   const url = path === "/" ? APP_CONFIG.URL : `${APP_CONFIG.URL}${path}`;
-  const socialTitle = (ogTitle ?? `${title} | ${APP_CONFIG.NAME}`)
+  const cleanTitle = title.replace(/\s+/g, " ").trim();
+  const cleanDescription = description.replace(/\s+/g, " ").trim();
+  const socialTitle = (ogTitle ?? `${cleanTitle} – ${APP_CONFIG.NAME}`)
     .replace(/\s+/g, " ")
     .trim();
-  const socialDescription = (ogDescription ?? description)
+  const socialDescription = (ogDescription ?? cleanDescription)
     .replace(/\s+/g, " ")
     .trim();
   const image = ogImage
@@ -55,10 +71,11 @@ export function createPageMetadata({
   const imageUrl = ogImage ?? OG_IMAGE.url;
 
   return {
-    title,
-    description,
+    title: cleanTitle,
+    description: cleanDescription,
+    keywords,
     alternates: {
-      canonical: path,
+      canonical: url,
     },
     openGraph: {
       type: "website",

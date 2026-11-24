@@ -13,6 +13,7 @@ import { ACCENT_BG, resolveServiceVisual, type ServiceAccent } from "@/lib/servi
 import { getSiteSettings } from "@/lib/settings";
 import { getSiteLinks } from "@/lib/site-config";
 import { getActiveTestimonials } from "@/lib/testimonials";
+import { createPageMetadata } from "@/lib/seo";
 import { cn, formatRupiah } from "@/lib/utils";
 import {
   ArrowRight,
@@ -33,6 +34,24 @@ import Link from "next/link";
 import { SiWhatsapp } from "react-icons/si";
 
 export const revalidate = 300;
+
+export const metadata = createPageMetadata({
+  title: "Jasa Pembuatan CV & Template CV ATS – CIVITA",
+  ogTitle: "Jasa Pembuatan CV & Template CV ATS – CIVITA",
+  description:
+    "Jasa bikin CV ATS-friendly, resume, dan surat lamaran profesional, plus template CV siap edit untuk berbagai profesi. Dikerjakan custom, siap kerja.",
+  path: "/",
+  keywords: [
+    "jasa pembuatan cv",
+    "jasa bikin cv",
+    "jasa cv ats",
+    "jasa resume",
+    "jasa surat lamaran",
+    "template cv",
+    "template resume",
+    "template surat lamaran",
+  ],
+});
 
 const TRUST_ITEMS = [
   { icon: ShieldCheck, label: "ATS-friendly", detail: "Mudah dibaca sistem" },
@@ -159,8 +178,27 @@ export default async function HomePage() {
           };
         });
 
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: FAQ_ITEMS.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer,
+      },
+    })),
+  };
+
   return (
     <div className="min-h-screen bg-paper font-mono text-ink">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(faqJsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
       <PublicNavigation />
 
       <main>

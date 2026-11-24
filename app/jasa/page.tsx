@@ -1,7 +1,7 @@
 import { ServiceCard } from "@/components/services/service-card";
 import { CatalogPagination } from "@/components/products/catalog-pagination";
 import { buttonVariants } from "@/components/ui/button";
-import { ROUTES } from "@/lib/constants";
+import { APP_CONFIG, ROUTES } from "@/lib/constants";
 import { getActiveServices } from "@/lib/service-catalog";
 import { createPageMetadata } from "@/lib/seo";
 import { cn } from "@/lib/utils";
@@ -9,10 +9,18 @@ import { ArrowRight, Search, X } from "lucide-react";
 import Link from "next/link";
 
 export const metadata = createPageMetadata({
-  title: "Katalog Jasa",
+  title: "Jasa Pembuatan CV, Resume & Surat Lamaran",
   description:
-    "Jasa pembuatan CV ATS, resume, surat lamaran, cover letter, dan berkas lamaran lain. Dikerjakan custom sesuai pengalaman dan posisi yang kamu lamar.",
+    "Jasa buat CV ATS, resume, surat lamaran, dan cover letter. Dikerjakan custom dari data dan posisi yang kamu lamar, rapi dan siap kirim ke HR.",
   path: ROUTES.SERVICES,
+  keywords: [
+    "jasa pembuatan cv",
+    "jasa bikin cv",
+    "jasa cv ats",
+    "jasa resume",
+    "jasa surat lamaran",
+    "jasa cover letter",
+  ],
 });
 
 export const revalidate = 300;
@@ -88,8 +96,26 @@ export default async function ServicesPage({
 
   const hasFilter = Boolean(query || sort !== "urutan");
 
+  const itemListJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Katalog Jasa CIVITA",
+    itemListElement: services.map((service, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: service.name,
+      url: `${APP_CONFIG.URL}${ROUTES.SERVICES}/${service.slug}`,
+    })),
+  };
+
   return (
     <main className="bg-paper">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(itemListJsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
       <section className="border-b-2 border-ink bg-paper-2 px-4 pt-28 pb-10 sm:px-6 md:pt-32 md:pb-14">
         <div className="mx-auto max-w-6xl">
           <span className="nb-sm inline-flex items-center rounded-full bg-paper px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-ink">
