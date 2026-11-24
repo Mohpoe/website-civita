@@ -37,7 +37,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   linkedinUrl: APP_CONFIG.SOCIAL.LINKEDIN,
   twitterHandle: APP_CONFIG.SOCIAL.TWITTER,
   logoUrl: APP_CONFIG.ASSETS.LOGO,
-  heroHeadline: "Berkas lamaran yang rapi, siap di-screening HR.",
+  heroHeadline: "Jasa Pembuatan CV & Resume ATS-friendly.",
   heroSubheadline:
     "CV ATS-friendly, resume, surat lamaran, dan cover letter yang disusun tenaga profesional — bahasa Indonesia maupun Inggris.",
   consultMessage: APP_CONFIG.CONSULT_MESSAGE,

@@ -256,8 +256,8 @@ export default async function HomePage() {
             <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <SectionHeading
                 eyebrow="Layanan"
-                title="Berkas lamaran yang siap di-screening HR."
-                description="Pilih satu berkas atau paket lengkap. Semua disusun custom dari riwayat pendidikan, pengalaman, dan pencapaianmu."
+                title="Jasa pembuatan berkas lamaran yang mudah di-screening HR."
+                description="Tersedia jasa pembuatan CV, Ressume, Surat Lamara, dan lainnya. Dijamin ATS-friendly dan mudah di-screening HR."
                 className="max-w-2xl"
               />
               <Link
