@@ -74,8 +74,8 @@
   --card-foreground: var(--ink);
   --popover: #fffdf9;
   --popover-foreground: var(--ink);
-  --primary: var(--ink);
-  --primary-foreground: var(--paper);
+  --primary: #4a3428;
+  --primary-foreground: #faf7f2;
   --secondary: var(--paper-2);
   --secondary-foreground: var(--ink);
   --muted: var(--paper-2);
@@ -96,8 +96,8 @@
   --radius: 0.5rem;
   --sidebar: #f5f0e8;
   --sidebar-foreground: var(--ink);
-  --sidebar-primary: var(--ink);
-  --sidebar-primary-foreground: var(--paper);
+  --sidebar-primary: #4a3428;
+  --sidebar-primary-foreground: #faf7f2;
   --sidebar-accent: #ebe3d7;
   --sidebar-accent-foreground: var(--ink);
   --sidebar-border: #ded5c8;
@@ -135,8 +135,8 @@
   --card-foreground: var(--ink);
   --popover: #24211d;
   --popover-foreground: var(--ink);
-  --primary: var(--ink);
-  --primary-foreground: var(--paper);
+  --primary: #d6b79a;
+  --primary-foreground: #1b1917;
   --secondary: var(--paper-2);
   --secondary-foreground: var(--ink);
   --muted: var(--paper-2);
@@ -156,8 +156,8 @@
   --chart-5: var(--lilac);
   --sidebar: #201d1a;
   --sidebar-foreground: var(--ink);
-  --sidebar-primary: var(--ink);
-  --sidebar-primary-foreground: var(--paper);
+  --sidebar-primary: #d6b79a;
+  --sidebar-primary-foreground: #1b1917;
   --sidebar-accent: #2c2823;
   --sidebar-accent-foreground: var(--ink);
   --sidebar-border: #3b352e;
